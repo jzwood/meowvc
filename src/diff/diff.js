@@ -19,14 +19,16 @@ module.exports = function diff(a, b, subCost = 1, insertCost = 1, delCost = 1) {
 	let i = blength + 1
 	while (i--) {
 		matrix[i] = [i]
-		backtrace[i] = []
+		backtrace[i] = [2]
 	}
 
 	// init each column in the first row
 	let j = alength + 1
 	while (j--) {
-		matrix[0][j] = [j]
+		matrix[0][j] = j
+		backtrace[0][j] = 3
 	}
+	backtrace[0][0] = 5
 
 	// Fill in the rest of the matrix
 	for (let i = 1; i <= blength; i++) {
@@ -36,9 +38,9 @@ module.exports = function diff(a, b, subCost = 1, insertCost = 1, delCost = 1) {
 				matrix[i][j] = matrix[i - 1][j - 1]
 				backtrace[i][j] = pointer
 			} else {
-				const substDist = parseInt(matrix[i - 1][j - 1]) + subCost
-				const insertDist = parseInt(matrix[i][j - 1]) + insertCost
-				const deleteDist = parseInt(matrix[i - 1][j]) + delCost
+				const substDist = matrix[i - 1][j - 1] + subCost
+				const insertDist = matrix[i][j - 1] + insertCost
+				const deleteDist = matrix[i - 1][j] + delCost
 				let minDist
 				if (substDist <= insertDist && substDist <= deleteDist) {
 					minDist = substDist
@@ -61,19 +63,20 @@ module.exports = function diff(a, b, subCost = 1, insertCost = 1, delCost = 1) {
 		dj = alength,
     incrementer = 0
 	const trace = []
-	while (dj - 1 && dj - 1) {
+	while (di || dj) {
 		let bt = backtrace[di][dj]
 		trace[incrementer++] = bt
-
 		if (bt <= 1) {
-			dj = max(1, dj - 1)
-			di = max(1, di - 1)
+			dj = max(0, dj - 1)
+			di = max(0, di - 1)
 		} else if (bt === 2) {
-			di = max(1, di - 1)
+			di = max(0, di - 1)
 		} else {
-			dj = max(1, dj - 1)
+			dj = max(0, dj - 1)
 		}
 	}
+
+	console.log(backtrace)
 
   const decode = {
     0: '_',
@@ -83,7 +86,7 @@ module.exports = function diff(a, b, subCost = 1, insertCost = 1, delCost = 1) {
   }
 
 	return {
-		'distance': parseInt(matrix[blength][alength]),
+		'distance': matrix[blength][alength],
 		'backtrace': trace,
     decode
 	}

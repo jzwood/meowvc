@@ -10,8 +10,8 @@
     "colors": "^1.1.2"
   },
   "scripts": {
-    "start": "node index.js",
-    "tests": "node test/tests.js"
+    "start": "node mu.js",
+    "tests": "node test/runtests.js"
   },
   "author": "",
   "license": "ISC"
