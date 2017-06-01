@@ -6,9 +6,12 @@
   "dependencies": {
     "edit-distance": "^1.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "colors": "^1.1.2"
+  },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "tests": "node test/tests.js"
   },
   "author": "",
   "license": "ISC"
