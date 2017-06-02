@@ -2,14 +2,29 @@
  * @acknowledgement
  * Adapted from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance
  */
+module.exports = {
+	diff,
+	reconstruct
+}
 
-module.exports = function diff(oldstr, newstr, subCost = 1, insertCost = 1, delCost = 1) {
+function diff(oldstr, newstr, subCost = 1, insertCost = 1, delCost = 1) {
 	const oldLength = oldstr.length,
 		newLength = newstr.length
 
-	// trivial case
-	if (oldLength === 0) return newLength
-	if (newLength === 0) return oldLength
+	// trivial cases
+	if (oldLength === 0){
+		return {
+			"distance" : newLength,
+			"backtrace" : []
+		}
+	}
+
+	if (newLength === 0){
+		return {
+			"distance" : oldLength,
+			"backtrace" : []
+		}
+	}
 
 	const min = Math.min, max = Math.max
 	const matrix = []
@@ -69,39 +84,51 @@ module.exports = function diff(oldstr, newstr, subCost = 1, insertCost = 1, delC
 	let di = newLength,
 		dj = oldLength,
     incrementer = 0,
-		countSkip = 0
+		index = oldstr.length - 1
 	const trace = []
 	while (di || dj) {
 		let bt = backtrace[di][dj]
-		const aChar = () => oldstr[oldstr.length - incrementer]
+		const aChar = () => oldstr[index--] || "error. index: " + oldstr.length
 		if (bt <= 1) {
 			dj = max(0, dj - 1)
 			di = max(0, di - 1)
-			if(bt){
-				trace[incrementer++] = 's'// + aChar()
+			if(bt){ //i.e. is bt === 1
+				trace[incrementer++] = 's' + aChar()
 			}else{
-				countSkip++
+				trace[incrementer++] = '1_'
+				index--
 			}
-		} else{
-			if(countSkip){
-				trace[incrementer++] = countSkip //+ '_'
-				countSkip = 0
-			}
-			if (bt === 2) {
-				di = max(0, di - 1)
-				trace[incrementer++] = 'd'
-			} else if(bt === 3) {
-				dj = max(0, dj - 1)
-				trace[incrementer++] = 'i' //+ aChar()
-			}
+		} else if (bt === 2) {
+			di = max(0, di - 1)
+			trace[incrementer++] = 'd'
+		} else if(bt === 3) {
+			dj = max(0, dj - 1)
+			trace[incrementer++] = 'i' + aChar()
 		}
-	}
-	if(countSkip){
-		trace[incrementer] = countSkip //+ '_'
+		// console.log(incrementer)
 	}
 
 	return {
 		'distance': matrix[newLength][oldLength],
 		'backtrace': trace
 	}
+}
+
+function reconstruct(old, trace){
+	let c = '', pointer = old.length
+	for(let i=0, n=trace.length; i < n; i++){
+		const op = trace[i], skipBlock = parseInt(op)
+		if(op[1] === '_'){
+			c = old.slice(pointer - skipBlock, pointer) + c
+			pointer -= skipBlock
+		}else if(op[0] === 's'){
+			c = op[1] + c
+			pointer--
+		}else if(op[0] === 'i'){
+			c = op[1] + c
+		}else{
+			pointer--
+		}
+	}
+	return c
 }

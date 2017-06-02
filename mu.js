@@ -12,29 +12,21 @@ const lev = (a, b) => {
 }
 
 //get new from old + backtrace
-var b = 'aerfrf' // old
-var a = 'asefesfaer' // new
+// var b = 'pewgdashdaaaso' // old
+// var a = 'sadfafassdfa' // new
+
+var b = 'dafsdjfaisdjfasdfuashdfhuasdf' // old
+var a = 'asdhfhfgdysbsg' // new
 
 var t = lev(a, b)
-var d = diff(a, b)
-// console.log(t.pairs())
+var d = diff.diff(a, b)
 
-function getNewStr(old, trace){
-	let c = '', aPointer = old.length
-	for(let i=0, n=d.backtrace.length; i < n; i++){
-		const op = d.backtrace[i], skipBlock = parseInt(op)
-		if(op[1] === '_'){
-			c = old.slice(aPointer - skipBlock, aPointer) + c
-			aPointer -= skipBlock
-		}else if(op[0] === 's'){
-			c = op[1] + c
-			aPointer--
-		}else if(op[0] === 'i'){
-			c = op[1] + c
-		}
-	}
-	return c
-}
+console.log(a === diff.reconstruct(b, d.backtrace))
 
-// console.log(a, getNewStr(b,d.backtrace), b, d.backtrace)
-console.log(a, b, d.backtrace)
+var b = 'susdyfwrfnewfbnwebfbfsdbfds' // old
+var a = 'asdfnausdfuasdhfuhasdufhuhudqmeiaiwiaieeu' // new
+
+var t = lev(a, b)
+var d = diff.diff(a, b)
+
+console.log(a === diff.reconstruct(b, d.backtrace))
