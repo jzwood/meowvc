@@ -23,8 +23,8 @@ var d = diff.diff(a, b)
 
 console.log(a === diff.reconstruct(b, d.backtrace))
 
-var b = 'susdyfwrfnewfbnwebfbfsdbfds' // old
-var a = 'asdfnausdfuasdhfuhasdufhuhudqmeiaiwiaieeu' // new
+var a = 'asdfnausdfuasdhfuhasdufhuhudqme' // new
+var b = 'susdyfwrfbfsdbfds' // old
 
 var t = lev(a, b)
 var d = diff.diff(a, b)

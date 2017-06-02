@@ -7,9 +7,9 @@ module.exports = {
 	reconstruct
 }
 
-function diff(oldstr, newstr, subCost = 1, insertCost = 1, delCost = 1) {
-	const oldLength = oldstr.length,
-		newLength = newstr.length
+function diff(str1, str2, subCost = 1, insertCost = 1, delCost = 1) {
+	const oldLength = str1.length,
+		newLength = str2.length
 
 	// trivial cases
 	if (oldLength === 0){
@@ -49,7 +49,7 @@ function diff(oldstr, newstr, subCost = 1, insertCost = 1, delCost = 1) {
 	for (let i = 1; i <= newLength; i++) {
 		for (let j = 1; j <= oldLength; j++) {
 			let pointer = 0
-			if (newstr[i - 1] === oldstr[j - 1]) {
+			if (str2[i - 1] === str1[j - 1]) {
 				matrix[i][j] = matrix[i - 1][j - 1]
 				backtrace[i][j] = pointer
 			} else {
@@ -84,11 +84,11 @@ function diff(oldstr, newstr, subCost = 1, insertCost = 1, delCost = 1) {
 	let di = newLength,
 		dj = oldLength,
     incrementer = 0,
-		index = oldstr.length - 1
+		index = str1.length - 1
 	const trace = []
 	while (di || dj) {
 		let bt = backtrace[di][dj]
-		const aChar = () => oldstr[index--] || "error. index: " + oldstr.length
+		const aChar = () => str1[index--] || "error. index: " + str1.length
 		if (bt <= 1) {
 			dj = max(0, dj - 1)
 			di = max(0, di - 1)
@@ -114,12 +114,12 @@ function diff(oldstr, newstr, subCost = 1, insertCost = 1, delCost = 1) {
 	}
 }
 
-function reconstruct(old, trace){
-	let c = '', pointer = old.length
+function reconstruct(str2, trace){
+	let c = '', pointer = str2.length
 	for(let i=0, n=trace.length; i < n; i++){
 		const op = trace[i], skipBlock = parseInt(op)
 		if(op[1] === '_'){
-			c = old.slice(pointer - skipBlock, pointer) + c
+			c = str2.slice(pointer - skipBlock, pointer) + c
 			pointer -= skipBlock
 		}else if(op[0] === 's'){
 			c = op[1] + c
