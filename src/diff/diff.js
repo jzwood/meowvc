@@ -27,7 +27,6 @@ function diff(str1, str2, subCost = 1, insertCost = 1, delCost = 1) {
 		matrix[0][j] = j
 		backtrace[0][j] = 3
 	}
-	backtrace[0][0] = 5
 
 	// Fill in the rest of the matrix
 	for (let i = 1; i <= str2Length; i++) {
