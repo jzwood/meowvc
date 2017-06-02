@@ -1,32 +1,15 @@
 const diff = require('./src/diff/diff.js')
 
+var one = '' // new
+var two = 'dafsdjfaisdjfasdfuashdfhuasdf' // old
 
-const ed = require('edit-distance')
-// Define cost functions.
+var d = diff.diff(one, two)
 
-const lev = (a, b) => {
-	let insert, remove, update
-	insert = remove = function(node) { return 1; }
-	update = function(stringA, stringB) { return stringA !== stringB ? 1 : 0; }
-	return ed.levenshtein(a, b, insert, remove, update)
-}
+console.log(d.backtrace)
 
-//get new from old + backtrace
-// var b = 'pewgdashdaaaso' // old
-// var a = 'sadfafassdfa' // new
+two = '' // new
+one = 'dafsdjfaisdjfasdfuashdfhuasdf' // old
 
-var b = 'dafsdjfaisdjfasdfuashdfhuasdf' // old
-var a = 'asdhfhfgdysbsg' // new
+d = diff.diff(one, two)
 
-var t = lev(a, b)
-var d = diff.diff(a, b)
-
-console.log(a === diff.reconstruct(b, d.backtrace))
-
-var a = 'asdfnausdfuasdhfuhasdufhuhudqme' // new
-var b = 'susdyfwrfbfsdbfds' // old
-
-var t = lev(a, b)
-var d = diff.diff(a, b)
-
-console.log(a === diff.reconstruct(b, d.backtrace))
+console.log(d.backtrace)

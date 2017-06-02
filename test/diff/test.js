@@ -1,5 +1,6 @@
 const assert = require('../assert.js').assert
 const diff = require('../../src/diff/diff.js')
+const colors = require('colors')
 const fs = require('fs')
 
 const ed = require('edit-distance')
@@ -20,7 +21,7 @@ const del = (string, index) => string.slice(0, index) + string.slice(index + 1)
  */
 console.log('diff tests:'.yellow)
 
- const testFiles = ['a','b']
+ const testFiles = ['a','b','c']
  for(let i in testFiles){
    let f1 = fs.readFileSync(`test/diff/randomTextFiles/${testFiles[i]}1.txt`, 'utf8')
    let f2 = fs.readFileSync(`test/diff/randomTextFiles/${testFiles[i]}2.txt`, 'utf8')
@@ -29,7 +30,7 @@ console.log('diff tests:'.yellow)
    const benchmarkDiff = lev(f1, f2)
 
    // is distance correct
-   assert.equals(myDiff.distance, benchmarkDiff.distance, 'dist1 === dist2')
+   assert.equals(myDiff.distance, benchmarkDiff.distance, 'dist1 === dist2\t\t'.cyan)
    // is backtrace correct
-   assert.equals(f1, diff.reconstruct(f2, myDiff.backtrace), 'str1 === backtrace(str2)')
+   assert.equals(f1, diff.reconstruct(f2, myDiff.backtrace), 'str1 === backtrace(str2)'.magenta)
  }

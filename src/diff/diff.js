@@ -8,37 +8,21 @@ module.exports = {
 }
 
 function diff(str1, str2, subCost = 1, insertCost = 1, delCost = 1) {
-	const oldLength = str1.length,
-		newLength = str2.length
-
-	// trivial cases
-	if (oldLength === 0){
-		return {
-			"distance" : newLength,
-			"backtrace" : []
-		}
-	}
-
-	if (newLength === 0){
-		return {
-			"distance" : oldLength,
-			"backtrace" : []
-		}
-	}
-
+	const str1Length = str1.length
+	const str2Length = str2.length
 	const min = Math.min, max = Math.max
 	const matrix = []
 	const backtrace = []
 
 	// init first column of each row & backtrace matrix
-	let i = newLength + 1
+	let i = str2Length + 1
 	while (i--) {
 		matrix[i] = [i]
 		backtrace[i] = [2]
 	}
 
 	// init each column in the first row
-	let j = oldLength + 1
+	let j = str1Length + 1
 	while (j--) {
 		matrix[0][j] = j
 		backtrace[0][j] = 3
@@ -46,8 +30,8 @@ function diff(str1, str2, subCost = 1, insertCost = 1, delCost = 1) {
 	backtrace[0][0] = 5
 
 	// Fill in the rest of the matrix
-	for (let i = 1; i <= newLength; i++) {
-		for (let j = 1; j <= oldLength; j++) {
+	for (let i = 1; i <= str2Length; i++) {
+		for (let j = 1; j <= str1Length; j++) {
 			let pointer = 0
 			if (str2[i - 1] === str1[j - 1]) {
 				matrix[i][j] = matrix[i - 1][j - 1]
@@ -73,22 +57,15 @@ function diff(str1, str2, subCost = 1, insertCost = 1, delCost = 1) {
 		}
 	}
 
-	const decode = {
-    0: '_',
-		1: 'sub',
-		2: 'del',
-		3: 'ins'
-  }
-
   //perform backtrace
-	let di = newLength,
-		dj = oldLength,
+	let di = str2Length,
+		dj = str1Length,
     incrementer = 0,
 		index = str1.length - 1
 	const trace = []
 	while (di || dj) {
 		let bt = backtrace[di][dj]
-		const aChar = () => str1[index--] || "error. index: " + str1.length
+		const aChar = () => str1[index--]
 		if (bt <= 1) {
 			dj = max(0, dj - 1)
 			di = max(0, di - 1)
@@ -105,11 +82,10 @@ function diff(str1, str2, subCost = 1, insertCost = 1, delCost = 1) {
 			dj = max(0, dj - 1)
 			trace[incrementer++] = 'i' + aChar()
 		}
-		// console.log(incrementer)
 	}
 
 	return {
-		'distance': matrix[newLength][oldLength],
+		'distance': matrix[str2Length][str1Length],
 		'backtrace': trace
 	}
 }
