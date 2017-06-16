@@ -1,15 +1,35 @@
-const diff = require('./src/diff/diff.js')
+/*
+ *	MU.JS ENTRY POINT / MAIN / CONTROLLER / BRAINZ
+ */
 
-var one = '' // new
-var two = 'dafsdjfaisdjfasdfuashdfhuasdf' // old
+const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 
-var d = diff.diff(one, two)
+function mu(args){
+	for(let i=0, n=args.length; i<n; i++){
+		const command = { init, stat, save, saveas, getblock }[sanitizeInput(args[i])]
+		if(typeof command === 'function') return command(i)
+	}
+}
 
-console.log(d.backtrace)
+mu(process.argv)
 
-two = '' // new
-one = 'dafsdjfaisdjfasdfuashdfhuasdf' // old
 
-d = diff.diff(one, two)
+function init(i) {
+	console.log('init', i)
+}
 
-console.log(d.backtrace)
+function stat(i) {
+	console.log('stat', i)
+}
+
+function save(i) {
+	console.log('save', i)
+}
+
+function saveas(i) {
+	console.log('saveas', i)
+}
+
+function getblock(i) {
+	console.log('getblock', i)
+}
