@@ -5,8 +5,9 @@ Recursively maps file tree
 const fs = require('fs-extra')
 const path = require('path')
 const crc = require('crc')
+const cache = require('./discretize.js')
 
-function blockify(cwd, parent, block, callback, ignore) {
+function blockify(cwd, parent, callback, ignore) {
 	const baseCase = {}
 	if (!fs.existsSync(parent)) return baseCase
 	const hashFileLookup = fs.readdirSync(parent).reduce((tree, child) => {
@@ -14,26 +15,19 @@ function blockify(cwd, parent, block, callback, ignore) {
 		const childPath = path.join(parent, child)
 		const isDir = fs.statSync(childPath).isDirectory()
 		if(isDir){
-			Object.assign(tree,blockify(cwd, childPath, block, callback, ignore))
+			Object.assign(tree, blockify(cwd, childPath, callback, ignore))
 		} else {
 			const childRelativePath = path.relative(cwd, childPath)
-			const hashsum = callback(cwd, block, childRelativePath)
-			tree[hashsum] = childRelativePath
+			const hashsum = callback(cwd, childRelativePath, tree)
 		}
 		return tree
 	}, baseCase)
-	fs.outputJsonSync(path.join(cwd,'.mu', block,'_register.json'), hashFileLookup)
 	return hashFileLookup
 }
 
-function writePath(cwd, block, fpath){
-	let file = fs.readFileSync(fpath,'utf8')
-	const hashsum = crc.crc32(file).toString(16)
-	const dest = path.join(cwd,'.mu', block, hashsum)
-	fs.ensureDirSync(path.dirname(dest))
-	fs.writeFileSync(dest, file)
-	return hashsum
-}
+cache(cwd, fpath, block)
 
-const tree = blockify(process.cwd(), process.cwd(), 'frontier', writePath ,/^\.|node_modules/)
+const tree = blockify(process.cwd(), process.cwd(), 'frontier', cache ,/^\.|node_modules/)
+// fs.outputJsonSync(path.join(cwd,'.mu', block,'_register.json'), hashFileLookup)
+
 console.log(tree)

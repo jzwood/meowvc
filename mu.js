@@ -2,6 +2,13 @@
  *	MU.JS ENTRY POINT / MAIN / CONTROLLER / BRAINZ
  */
 
+const fs = require('fs-extra')
+const path = require('path')
+const chalk = require('chalk')
+
+const discretize = require('./src/discretize.js')
+
+const DotMu = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 
 function mu(args){
@@ -15,7 +22,15 @@ mu(process.argv)
 
 
 function init(i) {
-	console.log('init', i)
+	const root = path.join(process.cwd(), DotMu)
+	fs.ensureDirSync(root)
+	const ledger = path.join(root, '_ledger.json')
+	if(fs.existsSync(ledger)){
+		console.log(chalk.red('there is a mu here already!'))
+		return false
+	}
+	fs.writeJsonSync(ledger, {"block":0})
+	console.log(chalk.green('wild mu released'))
 }
 
 function stat(i) {
@@ -24,6 +39,8 @@ function stat(i) {
 
 function save(i) {
 	console.log('save', i)
+	const cwd = process.cwd()
+	discretize(cwd, 'frontier').save()
 }
 
 function saveas(i) {
