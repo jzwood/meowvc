@@ -10,27 +10,46 @@ const discretize = require('./src/discretize.js')
 
 const DotMu = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
+let cwd, isMuRoot
 
-function mu(args){
-	for(let i=0, n=args.length; i<n; i++){
+function mu(args) {
+
+	cwd = process.cwd()
+	isMuRoot = fs.existsSync(path.join(cwd, DotMu))
+
+	for (let i = 0, n = args.length; i < n; i++) {
 		const command = { init, stat, save, saveas, getblock }[sanitizeInput(args[i])]
-		if(typeof command === 'function') return command(i)
+		if (typeof command === 'function') {
+			if (isMuRoot || args[i] === 'init') {
+				return command(i, args)
+			} else {
+				chalk.red('this directory has no mu!')
+			}
+		}
 	}
+	console.log(chalk.magenta('@todo: mu usage'))
 }
 
 mu(process.argv)
 
+function dest(fpath) {
+	return path.join(cwd, DotMu, fpath)
+}
 
 function init(i) {
-	const root = path.join(process.cwd(), DotMu)
-	fs.ensureDirSync(root)
-	const ledger = path.join(root, '_ledger.json')
-	if(fs.existsSync(ledger)){
-		console.log(chalk.red('there is a mu here already!'))
-		return false
+	if (isMuRoot) {
+		console.log(chalk.red('there is already a mu here!'))
+	} else {
+		fs.ensureDirSync(dest('history'))
+		fs.readJsonSync(dest('_pointer.json'), JSON.stringify({
+			head: "master",
+			branches: {
+				master: "v0.0.0"
+			}
+		}))
+		fs.readJsonSync(dest('_ignore'), '', 'utf8')
+		console.log(chalk.green('wild mu successfully released'))
 	}
-	fs.writeJsonSync(ledger, {"block":0})
-	console.log(chalk.green('wild mu released'))
 }
 
 function stat(i) {
@@ -39,12 +58,22 @@ function stat(i) {
 
 function save(i) {
 	console.log('save', i)
-	const cwd = process.cwd()
-	discretize(cwd, 'frontier').save()
+	let pointer = fs.readJsonSync(dest('_pointer.json'))
+	discretize(cwd, pointer.head).save()
+	console.log(chalk.red('The mu is done inventorying'))
 }
 
-function saveas(i) {
+function saveas(i, args) {
 	console.log('saveas', i)
+	const name = args[i + 1]
+	if (name) {
+		let pointer = fs.outputJsonSync(dest('_pointer.json'))
+		pointer.head = name
+		pointer.branch[name] = "v0.0.0"
+		fs.outputJsonSync(dest('_pointer.json'), pointer)
+	} else {
+		console.log(chalk.red('Mu expects'), chalk.inverse('saveas'), chalk.red('to include a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
+	}
 }
 
 function getblock(i) {

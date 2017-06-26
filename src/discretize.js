@@ -7,14 +7,14 @@ module.exports = (cwd, block) => {
 	const linesPath = path.join(cwd, '.mu', 'disk_mem', 'lines')
 	const filesPath = path.join(cwd, '.mu', 'disk_mem', 'files')
 	const memory = new Set()
-	const ignore_file = fs.readdirSync(path.join(cwd, '.mu', '_ignore')).trim()
+	const ignore_file = fs.readFileSync(path.join(cwd, '.mu', '_ignore'), 'utf8').trim().split('\n').join('|')
 	const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
 
 	return {
 		save(){
 			preCache()
 			const tree = blockify(cwd)
-			fs.outputJsonSync(path.join(cwd,'.mu', block, '_register.json'), hashFileLookup)
+			fs.outputJsonSync(path.join(cwd,'.mu/history', block, '_register.json'), tree)
 		}
 	}
 
@@ -28,8 +28,9 @@ module.exports = (cwd, block) => {
 			if (isDir) {
 				Object.assign(tree, blockify(childPath))
 			} else {
-				const childRelativePath = path.relative(childPath)
-				const hashsum = hashNCache(childRelativePath, tree)
+				const childRelativePath = path.relative(cwd, childPath)
+				const hashsum = hashNCache(childRelativePath)
+				tree[hashsum] = childRelativePath
 			}
 			return tree
 		}, baseCase)
@@ -53,6 +54,7 @@ module.exports = (cwd, block) => {
 		const cacheIt = data => {
 			memory.add(data)
 		}
+		const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
 
 		const file = fs.readFileSync(fpath, 'utf8')
 		const fileHash = hashIt(file)
@@ -62,12 +64,12 @@ module.exports = (cwd, block) => {
 			const hashes = file.split('\n').map(line => {
 				const lineHash = hashIt(line)
 				if (isUncached(lineHash)) {
-					cacheIt(hashsum)
-					fs.writeFileSync(path.join(linesPath, lineHash), line)
+					cacheIt(lineHash)
+					fs.outputFileSync(path.join(linesPath, insert(lineHash, 2, '/')), line)
 				}
 				return lineHash
 			})
-			fs.outputJsonSync(path.join(filesPath, fileHash), hashes)
+			fs.outputJsonSync(path.join(filesPath, insert(fileHash, 2, '/')), hashes)
 		}
 		return fileHash
 	}
