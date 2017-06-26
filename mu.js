@@ -11,11 +11,19 @@ const discretize = require('./src/discretize.js')
 const DotMu = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 let cwd, isMuRoot
-let t1
+let t1, t2
+
+const setup = () => {
+		t1 = + new Date()
+}
+const cleanup = () => {
+	t2 = + new Date()
+	console.log((t2 - t1)/1000)
+}
 
 function mu(args) {
 
-	t1 = + new Date()
+	setup()
 
 	cwd = process.cwd()
 	isMuRoot = fs.existsSync(path.join(cwd, DotMu))
@@ -46,8 +54,8 @@ function init(i) {
 		fs.ensureDirSync(dest('history'))
 		fs.writeJsonSync(dest('_pointer.json'), {
 			head: "master",
-			branches: {
-				master: "v0.0.0"
+			branch: {
+				master: "-1"
 			}
 		})
 		fs.writeFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
@@ -62,20 +70,26 @@ function stat(i) {
 function save(i) {
 	console.log('save', i)
 	let pointer = fs.readJsonSync(dest('_pointer.json'))
+	pointer.branch[pointer.head]++
+	fs.outputJsonSync(dest('_pointer.json'), pointer)
 	discretize(cwd, pointer.head).save()
 	console.log(chalk.red('The mu is done inventorying'))
-	const t2 = + new Date()
-	console.log((t2 - t1)/1000)
+	cleanup()
 }
 
 function saveas(i, args) {
 	console.log('saveas', i)
 	const name = args[i + 1]
 	if (name) {
-		let pointer = fs.outputJsonSync(dest('_pointer.json'))
-		pointer.head = name
-		pointer.branch[name] = "v0.0.0"
-		fs.outputJsonSync(dest('_pointer.json'), pointer)
+		let pointer = fs.readJsonSync(dest('_pointer.json'))
+		if(!(pointer.branch[name])){
+			pointer.head = name
+			pointer.branch[name] = 0
+			fs.outputJsonSync(dest('_pointer.json'), pointer)
+			cleanup()
+		}else{
+			console.log(chalk.yellow('The mu says you have already named a save \"' + name + '\"'))
+		}
 	} else {
 		console.log(chalk.red('Mu expects'), chalk.inverse('saveas'), chalk.red('to include a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
 	}

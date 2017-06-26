@@ -14,7 +14,8 @@ module.exports = (cwd, block) => {
 		save(){
 			preCache()
 			const tree = blockify(cwd)
-			fs.outputJsonSync(path.join(cwd,'.mu/history', block, '_register.json'), tree)
+			const pointer = fs.readJsonSync(path.join(cwd, '.mu', '_pointer.json'))
+			fs.outputJsonSync(path.join(cwd,'.mu/history', block, 'v' + pointer.branch[pointer.head]), tree)
 		}
 	}
 
