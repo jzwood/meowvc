@@ -11,8 +11,11 @@ const discretize = require('./src/discretize.js')
 const DotMu = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 let cwd, isMuRoot
+let t1
 
 function mu(args) {
+
+	t1 = + new Date()
 
 	cwd = process.cwd()
 	isMuRoot = fs.existsSync(path.join(cwd, DotMu))
@@ -41,13 +44,13 @@ function init(i) {
 		console.log(chalk.red('there is already a mu here!'))
 	} else {
 		fs.ensureDirSync(dest('history'))
-		fs.readJsonSync(dest('_pointer.json'), JSON.stringify({
+		fs.writeJsonSync(dest('_pointer.json'), {
 			head: "master",
 			branches: {
 				master: "v0.0.0"
 			}
-		}))
-		fs.readJsonSync(dest('_ignore'), '', 'utf8')
+		})
+		fs.writeFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
 		console.log(chalk.green('wild mu successfully released'))
 	}
 }
@@ -61,6 +64,8 @@ function save(i) {
 	let pointer = fs.readJsonSync(dest('_pointer.json'))
 	discretize(cwd, pointer.head).save()
 	console.log(chalk.red('The mu is done inventorying'))
+	const t2 = + new Date()
+	console.log((t2 - t1)/1000)
 }
 
 function saveas(i, args) {

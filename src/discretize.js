@@ -40,16 +40,25 @@ module.exports = (cwd, block) => {
 	function preCache() {
 		fs.ensureDirSync(linesPath)
 		fs.ensureDirSync(filesPath)
-		fs.readdirSync(linesPath).forEach(v => {
-			memory.add(v)
+
+		fs.readdirSync(linesPath).forEach(d => {
+			fs.readdirSync(path.join(linesPath, d)).forEach(f => {
+				memory.add('' + d + f)
+			})
 		})
-		fs.readdirSync(filesPath).forEach(v => {
-			memory.add(v)
+		fs.readdirSync(filesPath).forEach(d => {
+			fs.readdirSync(path.join(filesPath, d)).forEach(f => {
+				memory.add('' + d + f)
+			})
 		})
 	}
 
 	function hashNCache(fpath) {
-		const hashIt = data => crc.crc32(data).toString(16)
+		const hashIt = data => {
+			const h = crc.crc32(data).toString(16)
+			if(h === '0') return '00000000'
+			return h
+		}
 		const isUncached = hash => !(memory.has(hash))
 		const cacheIt = data => {
 			memory.add(data)
