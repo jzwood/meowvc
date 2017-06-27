@@ -4,18 +4,19 @@ const path = require('path')
 const crc = require('crc')
 
 module.exports = (cwd, block) => {
-	const linesPath = path.join(cwd, '.mu', 'disk_mem', 'lines')
-	const filesPath = path.join(cwd, '.mu', 'disk_mem', 'files')
+	const dotMu = '.mu'
+	const linesPath = path.join(cwd, dotMu, 'disk_mem', 'lines')
+	const filesPath = path.join(cwd, dotMu, 'disk_mem', 'files')
 	const memory = new Set()
-	const ignore_file = fs.readFileSync(path.join(cwd, '.mu', '_ignore'), 'utf8').trim().split('\n').join('|')
+	const ignore_file = fs.readFileSync(path.join(cwd, dotMu, '_ignore'), 'utf8').trim().split('\n').join('|')
 	const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
 
 	return {
 		save(){
 			preCache()
 			const tree = blockify(cwd)
-			const pointer = fs.readJsonSync(path.join(cwd, '.mu', '_pointer.json'))
-			fs.outputJsonSync(path.join(cwd,'.mu/history', block, 'v' + pointer.branch[pointer.head]), tree)
+			const pointer = fs.readJsonSync(path.join(cwd, dotMu, '_pointer.json'))
+			fs.outputJsonSync(path.join(cwd, dotMu, 'history', block, 'v' + pointer.branch[pointer.head]), tree)
 		}
 	}
 

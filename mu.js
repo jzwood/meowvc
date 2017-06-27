@@ -8,7 +8,7 @@ const chalk = require('chalk')
 
 const discretize = require('./src/discretize.js')
 
-const DotMu = '.mu'
+const dotMu = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 let cwd, isMuRoot
 let t1, t2
@@ -26,7 +26,7 @@ function mu(args) {
 	setup()
 
 	cwd = process.cwd()
-	isMuRoot = fs.existsSync(path.join(cwd, DotMu))
+	isMuRoot = fs.existsSync(path.join(cwd, dotMu))
 
 	for (let i = 0, n = args.length; i < n; i++) {
 		const command = { init, stat, save, saveas, getblock }[sanitizeInput(args[i])]
@@ -44,7 +44,7 @@ function mu(args) {
 mu(process.argv)
 
 function dest(fpath) {
-	return path.join(cwd, DotMu, fpath)
+	return path.join(cwd, dotMu, fpath)
 }
 
 function init(i) {
@@ -65,6 +65,12 @@ function init(i) {
 
 function stat(i) {
 	console.log('stat', i)
+	const pointer = fs.readJsonSync(dest('_pointer.json'))
+	const head = pointer.head
+	const output = Object.keys(pointer.branch).map(key => {
+		return (key === head) ? chalk.green(key, 'v' + Math.max(0, pointer.branch[key])) : key
+	}).join(' ')
+	console.log(output)
 }
 
 function save(i) {
@@ -82,10 +88,11 @@ function saveas(i, args) {
 	const name = args[i + 1]
 	if (name) {
 		let pointer = fs.readJsonSync(dest('_pointer.json'))
-		if(!(pointer.branch[name])){
+		if(typeof pointer.branch[name] === 'undefined'){
 			pointer.head = name
-			pointer.branch[name] = 0
+			pointer.branch[name] = -1
 			fs.outputJsonSync(dest('_pointer.json'), pointer)
+			save(i)
 			cleanup()
 		}else{
 			console.log(chalk.yellow('The mu says you have already named a save \"' + name + '\"'))
