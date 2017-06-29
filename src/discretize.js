@@ -2,6 +2,7 @@ const fs = require('fs-extra')
 const readline = require('readline')
 const path = require('path')
 const crc = require('crc')
+const util = require('./utils')
 
 module.exports = (cwd, block) => {
 	const dotMu = '.mu'
@@ -30,9 +31,17 @@ module.exports = (cwd, block) => {
 			if (isDir) {
 				Object.assign(tree, blockify(childPath))
 			} else {
+				const status = fs.statSync(childRelativePath)
+				const inode = status.ino, size = status.size, mtime = fs._toUnixTimestamp(status.mtime)
 				const childRelativePath = path.relative(cwd, childPath)
-				const hashsum = hashNCache(childRelativePath)
-				tree[hashsum] = childRelativePath
+
+				const data = tree[inode] && tree[tree[inode]] || []
+				if(data[0] !== childRelativePath || data[1] !== size || data[3] !== mtime){
+					const hashsum = hashNCache(childRelativePath)
+					tree[inode] = hashsum
+					tree[hashsum] = [childRelativePath, status.size, fs._toUnixTimestamp(status.mtime)]
+				}
+				// else? no changes required!
 			}
 			return tree
 		}, baseCase)

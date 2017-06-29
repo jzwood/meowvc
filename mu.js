@@ -7,9 +7,12 @@ const path = require('path')
 const chalk = require('chalk')
 
 const discretize = require('./src/discretize.js')
+const checkout = require('./src/checkout.js')
+
 
 const dotMu = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
+const getPointer = () => fs.readJsonSync(dest('_pointer.json'))
 let cwd, isMuRoot
 let t1, t2
 
@@ -29,7 +32,7 @@ function mu(args) {
 	isMuRoot = fs.existsSync(path.join(cwd, dotMu))
 
 	for (let i = 0, n = args.length; i < n; i++) {
-		const command = { init, stat, save, saveas, getblock }[sanitizeInput(args[i])]
+		const command = { init, stat, save, saveas, get }[sanitizeInput(args[i])]
 		if (typeof command === 'function') {
 			if (isMuRoot || args[i] === 'init') {
 				return command(i, args)
@@ -65,17 +68,17 @@ function init(i) {
 
 function stat(i) {
 	console.log('stat', i)
-	const pointer = fs.readJsonSync(dest('_pointer.json'))
+	const pointer = getPointer()
 	const head = pointer.head
 	const output = Object.keys(pointer.branch).map(key => {
-		return (key === head) ? chalk.green(key, 'v' + Math.max(0, pointer.branch[key])) : key
+		return (key === head) ? chalk.green(key, '(v' + Math.max(0, pointer.branch[key]) + ')') : key
 	}).join(' ')
 	console.log(output)
 }
 
 function save(i) {
 	console.log('save', i)
-	let pointer = fs.readJsonSync(dest('_pointer.json'))
+	let pointer = getPointer()
 	pointer.branch[pointer.head]++
 	fs.outputJsonSync(dest('_pointer.json'), pointer)
 	discretize(cwd, pointer.head).save()
@@ -87,7 +90,7 @@ function saveas(i, args) {
 	console.log('saveas', i)
 	const name = args[i + 1]
 	if (name) {
-		let pointer = fs.readJsonSync(dest('_pointer.json'))
+		let pointer = getPointer()
 		if(typeof pointer.branch[name] === 'undefined'){
 			pointer.head = name
 			pointer.branch[name] = -1
@@ -102,6 +105,17 @@ function saveas(i, args) {
 	}
 }
 
-function getblock(i) {
-	console.log('getblock', i)
+function get(i, args){
+	console.log('get', i)
+	const name = args[i + 1]
+	if (name) {
+		let pointer = getPointer()
+		if(name !== pointer.head){
+			checkout(cwd, name)
+		}else{
+			console.log(chalk.red('working directory already \"', name, '\"'))
+		}
+	}else{
+		console.log(chalk.red('Mu expects'), chalk.inverse('get'), chalk.red('to include the name of a save, e.g.'), chalk.inverse('$ mu get master'))
+	}
 }
