@@ -32,7 +32,7 @@ function mu(args) {
 	isMuRoot = fs.existsSync(path.join(cwd, dotMu))
 
 	for (let i = 0, n = args.length; i < n; i++) {
-		const command = { init, stat, save, saveas, get }[sanitizeInput(args[i])]
+		const command = { init, stat, save, saveas, get, which }[sanitizeInput(args[i])]
 		if (typeof command === 'function') {
 			if (isMuRoot || args[i] === 'init') {
 				return command(i, args)
@@ -58,7 +58,7 @@ function init(i) {
 		fs.outputJsonSync(dest('_pointer.json'), {
 			head: "master",
 			branch: {
-				master: "-1"
+				master: "0"
 			}
 		})
 		fs.outputFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
@@ -66,22 +66,25 @@ function init(i) {
 	}
 }
 
-function stat(i) {
-	console.log('stat', i)
+function which(i) {
+	console.log('which', i)
 	const pointer = getPointer()
 	const head = pointer.head
 	const output = Object.keys(pointer.branch).map(key => {
 		return (key === head) ? chalk.green(key, '(v' + Math.max(0, pointer.branch[key]) + ')') : key
 	}).join(' ')
 	console.log(output)
+	cleanup()
+}
+
+function stat(i) {
+	console.log('stat', i)
+	cleanup()
 }
 
 function save(i) {
 	console.log('save', i)
-	let pointer = getPointer()
-	pointer.branch[pointer.head]++
-	fs.outputJsonSync(dest('_pointer.json'), pointer)
-	discretize(cwd, pointer.head).save()
+	discretize(cwd).save()
 	console.log(chalk.red('The mu is done inventorying'))
 	cleanup()
 }
@@ -90,13 +93,12 @@ function saveas(i, args) {
 	console.log('saveas', i)
 	const name = args[i + 1]
 	if (name) {
-		let pointer = getPointer()
+		const pointer = getPointer()
 		if(typeof pointer.branch[name] === 'undefined'){
 			pointer.head = name
-			pointer.branch[name] = -1
+			pointer.branch[name] = 0
 			fs.outputJsonSync(dest('_pointer.json'), pointer)
 			save(i)
-			cleanup()
 		}else{
 			console.log(chalk.yellow('The mu says you have already named a save \"' + name + '\"'))
 		}

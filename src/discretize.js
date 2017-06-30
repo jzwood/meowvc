@@ -3,7 +3,7 @@ const readline = require('readline')
 const path = require('path')
 const crc = require('crc')
 
-module.exports = (cwd, block) => {
+module.exports = cwd => {
 	const dotMu = '.mu'
 	const linesPath = path.join(cwd, dotMu, 'disk_mem', 'lines')
 	const filesPath = path.join(cwd, dotMu, 'disk_mem', 'files')
@@ -14,19 +14,35 @@ module.exports = (cwd, block) => {
 
 	return {
 		save(){
-			preCache()
-			const tree = blockify(cwd)
-			const pointer = fs.readJsonSync(path.join(cwd, dotMu, '_pointer.json'))
-
+			const tree = getTree()
+			let outputFile
+			if(outputFileQueue.length){
+				while(outputFile = outputFileQueue.pop()){
+					fs.outputJsonSync(outputFile[0], outputFile[1])
+				}
+				const pointerPath = path.join(cwd, dotMu, '_pointer.json')
+				const pointer = fs.readJsonSync(pointerPath)
+				fs.outputJsonSync(path.join(cwd, dotMu, 'history', pointer.head, 'v' + pointer.branch[pointer.head]), tree)
+				pointer.branch[pointer.head]++
+				fs.outputJsonSync(pointerPath, pointer)
+				return true
+			}
+			return false
+		},
+		stat(){
+			getTree() //populates outputFileQueue
 			let outputFile
 			if(outputFileQueue.length){
 				while(outputFile = outputFileQueue.pop()){
 					console.log(outputFile)
-					fs.outputJsonSync(outputFile[0], outputFile[1])
 				}
-				fs.outputJsonSync(path.join(cwd, dotMu, 'history', block, 'v' + pointer.branch[pointer.head]), tree)
 			}
 		}
+	}
+
+	function getTree(){
+		preCache()
+		return blockify(cwd)
 	}
 
 	function blockify(parent) {

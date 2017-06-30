@@ -11,7 +11,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node mu.js"
+    "start": "node mu.js",
+    "clear": "rm -r .mu"
   },
   "author": "",
   "license": "MIT"
