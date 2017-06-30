@@ -14,6 +14,6 @@
     "start": "node mu.js",
     "clear": "rm -r .mu"
   },
-  "author": "",
+  "author": "Jake Wood",
   "license": "MIT"
 }
