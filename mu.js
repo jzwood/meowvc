@@ -55,13 +55,13 @@ function init(i) {
 		console.log(chalk.red('there is already a mu here!'))
 	} else {
 		fs.ensureDirSync(dest('history'))
-		fs.writeJsonSync(dest('_pointer.json'), {
+		fs.outputJsonSync(dest('_pointer.json'), {
 			head: "master",
 			branch: {
 				master: "-1"
 			}
 		})
-		fs.writeFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
+		fs.outputFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
 		console.log(chalk.green('wild mu successfully released'))
 	}
 }

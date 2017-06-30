@@ -2,13 +2,13 @@ const fs = require('fs-extra')
 const readline = require('readline')
 const path = require('path')
 const crc = require('crc')
-const util = require('./utils')
 
 module.exports = (cwd, block) => {
 	const dotMu = '.mu'
 	const linesPath = path.join(cwd, dotMu, 'disk_mem', 'lines')
 	const filesPath = path.join(cwd, dotMu, 'disk_mem', 'files')
 	const memory = new Set()
+	const outputFileQueue = []
 	const ignore_file = fs.readFileSync(path.join(cwd, dotMu, '_ignore'), 'utf8').trim().split('\n').join('|')
 	const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
 
@@ -17,7 +17,15 @@ module.exports = (cwd, block) => {
 			preCache()
 			const tree = blockify(cwd)
 			const pointer = fs.readJsonSync(path.join(cwd, dotMu, '_pointer.json'))
-			fs.outputJsonSync(path.join(cwd, dotMu, 'history', block, 'v' + pointer.branch[pointer.head]), tree)
+
+			let outputFile
+			if(outputFileQueue.length){
+				while(outputFile = outputFileQueue.pop()){
+					console.log(outputFile)
+					fs.outputJsonSync(outputFile[0], outputFile[1])
+				}
+				fs.outputJsonSync(path.join(cwd, dotMu, 'history', block, 'v' + pointer.branch[pointer.head]), tree)
+			}
 		}
 	}
 
@@ -31,10 +39,9 @@ module.exports = (cwd, block) => {
 			if (isDir) {
 				Object.assign(tree, blockify(childPath))
 			} else {
+				const childRelativePath = path.relative(cwd, childPath)
 				const status = fs.statSync(childRelativePath)
 				const inode = status.ino, size = status.size, mtime = fs._toUnixTimestamp(status.mtime)
-				const childRelativePath = path.relative(cwd, childPath)
-
 				const data = tree[inode] && tree[tree[inode]] || []
 				if(data[0] !== childRelativePath || data[1] !== size || data[3] !== mtime){
 					const hashsum = hashNCache(childRelativePath)
@@ -85,11 +92,11 @@ module.exports = (cwd, block) => {
 				const lineHash = hashIt(line)
 				if (isUncached(lineHash)) {
 					cacheIt(lineHash)
-					fs.outputFileSync(path.join(linesPath, insert(lineHash, 2, '/')), line)
+					outputFileQueue.push([path.join(linesPath, insert(lineHash, 2, '/')), line])
 				}
 				return lineHash
 			})
-			fs.outputJsonSync(path.join(filesPath, insert(fileHash, 2, '/')), hashes)
+			outputFileQueue.push([path.join(filesPath, insert(fileHash, 2, '/')), hashes])
 		}
 		return fileHash
 	}
