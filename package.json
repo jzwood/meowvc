@@ -11,7 +11,8 @@
   "devDependencies": {},
   "scripts": {
     "start": "node mu.js",
-    "clear": "rm -r .mu"
+    "clear": "rm -r .mu",
+    "restart": "npm run clear && node mu.js init"
   },
   "author": "Jake Wood",
   "license": "MIT"

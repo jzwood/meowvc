@@ -19,6 +19,7 @@ module.exports = cwd => {
 		}
 	}
 	const memory = new Set()
+	const recordedHashes = new Set()
 	const recordedFiles = new Set()
 	const outputFileQueue = []
 	const ignore_file = fs.readFileSync(path.join(cwd, dotMu, '_ignore'), 'utf8').trim().split('\n').join('|')
@@ -42,17 +43,21 @@ module.exports = cwd => {
 			return false
 		},
 		stat() {
-			blockify(cwd, true)
-			const previousFilepaths = Object.keys(lastSave.dat)
-			let outputFile
-			while (outputFile = previousFilepaths.pop()) {
-				const fileData = lastSave.dat[outputFile]
-				if (!recordedFiles.delete(fileData[0])) {
-					print.deleted(fileData[0])
+			const tree = blockify(cwd, true)
+			const previousFileHashes = Object.keys(lastSave.dat)
+			let hashsum
+			while (hashsum = previousFileHashes.pop()) {
+				const hasHash = recordedHashes.delete(hashsum)
+				const filepath = lastSave.dat[hashsum][0]
+				const hasFile = recordedFiles.delete(filepath)
+				if(!hasHash && !hasFile){
+					print.deleted(filepath)
+				}else if (!hasHash && hasFile) {
+					print.modified(filepath)
 				}
 			}
-			for (let item of recordedFiles) {
-				print.added(item)
+			for (let file of recordedFiles) {
+				print.added(file)
 			}
 		}
 	}
@@ -85,6 +90,7 @@ module.exports = cwd => {
 					data = [childRelativePath, status.size, fs._toUnixTimestamp(status.mtime)]
 					hashsum = isStat ? hashOnly(childRelativePath) : hashNCache(childRelativePath)
 				}
+				recordedHashes.add(hashsum)
 				recordedFiles.add(childRelativePath)
 				tree.ino[inode] = hashsum
 				tree.dat[hashsum] = data

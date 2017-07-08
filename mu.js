@@ -37,7 +37,7 @@ function mu(args) {
 			if (isMuRoot || args[i] === 'init') {
 				return command(i, args)
 			} else {
-				chalk.red('this directory has no mu!')
+				chalk.yellow('Warning:',cwd,'is not a mu repo')
 			}
 		}
 	}
@@ -86,7 +86,7 @@ function stat(i) {
 function save(i) {
 	console.log('save', i)
 	discretize(cwd).save()
-	console.log(chalk.red('The mu is done inventorying'))
+	console.log(chalk.red('done'))
 	cleanup()
 }
 
