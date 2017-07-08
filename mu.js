@@ -79,6 +79,7 @@ function which(i) {
 
 function stat(i) {
 	console.log('stat', i)
+	discretize(cwd).stat()
 	cleanup()
 }
 
