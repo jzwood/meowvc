@@ -12,61 +12,48 @@ module.exports = cwd => {
 		'deleted': str => console.log(chalk.red('-\t' + str)),
 		'added': str => console.log(chalk.yellow('+\t' + str))
 	}
+	const baseCase = () => {
+		return {
+			'ino': {},
+			'dat': {}
+		}
+	}
 	const memory = new Set()
-	const modifiedFiles = new Set()
+	const recordedFiles = new Set()
 	const outputFileQueue = []
 	const ignore_file = fs.readFileSync(path.join(cwd, dotMu, '_ignore'), 'utf8').trim().split('\n').join('|')
 	const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
-
-	const hashIt = data => {
-		const h = crc.crc32(data).toString(16)
-		if (h === '0') return '00000000'
-		return h
-	}
+	const lastSave = getSavedData()
 
 	return {
 		save() {
 			const tree = getTree()
-			let outputFile
-			if (outputFileQueue.length) {
-				while (outputFile = outputFileQueue.pop()) {
-					fs.outputJsonSync(outputFile[0], outputFile[1])
-				}
-				const pointerPath = path.join(cwd, dotMu, '_pointer.json')
-				const pointer = fs.readJsonSync(pointerPath)
-				fs.outputJsonSync(path.join(cwd, dotMu, 'history', pointer.head, 'v' + pointer.branch[pointer.head]), tree)
-				pointer.branch[pointer.head]++
-					fs.outputJsonSync(pointerPath, pointer)
-				return true
-			}
-			return false
+			console.log(tree)
+			// let outputFile
+			// if (outputFileQueue.length) {
+			// 	while (outputFile = outputFileQueue.pop()) {
+			// 		fs.outputJsonSync(outputFile[0], outputFile[1])
+			// 	}
+			// 	const po = pointerOps()
+			// 	fs.outputJsonSync(path.join(cwd, dotMu, 'history', po.head, 'v' + po.version), tree)
+			// 	po.incrPointer()
+			// 	po.writePointer()
+			// 	return true
+			// }
+			// return false
 		},
 		stat() {
 			blockify(cwd, true)
+			const previousFilepaths = Object.keys(lastSave.dat)
 			let outputFile
-			if (outputFileQueue.length) {
-				const pointerPath = path.join(cwd, dotMu, '_pointer.json')
-				const pointer = fs.readJsonSync(pointerPath)
-				const currentVersion = pointer.branch[pointer.head].toString()
-
-				let previousFilepaths
-				if (currentVersion === '0') {
-					previousFilepaths = []
-				} else {
-					const lastSave = path.join(cwd, dotMu, 'history', pointer.head, 'v' + (currentVersion - 1))
-					previousFilepaths = Object.keys(lastSave.dat)
+			while (outputFile = previousFilepaths.pop()) {
+				const fileData = lastSave.dat[outputFile]
+				if (!recordedFiles.delete(fileData[0])) {
+					print.deleted(fileData[0])
 				}
-				let current
-				while (current = previousFilepaths.pop()) {
-					if (modifiedFiles.delete(current)) {
-						print.modified(current)
-					} else {
-						print.deleted(current)
-					}
-					for (let item of modifiedFiles) {
-						print.added(item)
-					}
-				}
+			}
+			for (let item of recordedFiles) {
+				print.added(item)
 			}
 		}
 	}
@@ -77,34 +64,33 @@ module.exports = cwd => {
 	}
 
 	function blockify(parent, isStat) {
-		const baseCase = {
-			'ino': {},
-			'dat': {}
-		}
-		if (!fs.existsSync(parent)) return baseCase
+		if (!fs.existsSync(parent)) return baseCase()
 		const hashFileLookup = fs.readdirSync(parent).reduce((tree, child) => {
 			if (ignore && ignore.test(child)) return tree
 			const childPath = path.join(parent, child)
 			const isDir = fs.statSync(childPath).isDirectory()
 			if (isDir) {
-				Object.assign(tree, blockify(childPath))
+				Object.assign(tree, blockify(childPath, isStat))
 			} else {
 				const childRelativePath = path.relative(cwd, childPath)
 				const status = fs.statSync(childRelativePath)
 				const inode = status.ino,
 					size = status.size,
 					mtime = fs._toUnixTimestamp(status.mtime)
-				const data = tree.ino[inode] && tree.dat[tree.ino[inode]] || []
-				if (data[0] !== childRelativePath || data[1] !== size || data[3] !== mtime) {
-					const hashsum = isStat ? hashOnly(childRelativePath) : hashNCache(childRelativePath)
-					tree.ino[inode] = hashsum
-					tree.dat[hashsum] = [childRelativePath, status.size, fs._toUnixTimestamp(status.mtime)]
-					modifiedFiles.add(childRelativePath)
+				const lastHash = lastSave.ino[inode]
+				let data = lastHash && lastSave.dat[lastHash] || []
+				let hashsum = lastHash
+				if(data[0] !== childRelativePath || data[1] !== size || data[2] !== mtime){
+					data = [childRelativePath, status.size, fs._toUnixTimestamp(status.mtime)]
+					hashsum = isStat ? hashOnly(childRelativePath) : hashNCache(childRelativePath)
 				}
-				// ELSE DO NOTHING
+				recordedFiles.add(childRelativePath)
+				tree.ino[inode] = hashsum
+				tree.dat[hashsum] = data.slice()
+				// console.log(tree.ino,tree.dat)
 			}
 			return tree
-		}, baseCase)
+		}, baseCase())
 		return hashFileLookup
 	}
 
@@ -122,6 +108,36 @@ module.exports = cwd => {
 				memory.add('' + d + f)
 			})
 		})
+	}
+
+	function pointerOps(){
+		const pointerPath = path.join(cwd, dotMu, '_pointer.json')
+		const pointer = fs.readJsonSync(pointerPath)
+		const writePointer = () => {
+			fs.outputJsonSync(pointerPath, pointer)
+		}
+		const incrPointer = () => {
+			pointer.branch[pointer.head]++
+		}
+		return {
+			head: pointer.head,
+			version: pointer.branch[pointer.head],
+			incrPointer,
+			writePointer
+		}
+	}
+
+	function getSavedData(){
+		const po = pointerOps()
+		const currentVersion = po.version.toString()
+		const lastSave = (currentVersion === '0') ? baseCase() : fs.readJsonSync(path.join(cwd, dotMu, 'history', po.head, 'v' + (currentVersion - 1)))
+		return lastSave
+	}
+
+	function hashIt(data){
+		const h = crc.crc32(data).toString(16)
+		if (h === '0') return '00000000'
+		return h
 	}
 
 	function hashOnly(fpath){
