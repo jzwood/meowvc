@@ -28,19 +28,18 @@ module.exports = cwd => {
 	return {
 		save() {
 			const tree = getTree()
-			console.log(tree)
-			// let outputFile
-			// if (outputFileQueue.length) {
-			// 	while (outputFile = outputFileQueue.pop()) {
-			// 		fs.outputJsonSync(outputFile[0], outputFile[1])
-			// 	}
-			// 	const po = pointerOps()
-			// 	fs.outputJsonSync(path.join(cwd, dotMu, 'history', po.head, 'v' + po.version), tree)
-			// 	po.incrPointer()
-			// 	po.writePointer()
-			// 	return true
-			// }
-			// return false
+			let outputFile
+			if (outputFileQueue.length) {
+				while (outputFile = outputFileQueue.pop()) {
+					fs.outputJsonSync(outputFile[0], outputFile[1])
+				}
+				const po = pointerOps()
+				fs.outputJsonSync(path.join(cwd, dotMu, 'history', po.head, 'v' + po.version), tree)
+				po.incrPointer()
+				po.writePointer()
+				return true
+			}
+			return false
 		},
 		stat() {
 			blockify(cwd, true)
@@ -70,7 +69,9 @@ module.exports = cwd => {
 			const childPath = path.join(parent, child)
 			const isDir = fs.statSync(childPath).isDirectory()
 			if (isDir) {
-				Object.assign(tree, blockify(childPath, isStat))
+				const treeTemp = blockify(childPath, isStat)
+				Object.assign(tree.ino, treeTemp.ino)
+				Object.assign(tree.dat, treeTemp.dat)
 			} else {
 				const childRelativePath = path.relative(cwd, childPath)
 				const status = fs.statSync(childRelativePath)
@@ -86,8 +87,7 @@ module.exports = cwd => {
 				}
 				recordedFiles.add(childRelativePath)
 				tree.ino[inode] = hashsum
-				tree.dat[hashsum] = data.slice()
-				// console.log(tree.ino,tree.dat)
+				tree.dat[hashsum] = data
 			}
 			return tree
 		}, baseCase())
