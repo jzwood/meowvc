@@ -2,6 +2,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const crc = require('crc')
 const chalk = require('chalk')
+const pointerOps = require('./pointerOps')
 
 module.exports = cwd => {
 	const dotMu = '.mu'
@@ -24,21 +25,33 @@ module.exports = cwd => {
 	const outputFileQueue = []
 	const ignore_file = fs.readFileSync(path.join(cwd, dotMu, '_ignore'), 'utf8').trim().split('\n').join('|')
 	const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
-	const lastSave = getSavedData()
+	const lastSave = _getSavedData()
+
+	function _getSavedData(){
+		const po = pointerOps(cwd, dotMu)
+		const currentVersion = po.version.toString()
+		const lastSave = (currentVersion === '0') ? baseCase() : fs.readJsonSync(path.join(cwd, dotMu, 'history', po.head, 'v' + (currentVersion - 1)))
+		return lastSave
+	}
 
 	return {
-		save() {
-			const tree = getTree()
+		save(head) {
+			_preCache()
+			const tree = blockify(cwd, false)
+			const dest = (head, version) => path.join(cwd, dotMu, 'history', head, 'v' + version)
 			let outputFile
 			if (outputFileQueue.length) {
 				while (outputFile = outputFileQueue.pop()) {
 					fs.outputJsonSync(outputFile[0], outputFile[1])
 				}
-				const po = pointerOps()
-				fs.outputJsonSync(path.join(cwd, dotMu, 'history', po.head, 'v' + po.version), tree)
+				const po = pointerOps(cwd, dotMu)
+				fs.outputJsonSync(dest(po.head, po.version), tree)
 				po.incrPointer()
 				po.writePointer()
 				return true
+			} else if (head){
+				const po = pointerOps(cwd, dotMu)
+				fs.copySync(dest(head, po.branch[head] - 1), dest(po.head, po.version))
 			}
 			return false
 		},
@@ -60,11 +73,6 @@ module.exports = cwd => {
 				print.added(file)
 			}
 		}
-	}
-
-	function getTree() {
-		preCache()
-		return blockify(cwd, false)
 	}
 
 	function blockify(parent, isStat) {
@@ -100,7 +108,7 @@ module.exports = cwd => {
 		return hashFileLookup
 	}
 
-	function preCache() {
+	function _preCache() {
 		fs.ensureDirSync(linesPath)
 		fs.ensureDirSync(filesPath)
 
@@ -116,31 +124,11 @@ module.exports = cwd => {
 		})
 	}
 
-	function pointerOps(){
-		const pointerPath = path.join(cwd, dotMu, '_pointer.json')
-		const pointer = fs.readJsonSync(pointerPath)
-		const writePointer = () => {
-			fs.outputJsonSync(pointerPath, pointer)
-		}
-		const incrPointer = () => {
-			pointer.branch[pointer.head]++
-		}
-		return {
-			head: pointer.head,
-			version: pointer.branch[pointer.head],
-			incrPointer,
-			writePointer
-		}
-	}
+	/*
+	 * HASHING FUNCTIONS
+	 */
 
-	function getSavedData(){
-		const po = pointerOps()
-		const currentVersion = po.version.toString()
-		const lastSave = (currentVersion === '0') ? baseCase() : fs.readJsonSync(path.join(cwd, dotMu, 'history', po.head, 'v' + (currentVersion - 1)))
-		return lastSave
-	}
-
-	function hashIt(data){
+	function _hashIt(data){
 		const h = crc.crc32(data).toString(16)
 		if (h === '0') return '00000000'
 		return h
@@ -148,7 +136,7 @@ module.exports = cwd => {
 
 	function hashOnly(fpath){
 		const file = fs.readFileSync(fpath, 'utf8')
-		return hashIt(file)
+		return _hashIt(file)
 	}
 
 	function hashNCache(fpath) {
@@ -158,13 +146,13 @@ module.exports = cwd => {
 		}
 
 		const file = fs.readFileSync(fpath, 'utf8')
-		const fileHash = hashIt(file)
+		const fileHash = _hashIt(file)
 
 		if (isUncached(fileHash)) {
 			cacheIt(fileHash)
 			const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
 			const hashes = file.split('\n').map(line => {
-				const lineHash = hashIt(line)
+				const lineHash = _hashIt(line)
 				if (isUncached(lineHash)) {
 					cacheIt(lineHash)
 					outputFileQueue.push([path.join(linesPath, insert(lineHash, 2, '/')), line])

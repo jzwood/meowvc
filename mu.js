@@ -6,13 +6,13 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 
-const discretize = require('./src/discretize.js')
-const checkout = require('./src/checkout.js')
+const discretize = require('./src/discretize')
+const pointerOps = require('./src/pointerOps')
 
 
 const dotMu = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
-const getPointer = () => fs.readJsonSync(dest('_pointer.json'))
+
 let cwd, isMuRoot
 let t1, t2
 
@@ -68,10 +68,9 @@ function init(i) {
 
 function which(i) {
 	console.log('which', i)
-	const pointer = getPointer()
-	const head = pointer.head
-	const output = Object.keys(pointer.branch).map(key => {
-		return (key === head) ? chalk.green(key, '(v' + Math.max(0, pointer.branch[key]) + ')') : key
+	const po = pointerOps(cwd, dotMu)
+	const output = Object.keys(po.branch).map(key => {
+		return (key === po.head) ? chalk.green(key, '(v' + Math.max(0, po.branch[key]) + ')') : key
 	}).join(' ')
 	console.log(output)
 	cleanup()
@@ -85,7 +84,7 @@ function stat(i) {
 
 function save(i) {
 	console.log('save', i)
-	discretize(cwd).save()
+	discretize(cwd).save(false)
 	console.log(chalk.red('done'))
 	cleanup()
 }
@@ -94,15 +93,12 @@ function saveas(i, args) {
 	console.log('saveas', i)
 	const name = args[i + 1]
 	if (name) {
-		const pointer = getPointer()
-		if(typeof pointer.branch[name] === 'undefined'){
-			pointer.head = name
-			pointer.branch[name] = 0
-			fs.outputJsonSync(dest('_pointer.json'), pointer)
-			save(i)
-		}else{
-			console.log(chalk.yellow('The mu says you have already named a save \"' + name + '\"'))
+		const po = pointerOps(cwd, dotMu)
+		const head = po.head
+		po.addName(name, exists => {
+			if(exists) console.log(chalk.yellow('Warning: save named \"' + name + '\" already exists'))
 		}
+		discretize(cwd).save(head)
 	} else {
 		console.log(chalk.red('Mu expects'), chalk.inverse('saveas'), chalk.red('to include a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
 	}
@@ -110,15 +106,15 @@ function saveas(i, args) {
 
 function get(i, args){
 	console.log('get', i)
-	const name = args[i + 1]
-	if (name) {
-		let pointer = getPointer()
-		if(name !== pointer.head){
-			checkout(cwd, name)
-		}else{
-			console.log(chalk.red('working directory already \"', name, '\"'))
-		}
-	}else{
-		console.log(chalk.red('Mu expects'), chalk.inverse('get'), chalk.red('to include the name of a save, e.g.'), chalk.inverse('$ mu get master'))
-	}
+	// const name = args[i + 1]
+	// if (name) {
+	// 	let pointer = getPointer()
+	// 	if(name !== pointer.head){
+	// 		checkout(cwd, name)
+	// 	}else{
+	// 		console.log(chalk.red('working directory already \"', name, '\"'))
+	// 	}
+	// }else{
+	// 	console.log(chalk.red('Mu expects'), chalk.inverse('get'), chalk.red('to include the name of a save, e.g.'), chalk.inverse('$ mu get master'))
+	// }
 }
