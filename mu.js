@@ -10,7 +10,7 @@ const discretize = require('./src/discretize')
 const pointerOps = require('./src/pointerOps')
 
 
-const dotMu = '.mu'
+const root = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 
 let cwd, isMuRoot
@@ -29,7 +29,7 @@ function mu(args) {
 	setup()
 
 	cwd = process.cwd()
-	isMuRoot = fs.existsSync(path.join(cwd, dotMu))
+	isMuRoot = fs.existsSync(path.join(cwd, root))
 
 	for (let i = 0, n = args.length; i < n; i++) {
 		const command = { init, stat, save, saveas, get, which }[sanitizeInput(args[i])]
@@ -47,7 +47,7 @@ function mu(args) {
 mu(process.argv)
 
 function dest(fpath) {
-	return path.join(cwd, dotMu, fpath)
+	return path.join(cwd, root, fpath)
 }
 
 function init(i) {
@@ -68,7 +68,7 @@ function init(i) {
 
 function which(i) {
 	console.log('which', i)
-	const po = pointerOps(cwd, dotMu)
+	const po = pointerOps(cwd, root)
 	const output = Object.keys(po.branch).map(key => {
 		return (key === po.head) ? chalk.green(key, '(v' + Math.max(0, po.branch[key]) + ')') : key
 	}).join(' ')
@@ -93,11 +93,11 @@ function saveas(i, args) {
 	console.log('saveas', i)
 	const name = args[i + 1]
 	if (name) {
-		const po = pointerOps(cwd, dotMu)
+		const po = pointerOps(cwd, root)
 		const head = po.head
 		po.addName(name, exists => {
 			if(exists) console.log(chalk.yellow('Warning: save named \"' + name + '\" already exists'))
-		}
+		})
 		discretize(cwd).save(head)
 	} else {
 		console.log(chalk.red('Mu expects'), chalk.inverse('saveas'), chalk.red('to include a name, e.g.'), chalk.inverse('$ mu saveas muffins'))

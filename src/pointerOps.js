@@ -1,8 +1,8 @@
 const fs = require('fs-extra')
 const path = require('path')
 
-module.exports = (cwd, dotMu) => {
-  const pointerPath = path.join(cwd, dotMu, '_pointer.json')
+module.exports = (cwd, root) => {
+  const pointerPath = path.join(cwd, root, '_pointer.json')
   const pointer = fs.readJsonSync(pointerPath)
   return {
     head: pointer.head,
