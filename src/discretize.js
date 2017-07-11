@@ -20,6 +20,7 @@ module.exports = cwd => {
 		print: {
 			'modified': str => console.log(chalk.cyan('%\t' + str)),
 			'deleted': str => console.log(chalk.red('-\t' + str)),
+			'renamed': str => console.log(chalk.magenta('&\t' + str)),
 			'added': str => console.log(chalk.yellow('+\t' + str))
 		}
 	}
@@ -84,6 +85,10 @@ module.exports = cwd => {
 					GlConsts.print.deleted(filepath)
 				}else if (!hasHash && hasFile) {
 					GlConsts.print.modified(filepath)
+				}else if(hasHash && !hasFile){
+					const renamed = tree.dat[hashsum][0]
+					GlConsts.print.renamed(filepath + ' -> ' + renamed)
+					GlData.recordedFiles.delete(renamed)
 				}
 			}
 			for (let file of GlData.recordedFiles) {
