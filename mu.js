@@ -10,7 +10,7 @@ const discretize = require('./src/discretize')
 const pointerOps = require('./src/pointerOps')
 
 
-const root = '.mu'
+const ROOT = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 
 let cwd, isMuRoot
@@ -29,12 +29,12 @@ function mu(args) {
 	setup()
 
 	cwd = process.cwd()
-	isMuRoot = fs.existsSync(path.join(cwd, root))
+	isMuRoot = fs.existsSync(path.join(cwd, ROOT))
 
 	for (let i = 0, n = args.length; i < n; i++) {
-		const command = { init, stat, save, saveas, get, which }[sanitizeInput(args[i])]
+		const command = { start, status, save, saveas, get, which }[sanitizeInput(args[i])]
 		if (typeof command === 'function') {
-			if (isMuRoot || args[i] === 'init') {
+			if (isMuRoot || args[i] === 'start') {
 				return command(i, args)
 			} else {
 				chalk.yellow('Warning:',cwd,'is not a mu repo')
@@ -47,28 +47,21 @@ function mu(args) {
 mu(process.argv)
 
 function dest(fpath) {
-	return path.join(cwd, root, fpath)
+	return path.join(cwd, ROOT, fpath)
 }
 
-function init(i) {
-	if (isMuRoot) {
-		console.log(chalk.red('there is already a mu here!'))
-	} else {
-		fs.ensureDirSync(dest('history'))
-		fs.outputJsonSync(dest('_pointer.json'), {
-			head: "master",
-			branch: {
-				master: "0"
-			}
-		})
+function start(i) {
+	isMuRoot ? console.log(chalk.yellow('Warning: repo already setup')) : console.log(chalk.green('setup done'))
+	fs.ensureDirSync(dest('history'))
+	const po = pointerOps(cwd, ROOT)
+	if(!fs.existsSync(dest('_ignore'))){
 		fs.outputFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
-		console.log(chalk.green('wild mu successfully released'))
 	}
 }
 
 function which(i) {
 	console.log('which', i)
-	const po = pointerOps(cwd, root)
+	const po = pointerOps(cwd, ROOT)
 	const output = Object.keys(po.branch).map(key => {
 		return (key === po.head) ? chalk.green(key, '(v' + Math.max(0, po.branch[key]) + ')') : key
 	}).join(' ')
@@ -76,9 +69,8 @@ function which(i) {
 	cleanup()
 }
 
-function stat(i) {
-	console.log('stat', i)
-	discretize(cwd).stat()
+function status(i) {
+	discretize(cwd).status()
 	cleanup()
 }
 
@@ -93,14 +85,18 @@ function saveas(i, args) {
 	console.log('saveas', i)
 	const name = args[i + 1]
 	if (name) {
-		const po = pointerOps(cwd, root)
+		const po = pointerOps(cwd, ROOT)
 		const head = po.head
 		po.addName(name, exists => {
-			if(exists) console.log(chalk.yellow('Warning: save named \"' + name + '\" already exists'))
+			if(exists){
+				console.log(chalk.red('ERROR: Save named \"' + name + '\" already exists. Repo not saved.'))
+			}else{
+				discretize(cwd).save(head)
+			}
 		})
-		discretize(cwd).save(head)
+
 	} else {
-		console.log(chalk.red('Mu expects'), chalk.inverse('saveas'), chalk.red('to include a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
+		console.log(chalk.yellow('saveas expects a name to be included, e.g.'), chalk.inverse('$ mu saveas muffins'))
 	}
 }
 

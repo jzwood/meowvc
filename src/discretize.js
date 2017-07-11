@@ -66,11 +66,11 @@ module.exports = cwd => {
 				return true
 			} else if (head){
 				const po = pointerOps(cwd, Root)
-				fs.copySync(dest(head, po.branch[head] - 1), dest(po.head, po.version))
+				fs.copySync(dest(head, po.branch[head]), dest(po.head, po.version))
 			}
 			return false
 		},
-		stat() {
+		status() {
 			const tree = blockify(cwd, true)
 			const previousFileHashes = Object.keys(GlConsts.lastSave.dat)
 			let hashsum
