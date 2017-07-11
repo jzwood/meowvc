@@ -13,15 +13,32 @@ const pointerOps = require('./src/pointerOps')
 const ROOT = '.mu'
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 
+const USAGE = `
+Usage:
+	mu <command> [<args>]
+
+Commands:   Args:   Descriptions
+  start             - create a new mu repo
+
+  state            - show the working repo state
+  which             - show all named saves
+
+  save              - record snapshot of repo
+  saveas    <name>  - save with new namespace
+
+  undo      <file>  - reverts file to last save
+  get       <name>  - switch to repo with different namespace
+`
+
 let cwd, isMuRoot
 let t1, t2
 
 const setup = () => {
-		t1 = + new Date()
+	t1 = +new Date()
 }
 const cleanup = () => {
-	t2 = + new Date()
-	console.log((t2 - t1)/1000)
+	t2 = +new Date()
+	console.log((t2 - t1) / 1000)
 }
 
 function mu(args) {
@@ -32,16 +49,23 @@ function mu(args) {
 	isMuRoot = fs.existsSync(path.join(cwd, ROOT))
 
 	for (let i = 0, n = args.length; i < n; i++) {
-		const command = { start, status, save, saveas, get, which }[sanitizeInput(args[i])]
+		const command = {
+			start,
+			state,
+			save,
+			saveas,
+			get,
+			which
+		}[sanitizeInput(args[i])]
 		if (typeof command === 'function') {
 			if (isMuRoot || args[i] === 'start') {
 				return command(i, args)
 			} else {
-				chalk.yellow('Warning:',cwd,'is not a mu repo')
+				chalk.yellow('Warning:', cwd, 'is not a mu repo')
 			}
 		}
 	}
-	console.log(chalk.magenta('@todo: mu usage'))
+	console.log(chalk.gray(USAGE.trim()))
 }
 
 mu(process.argv)
@@ -54,7 +78,7 @@ function start(i) {
 	isMuRoot ? console.log(chalk.yellow('Warning: repo already setup')) : console.log(chalk.green('setup done'))
 	fs.ensureDirSync(dest('history'))
 	const po = pointerOps(cwd, ROOT)
-	if(!fs.existsSync(dest('_ignore'))){
+	if (!fs.existsSync(dest('_ignore'))) {
 		fs.outputFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
 	}
 }
@@ -69,15 +93,16 @@ function which(i) {
 	cleanup()
 }
 
-function status(i) {
-	discretize(cwd).status()
+function state(i) {
+	discretize(cwd).state()
 	cleanup()
 }
 
 function save(i) {
 	console.log('save', i)
-	discretize(cwd).save(false)
-	console.log(chalk.red('done'))
+  const po = pointerOps(cwd, ROOT)
+	const success = discretize(cwd).save(false)
+	success ? console.log(chalk.green('saved as', po.head, 'v' + po.version)) : console.log(chalk.yellow('nothing changed'))
 	cleanup()
 }
 
@@ -88,20 +113,21 @@ function saveas(i, args) {
 		const po = pointerOps(cwd, ROOT)
 		const head = po.head
 		po.addName(name, exists => {
-			if(exists){
+			if (exists) {
 				console.log(chalk.red('ERROR: Save named \"' + name + '\" already exists. Repo not saved.'))
-			}else{
+			} else {
 				discretize(cwd).save(head)
+				console.log(chalk.green('done'))
 			}
 		})
-
 	} else {
-		console.log(chalk.yellow('saveas expects a name to be included, e.g.'), chalk.inverse('$ mu saveas muffins'))
+		console.log(chalk.yellow('saveas expects a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
 	}
 }
 
-function get(i, args){
+function get(i, args) {
 	console.log('get', i)
+
 	// const name = args[i + 1]
 	// if (name) {
 	// 	let pointer = getPointer()

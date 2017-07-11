@@ -20,6 +20,7 @@ module.exports = cwd => {
 		print: {
 			'modified': str => console.log(chalk.cyan('%\t' + str)),
 			'deleted': str => console.log(chalk.red('-\t' + str)),
+			'renamed': str => console.log(chalk.magenta('&\t' + str)),
 			'added': str => console.log(chalk.yellow('+\t' + str))
 		}
 	}
@@ -45,7 +46,8 @@ module.exports = cwd => {
 	function _getSavedData(){
 		const po = pointerOps(cwd, Root)
 		const currentVersion = po.version.toString()
-		const lastSave = (currentVersion === '0') ? GlConsts.baseCase : fs.readJsonSync(path.join(cwd, Root, 'history', po.head, 'v' + (currentVersion - 1)))
+		const lastSavePath = path.join(cwd, Root, 'history', po.head, 'v' + (currentVersion - 1))
+		const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : GlConsts.baseCase
 		return lastSave
 	}
 
@@ -60,17 +62,18 @@ module.exports = cwd => {
 					fs.outputJsonSync(outputFile[0], outputFile[1])
 				}
 				const po = pointerOps(cwd, Root)
-				fs.outputJsonSync(dest(po.head, po.version), tree)
+				fs.outputJsonSync(dest(po.head, po.version), tree) // write tree
 				po.incrPointer()
 				po.writePointer()
 				return true
 			} else if (head){
 				const po = pointerOps(cwd, Root)
-				fs.copySync(dest(head, po.branch[head]), dest(po.head, po.version))
+				fs.copySync(dest(head, po.branch[head] - 1), dest(po.head, po.version))
+				return true
 			}
 			return false
 		},
-		status() {
+		state() {
 			const tree = blockify(cwd, true)
 			const previousFileHashes = Object.keys(GlConsts.lastSave.dat)
 			let hashsum
@@ -82,6 +85,10 @@ module.exports = cwd => {
 					GlConsts.print.deleted(filepath)
 				}else if (!hasHash && hasFile) {
 					GlConsts.print.modified(filepath)
+				}else if(hasHash && !hasFile){
+					const renamed = tree.dat[hashsum][0]
+					GlConsts.print.renamed(filepath + ' -> ' + renamed)
+					GlData.recordedFiles.delete(renamed)
 				}
 			}
 			for (let file of GlData.recordedFiles) {
