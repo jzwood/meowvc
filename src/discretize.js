@@ -45,7 +45,8 @@ module.exports = cwd => {
 	function _getSavedData(){
 		const po = pointerOps(cwd, Root)
 		const currentVersion = po.version.toString()
-		const lastSave = (currentVersion === '0') ? GlConsts.baseCase : fs.readJsonSync(path.join(cwd, Root, 'history', po.head, 'v' + (currentVersion - 1)))
+		const lastSavePath = path.join(cwd, Root, 'history', po.head, 'v' + (currentVersion - 1))
+		const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : GlConsts.baseCase
 		return lastSave
 	}
 
@@ -60,17 +61,18 @@ module.exports = cwd => {
 					fs.outputJsonSync(outputFile[0], outputFile[1])
 				}
 				const po = pointerOps(cwd, Root)
-				fs.outputJsonSync(dest(po.head, po.version), tree)
+				fs.outputJsonSync(dest(po.head, po.version), tree) // write tree
 				po.incrPointer()
 				po.writePointer()
 				return true
 			} else if (head){
 				const po = pointerOps(cwd, Root)
-				fs.copySync(dest(head, po.branch[head]), dest(po.head, po.version))
+				fs.copySync(dest(head, po.branch[head] - 1), dest(po.head, po.version))
+				return true
 			}
 			return false
 		},
-		status() {
+		state() {
 			const tree = blockify(cwd, true)
 			const previousFileHashes = Object.keys(GlConsts.lastSave.dat)
 			let hashsum
