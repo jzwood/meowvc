@@ -6,7 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 
-const discretize = require('./src/discretize')
+const discretize = require('./src/core')
 const pointerOps = require('./src/pointerOps')
 
 
@@ -19,9 +19,7 @@ Usage:
 
 Commands:   Args:   Descriptions
   start             - create a new mu repo
-
   state            - show the working repo state
-  which             - show all named saves
 
   save              - record snapshot of repo
   saveas    <name>  - save with new namespace
@@ -30,7 +28,7 @@ Commands:   Args:   Descriptions
   get       <name>  - switch to repo with different namespace
 `
 
-let cwd, isMuRoot
+let cwd, isMuRepo
 let t1, t2
 
 const setup = () => {
@@ -46,19 +44,12 @@ function mu(args) {
 	setup()
 
 	cwd = process.cwd()
-	isMuRoot = fs.existsSync(path.join(cwd, ROOT))
+	isMuRepo = fs.existsSync(path.join(cwd, ROOT))
 
 	for (let i = 0, n = args.length; i < n; i++) {
-		const command = {
-			start,
-			state,
-			save,
-			saveas,
-			get,
-			which
-		}[sanitizeInput(args[i])]
+		const command = { start, state, save, saveas, undo }[sanitizeInput(args[i])]
 		if (typeof command === 'function') {
-			if (isMuRoot || args[i] === 'start') {
+			if (isMuRepo || args[i] === 'start') {
 				return command(i, args)
 			} else {
 				chalk.yellow('Warning:', cwd, 'is not a mu repo')
@@ -75,7 +66,7 @@ function dest(fpath) {
 }
 
 function start(i) {
-	isMuRoot ? console.log(chalk.yellow('Warning: repo already setup')) : console.log(chalk.green('setup done'))
+	isMuRepo ? console.log(chalk.yellow('Warning: repo already setup')) : console.log(chalk.green('setup done'))
 	fs.ensureDirSync(dest('history'))
 	const po = pointerOps(cwd, ROOT)
 	if (!fs.existsSync(dest('_ignore'))) {
@@ -84,16 +75,15 @@ function start(i) {
 }
 
 function which(i) {
-	console.log('which', i)
 	const po = pointerOps(cwd, ROOT)
 	const output = Object.keys(po.branch).map(key => {
 		return (key === po.head) ? chalk.green(key, '(v' + Math.max(0, po.branch[key]) + ')') : key
 	}).join(' ')
 	console.log(output)
-	cleanup()
 }
 
 function state(i) {
+	which()
 	discretize(cwd).state()
 	cleanup()
 }
@@ -122,6 +112,15 @@ function saveas(i, args) {
 		})
 	} else {
 		console.log(chalk.yellow('saveas expects a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
+	}
+}
+
+function undo(i, args){
+	const pattern = args[i + 1]
+	if (pattern) {
+		discretize(cwd).undo(pattern)
+	} else {
+		console.log(chalk.yellow('undo expects a filename or pattern, e.g.'), chalk.inverse('$ mu undo path/to/file.txt'))
 	}
 }
 

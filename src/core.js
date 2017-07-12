@@ -3,6 +3,7 @@ const path = require('path')
 const crc = require('crc')
 const chalk = require('chalk')
 const pointerOps = require('./pointerOps')
+const frankenstein = require('./frankenstein')
 
 module.exports = cwd => {
 
@@ -18,10 +19,10 @@ module.exports = cwd => {
 			}
 		},
 		print: {
-			'modified': str => console.log(chalk.cyan('%\t' + str)),
-			'deleted': str => console.log(chalk.red('-\t' + str)),
-			'renamed': str => console.log(chalk.magenta('&\t' + str)),
-			'added': str => console.log(chalk.yellow('+\t' + str))
+			modified: str => console.log(chalk.cyan('%\t' + str)),
+			deleted: str => console.log(chalk.red('x\t' + str)),
+			renamed: str => console.log(chalk.magenta('&\t' + str)),
+			added: str => console.log(chalk.yellow('+\t' + str))
 		}
 	}
 
@@ -46,7 +47,7 @@ module.exports = cwd => {
 	function _getSavedData(){
 		const po = pointerOps(cwd, Root)
 		const currentVersion = po.version.toString()
-		const lastSavePath = path.join(cwd, Root, 'history', po.head, 'v' + (currentVersion - 1))
+		const lastSavePath = path.join(cwd, Root, 'history', po.head, 'v' + Math.max(0, currentVersion - 1))
 		const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : GlConsts.baseCase
 		return lastSave
 	}
@@ -73,7 +74,8 @@ module.exports = cwd => {
 			}
 			return false
 		},
-		state() {
+		state(action) {
+			const handleFile = (action === 'undo') ? frankenstein.undo : GlConsts.print
 			const tree = blockify(cwd, true)
 			const previousFileHashes = Object.keys(GlConsts.lastSave.dat)
 			let hashsum
@@ -82,17 +84,26 @@ module.exports = cwd => {
 				const filepath = GlConsts.lastSave.dat[hashsum][0]
 				const hasFile = GlData.recordedFiles.delete(filepath)
 				if(!hasHash && !hasFile){
-					GlConsts.print.deleted(filepath)
+					handleFile.deleted(filepath)
 				}else if (!hasHash && hasFile) {
-					GlConsts.print.modified(filepath)
+					handleFile.modified(filepath)
 				}else if(hasHash && !hasFile){
 					const renamed = tree.dat[hashsum][0]
-					GlConsts.print.renamed(filepath + ' -> ' + renamed)
+					handleFile.renamed(filepath + ' -> ' + renamed)
 					GlData.recordedFiles.delete(renamed)
 				}
 			}
 			for (let file of GlData.recordedFiles) {
-				GlConsts.print.added(file)
+				handleFile.added(file)
+			}
+		},
+		undo(pattern){
+			const previousFileHashes = Object.keys(GlConsts.lastSave.dat)
+			let hashsum
+			while (hashsum = previousFileHashes.pop()) {
+				const dat = GlConsts.lastSave.dat[hashsum]
+				pattern = new RegExp(pattern)
+				console.log('targeting:', pattern.test(dat[0]), dat[0])
 			}
 		}
 	}
@@ -103,14 +114,14 @@ module.exports = cwd => {
 		const hashFileLookup = fs.readdirSync(parent).reduce((tree, child) => {
 			if (GlConsts.ignore && GlConsts.ignore.test(child)) return tree
 			const childPath = path.join(parent, child)
-			const isDir = fs.statSync(childPath).isDirectory()
+			const status = fs.statSync(childPath)
+			const isDir = status.isDirectory()
 			if (isDir) {
 				const treeTemp = blockify(childPath, isStat)
 				Object.assign(tree.ino, treeTemp.ino)
 				Object.assign(tree.dat, treeTemp.dat)
 			} else {
 				const childRelativePath = path.relative(cwd, childPath)
-				const status = fs.statSync(childRelativePath)
 				const inode = status.ino,
 					size = status.size,
 					mtime = fs._toUnixTimestamp(status.mtime)
