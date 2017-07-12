@@ -21,7 +21,7 @@ module.exports = cwd => {
 		print: {
 			modified: str => console.log(chalk.cyan('%\t' + str)),
 			deleted: str => console.log(chalk.red('x\t' + str)),
-			renamed: str => console.log(chalk.magenta('&\t' + str)),
+			renamed: (strOld, strNew) => console.log(chalk.magenta('&\t' + strOld, '->', strNew)),
 			added: str => console.log(chalk.yellow('+\t' + str))
 		}
 	}
@@ -74,8 +74,8 @@ module.exports = cwd => {
 			}
 			return false
 		},
-		state(action) {
-			const handleFile = (action === 'undo') ? frankenstein.undo : GlConsts.print
+		diff(pattern) {
+			const handleFile = pattern ? frankenstein(cwd).undo : GlConsts.print
 			const tree = blockify(cwd, true)
 			const previousFileHashes = Object.keys(GlConsts.lastSave.dat)
 			let hashsum
@@ -83,18 +83,23 @@ module.exports = cwd => {
 				const hasHash = GlData.recordedHashes.delete(hashsum)
 				const filepath = GlConsts.lastSave.dat[hashsum][0]
 				const hasFile = GlData.recordedFiles.delete(filepath)
-				if(!hasHash && !hasFile){
-					handleFile.deleted(filepath)
-				}else if (!hasHash && hasFile) {
-					handleFile.modified(filepath)
-				}else if(hasHash && !hasFile){
-					const renamed = tree.dat[hashsum][0]
-					handleFile.renamed(filepath + ' -> ' + renamed)
-					GlData.recordedFiles.delete(renamed)
+
+				if(!pattern || pattern.test(filepath)){
+					if(!hasHash && !hasFile){
+						handleFile.deleted(filepath, hashsum)
+					}else if (!hasHash && hasFile) {
+						handleFile.modified(filepath, hashsum)
+					}else if(hasHash && !hasFile){
+						const renamed = tree.dat[hashsum][0]
+						handleFile.renamed(filepath, renamed)
+						GlData.recordedFiles.delete(renamed)
+					}
 				}
 			}
 			for (let file of GlData.recordedFiles) {
-				handleFile.added(file)
+				if(!pattern || pattern.test(file)){
+					handleFile.added(file)
+				}
 			}
 		},
 		undo(pattern){

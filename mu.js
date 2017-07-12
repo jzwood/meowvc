@@ -84,7 +84,7 @@ function which(i) {
 
 function state(i) {
 	which()
-	discretize(cwd).state()
+	discretize(cwd).diff()
 	cleanup()
 }
 
@@ -116,12 +116,14 @@ function saveas(i, args) {
 }
 
 function undo(i, args){
-	const pattern = args[i + 1]
+	let pattern = args[i + 1]
 	if (pattern) {
-		discretize(cwd).undo(pattern)
+		pattern = new RegExp(pattern.trim())
+		discretize(cwd).diff(pattern)
 	} else {
 		console.log(chalk.yellow('undo expects a filename or pattern, e.g.'), chalk.inverse('$ mu undo path/to/file.txt'))
 	}
+	cleanup()
 }
 
 function get(i, args) {

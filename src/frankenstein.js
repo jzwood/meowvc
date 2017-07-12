@@ -9,8 +9,8 @@ module.exports = cwd => {
 
 	return {
 		undo: {
-			modified: writeFile,
 			deleted: writeFile,
+			modified: writeFile,
 			renamed: rename,
 			added: remove
 		}
@@ -28,10 +28,10 @@ module.exports = cwd => {
 	}
 
 	function writeFile(file, filehash) {
-		const fileArray = fs.readFileSync(path(cwd, ROOT, 'disk_mem', 'files', insert(fileHash, 2, '/')), 'utf8')
+		const fileArray = fs.readJsonSync(path.join(cwd, ROOT, 'disk_mem', 'files', insert(filehash, 2, '/')), 'utf8')
 		let line, data = ''
 		while (linehash = fileArray.pop()) {
-			data += fs.readFileSync(path(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8')
+			data += fs.readFileSync(path.join(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8')
 		}
 		fs.outputFileSync(file, data)
 	}
