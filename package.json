@@ -8,7 +8,9 @@
     "crc": "^3.4.4",
     "fs-extra": "^3.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^4.2.0"
+  },
   "scripts": {
     "start": "node mu.js",
     "clear": "rm -r .mu",
