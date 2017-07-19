@@ -6,6 +6,12 @@ module.exports = cwd => {
 
   const ROOT = '.mu'
   const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
+  const reverted = str => {
+    console.log(chalk.green('✓\t' + str))
+  }
+  const removed = str => {
+    console.log(chalk.red('✗\t' + str))
+  }
 
   return {
     undo: {
@@ -20,6 +26,7 @@ module.exports = cwd => {
     const status = fs.statSync(file)
     if (status && status.isFile()) {
       fs.removeSync(file)
+      removed(file)
     }
   }
 
@@ -34,5 +41,6 @@ module.exports = cwd => {
       data += fs.readFileSync(path.join(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8')
     }
     fs.outputFileSync(file, data)
+    reverted(file)
   }
 }

@@ -158,7 +158,7 @@ module.exports = cwd => {
   */
   function _preCache() {
     const lp = GlConsts.linesPath,
-    fp = GlConsts.filesPath
+      fp = GlConsts.filesPath
     fs.ensureDirSync(lp)
     fs.ensureDirSync(fp)
 
