@@ -23,7 +23,8 @@ module.exports = cwd => {
       deleted: str => console.log(chalk.red('x\t' + str)),
       renamed: (strOld, strNew) => console.log(chalk.magenta('&\t' + strOld, '->', strNew)),
       added: str => console.log(chalk.yellow('+\t' + str))
-    }
+    },
+    deletedFilesFlag: false
   }
 
   Object.assign(GlConsts, {
@@ -57,7 +58,7 @@ module.exports = cwd => {
       const tree = blockify(cwd, false)
       const dest = (head, version) => path.join(cwd, Root, 'history', head, 'v' + version)
       let outputFile
-      if (GlData.outputFileQueue.length) {
+      if (GlData.outputFileQueue.length || true) { // @TODO detect files deleted and new files with already saved hashes
         while (outputFile = GlData.outputFileQueue.pop()) {
           fs.outputJsonSync(outputFile[0], outputFile[1])
         }
@@ -116,9 +117,13 @@ module.exports = cwd => {
       const isDir = status.isDirectory()
       const isFile = status.isFile()
       if (isDir) {
-        const treeTemp = blockify(childPath, isStat)
-        Object.assign(tree.ino, treeTemp.ino)
-        Object.assign(tree.dat, treeTemp.dat)
+        const subTree = blockify(childPath, isStat)
+        Object.assign(tree.ino, subTree.ino)
+        // Object.assign(tree.dat, subTree.dat)
+        for(let h in subTree.dat){
+          tree.dat[h] = tree.dat[h] || {}
+          Object.assign(tree.dat[h], subTree.dat[h])
+        }
       } else if (isFile) {
         const childRelativePath = path.relative(cwd, childPath)
         const inode = status.ino,
@@ -143,10 +148,9 @@ module.exports = cwd => {
         GlData.recordedFileHash.set(childRelativePath, hashsum)
         tree.ino[inode] = hashsum
 
-        tree.dat[hashsum] = Object.assign(tree.dat[hashsum] || {}, {
-          [childRelativePath]: data
-        })
-        data
+        tree.dat[hashsum] = tree.dat[hashsum] || {}
+        tree.dat[hashsum][childRelativePath] = data
+
       }
       return tree
     }, GlConsts.baseCase)
