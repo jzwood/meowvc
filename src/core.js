@@ -4,6 +4,7 @@ const crc = require('crc')
 const chalk = require('chalk')
 const pointerOps = require('./pointerOps')
 const frankenstein = require('./frankenstein')
+const prompt = require('./prompt')
 
 module.exports = cwd => {
 
@@ -53,26 +54,34 @@ module.exports = cwd => {
   }
 
   return {
-    save(head) {
+    save(srcHead, onComplete) {
       _preCache()
       const tree = blockify(cwd, false)
       const dest = (head, version) => path.join(cwd, Root, 'history', head, 'v' + version)
-      let outputFile
-      if (GlData.outputFileQueue.length || true) { // @TODO detect files deleted and new files with already saved hashes
+      const po = pointerOps(cwd, Root)
+      const saveit = () => {
+        let outputFile
         while (outputFile = GlData.outputFileQueue.pop()) {
           fs.outputJsonSync(outputFile[0], outputFile[1])
         }
-        const po = pointerOps(cwd, Root)
         fs.outputJsonSync(dest(po.head, po.version), tree) // write tree
         po.incrPointer()
         po.writePointer()
-        return true
-      } else if (head) {
-        const po = pointerOps(cwd, Root)
-        fs.copySync(dest(head, po.branch[head] - 1), dest(po.head, po.version))
-        return true
       }
-      return false
+      if (GlData.outputFileQueue.length) {
+        saveit()
+        onComplete.success(po)
+        return true
+      } else if (srcHead) {
+        fs.copySync(dest(srcHead, po.branch[srcHead] - 1), dest(po.head, po.version))
+        onComplete.success(po)
+        po.incrPointer()
+        po.writePointer()
+        return true
+      } else{
+        prompt(saveit, onComplete)
+        return false
+      }
     },
     diff(pattern) {
       const handleFile = pattern ? frankenstein(cwd).undo : GlConsts.print

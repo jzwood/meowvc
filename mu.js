@@ -17,15 +17,15 @@ const USAGE = `
 Usage:
 mu <command> [<args>]
 
-Commands:   Args:   Descriptions
-start             - create a new mu repo
-state            - show the working repo state
+  Commands:   Args:   Descriptions
+  start               - create a new mu repo
+  state               - show the working repo state
 
-save              - record snapshot of repo
-saveas    <name>  - save with new namespace
+  save              - record snapshot of repo
+  saveas    <name>  - save with new namespace
 
-undo      <file>  - reverts file to last save
-get       <name>  - switch to repo with different namespace
+  undo      <file>  - reverts file to last save
+  get       <name>  - switch to repo with different namespace
 `
 
 let cwd, isMuRepo
@@ -36,7 +36,7 @@ const setup = () => {
 }
 const cleanup = () => {
   t2 = +new Date()
-  console.log((t2 - t1) / 1000)
+  console.log((t2 - t1) / 1000 + 's')
 }
 
 function mu(args) {
@@ -95,15 +95,21 @@ function state(i) {
 }
 
 function save(i) {
-  console.log('save', i)
   const po = pointerOps(cwd, ROOT)
-  const success = discretize(cwd).save(false)
-  success ? console.log(chalk.green('saved as', po.head, 'v' + po.version)) : console.log(chalk.yellow('nothing changed'))
-  cleanup()
+  const onComplete = {
+    success(){
+      console.log(chalk.green('saved as', po.head, 'v' + po.version))
+      cleanup()
+    },
+    failure(){
+      console.log(chalk.yellow('nothing changed'))
+      cleanup()
+    }
+  }
+  const success = discretize(cwd).save(false, onComplete)
 }
 
 function saveas(i, args) {
-  console.log('saveas', i)
   const name = args[i + 1]
   if (name) {
     const po = pointerOps(cwd, ROOT)
@@ -112,7 +118,17 @@ function saveas(i, args) {
       if (exists) {
         console.log(chalk.red(`ERROR: Save named "${name}" already exists. Repo not saved.`))
       } else {
-        discretize(cwd).save(head)
+        const onComplete = {
+          success(destPo){
+            console.log(chalk.green(destPo.head, 'v' + destPo.version, 'successfully saved'))
+            cleanup()
+          },
+          failure(){
+            console.log(chalk.yellow('nothing changed'))
+            cleanup()
+          }
+        }
+        discretize(cwd).save(head, onComplete)
         console.log(chalk.green('done'))
       }
     })
