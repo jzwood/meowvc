@@ -3,15 +3,18 @@ const path = require('path')
 
 module.exports = (cwd, root) => {
   const pointerPath = path.join(cwd, root, '_pointer.json')
+  let pointer
   if(!fs.existsSync(pointerPath)){
-    fs.outputJsonSync(pointerPath, {
+    pointer = {
       head: "master",
       branch: {
         master: "0"
       }
-    })
-	}
-  const pointer = fs.readJsonSync(pointerPath)
+    }
+    fs.outputJsonSync(pointerPath, pointer)
+  } else {
+    pointer = fs.readJsonSync(pointerPath)
+  }
   return {
     head: pointer.head,
     branch: pointer.branch,

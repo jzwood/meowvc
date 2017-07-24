@@ -25,13 +25,8 @@ module.exports = cwd => {
       renamed: (strOld, strNew) => console.log(chalk.magenta('&\t' + strOld, '->', strNew)),
       added: str => console.log(chalk.yellow('+\t' + str))
     },
-    deletedFilesFlag: false
+    ignore: _ignore()
   }
-
-  Object.assign(GlConsts, {
-    ignore: _ignore(),
-    lastSave: _getSavedData()
-  })
 
   const GlData = {
     memory: new Set(),
@@ -45,10 +40,15 @@ module.exports = cwd => {
     return ignore
   }
 
-  function _getSavedData() {
-    const po = pointerOps(cwd, Root)
-    const currentVersion = po.version.toString()
-    const lastSavePath = path.join(cwd, Root, 'history', po.head, 'v' + Math.max(0, currentVersion - 1))
+  function _getSavedData(checkout) {
+    let lastSavePath
+    if (checkout){
+      lastSavePath = path.join(cwd, Root, 'history', checkout.head, 'v' + checkout.version)
+    } else {
+      const po = pointerOps(cwd, Root)
+      const currentVersion = po.version
+      lastSavePath = path.join(cwd, Root, 'history', po.head, 'v' + Math.max(0, currentVersion - 1))
+    }
     const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : GlConsts.baseCase
     return lastSave
   }
@@ -56,6 +56,7 @@ module.exports = cwd => {
   return {
     save(srcHead, onComplete) {
       _preCache()
+      GlConsts.lastSave = _getSavedData()
       const tree = blockify(cwd, false)
       const dest = (head, version) => path.join(cwd, Root, 'history', head, 'v' + version)
       const po = pointerOps(cwd, Root)
@@ -78,13 +79,14 @@ module.exports = cwd => {
         po.incrPointer()
         po.writePointer()
         return true
-      } else{
+      } else {
         prompt(saveit, onComplete)
         return false
       }
     },
-    diff(pattern) {
+    diff(pattern, checkout) {
       const handleFile = pattern ? frankenstein(cwd).undo : GlConsts.print
+      GlConsts.lastSave = _getSavedData(checkout)
       // tree implicity populates GlData.recordedFileHash
       const tree = blockify(cwd, true)
       // previousFileHashes = previous recorded Hashes

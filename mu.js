@@ -11,6 +11,7 @@ const pointerOps = require('./src/pointerOps')
 
 
 const ROOT = '.mu'
+const none = void(0)
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 
 const USAGE = `
@@ -22,10 +23,10 @@ mu <command> [<args>]
   state               - show the working repo state
 
   save              - record snapshot of repo
-  saveas    <name>  - save with new namespace
+  saveas    <name>  - save under a new name
 
-  undo      <file>  - reverts file to last save
-  get       <name>  - switch to repo with different namespace
+  undo      <file>  - revert file to last save
+  get       <name>  - switch to a different named repo
 `
 
 let cwd, isMuRepo
@@ -44,7 +45,7 @@ function mu(args) {
   setup()
 
   cwd = process.cwd()
-  isMuRepo = fs.existsSync(path.join(cwd, ROOT))
+  isMuRepo = fs.existsSync(path.join(cwd, ROOT)) // @todo make this smarter
 
   for (let i = 0, n = args.length; i < n; i++) {
     const command = {
@@ -90,7 +91,7 @@ function which(i) {
 
 function state(i) {
   which()
-  discretize(cwd).diff(false)
+  discretize(cwd).diff(none, none)
   cleanup()
 }
 
@@ -106,7 +107,7 @@ function save(i) {
       cleanup()
     }
   }
-  const success = discretize(cwd).save(false, onComplete)
+  const success = discretize(cwd).save(none, onComplete)
 }
 
 function saveas(i, args) {
@@ -141,7 +142,7 @@ function undo(i, args) {
   let pattern = args[i + 1]
   if (pattern) {
     pattern = new RegExp(pattern.trim())
-    discretize(cwd).diff(pattern)
+    discretize(cwd).diff(pattern, none)
   } else {
     console.log(chalk.yellow('undo expects a filename or pattern, e.g.'), chalk.inverse('$ mu undo path/to/file.txt'))
   }
@@ -150,16 +151,13 @@ function undo(i, args) {
 
 function get(i, args) {
   console.log('get', i)
-
-  // const name = args[i + 1]
-  // if (name) {
-  // 	let pointer = getPointer()
-  // 	if(name !== pointer.head){
-  // 		checkout(cwd, name)
-  // 	}else{
-  // 		console.log(chalk.red('working directory already \"', name, '\"'))
-  // 	}
-  // }else{
-  // 	console.log(chalk.red('Mu expects'), chalk.inverse('get'), chalk.red('to include the name of a save, e.g.'), chalk.inverse('$ mu get master'))
-  // }
+  const head = args[i + 1], v = args[i + 2]
+  const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
+  if (head) {
+    const po = pointerOps(cwd, ROOT)
+    const latestVersion = head !== po.head && po.branch[head]
+    const version = /v[0-9]+/.test(v) && parseInt(v.slice(1)) < latestVersion ? v : 'v' + latestVersion
+    discretize(cwd).diff('.', { head, version })
+  }
+  console.log(errorMsg)
 }
