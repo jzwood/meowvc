@@ -8,7 +8,7 @@ module.exports = (cwd, root) => {
     pointer = {
       head: "master",
       branch: {
-        master: "0"
+        master: 0
       }
     }
     fs.outputJsonSync(pointerPath, pointer)
@@ -21,6 +21,10 @@ module.exports = (cwd, root) => {
     version: pointer.branch[pointer.head],
     incrPointer(){
       pointer.branch[pointer.head]++
+    },
+    setPointer(head, version){
+      pointer.head = head
+      pointer.branch[pointer.head] = version
     },
     writePointer(){
       fs.outputJsonSync(pointerPath, pointer)

@@ -53,7 +53,8 @@ function mu(args) {
       state,
       save,
       saveas,
-      undo
+      undo,
+      get
     }[sanitizeInput(args[i])]
     if (typeof command === 'function') {
       if (isMuRepo || args[i] === 'start') {
@@ -153,11 +154,16 @@ function get(i, args) {
   console.log('get', i)
   const head = args[i + 1], v = args[i + 2]
   const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
-  if (head) {
-    const po = pointerOps(cwd, ROOT)
-    const latestVersion = head !== po.head && po.branch[head]
-    const version = /v[0-9]+/.test(v) && parseInt(v.slice(1)) < latestVersion ? v : 'v' + latestVersion
-    discretize(cwd).diff('.', { head, version })
+  const po = pointerOps(cwd, ROOT)
+  const latestVersion = head && po.branch[head]
+  if (latestVersion) {
+    let lv
+    const version = /v[0-9]+/.test(v) && (lv = parseInt(v.slice(1))) < latestVersion ? lv : latestVersion
+    discretize(cwd).diff(/./, { head, version })
+    po.setPointer(head, version)
+    po.writePointer()
+    which()
+  } else {
+    console.log(errorMsg)
   }
-  console.log(errorMsg)
 }
