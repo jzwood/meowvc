@@ -38,8 +38,9 @@ module.exports = cwd => {
   function writeFile(file, filehash, mtime) {
     const fileArray = fs.readJsonSync(path.join(cwd, ROOT, 'disk_mem', 'files', insert(filehash, 2, '/')), 'utf8')
     let linehash, data = ''
+    let firstLineHash = fileArray.pop()
     while (linehash = fileArray.pop()) {
-      data += fs.readFileSync(path.join(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8') + lineEnd
+      data = fs.readFileSync(path.join(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8') + lineEnd + data
     }
     fs.outputFileSync(file, data)
     fs.utimesSync(file, +new Date(), mtime)
