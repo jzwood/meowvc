@@ -104,6 +104,8 @@ module.exports = cwd => {
           if (!pattern || pattern.test(fp)) {
             if (equivFiles && !equivHashes) {
               handleFile.modified(fp, hashsum)
+              // const mtime = GlConsts.lastSave.dat[hashsum][fp][1]
+              // fs.utimesSync(path.join(cwd, fp) , +new Date(), mtime)
             } else if (!equivFiles){
               handleFile.deleted(fp, hashsum)
             }

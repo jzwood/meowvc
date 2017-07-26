@@ -152,13 +152,13 @@ function undo(i, args) {
 
 function get(i, args) {
   console.log('get', i)
-  const head = args[i + 1], v = args[i + 2]
+  const head = args[i + 1] || '', v = args[i + 2] || ''
   const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
   const po = pointerOps(cwd, ROOT)
-  const latestVersion = head && po.branch[head]
-  if (latestVersion) {
-    let lv
-    const version = /v[0-9]+/.test(v) && (lv = parseInt(v.slice(1))) < latestVersion ? lv : latestVersion
+  const currentVersion = head && po.branch[head]
+  const version = /v[0-9]+/.test(v) ? parseInt(v.slice(1)) : currentVersion
+  console.log(fs.readdirSync(dest(path.join('history', head))), 'v' + version, 'v' + currentVersion)
+  if (typeof currentVersion !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version)) {
     discretize(cwd).diff(/./, { head, version })
     po.setPointer(head, version)
     po.writePointer()
