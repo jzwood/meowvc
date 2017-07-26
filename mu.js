@@ -84,8 +84,12 @@ function start(i) {
 
 function which(i) {
   const po = pointerOps(cwd, ROOT)
+  const historyPath = dest(path.join('history', po.head))
+  fs.ensureDirSync(historyPath)
+  let latest = fs.readdirSync(historyPath).pop()
+  latest = /v[0-9]+/.test(latest) ? parseInt(latest.slice(1)) + 1 : 0
   const output = Object.keys(po.branch).map(key => {
-    return (key === po.head) ? chalk.green(key, '(v' + Math.max(0, po.branch[key]) + ')') : key
+    return (key === po.head) ? chalk.green(key, `(v${Math.max(0, po.branch[key])}/${latest})`) : key
   }).join(' ')
   console.log(output)
 }
@@ -157,7 +161,6 @@ function get(i, args) {
   const po = pointerOps(cwd, ROOT)
   const currentVersion = head && po.branch[head]
   const version = /v[0-9]+/.test(v) ? parseInt(v.slice(1)) : currentVersion
-  console.log(fs.readdirSync(dest(path.join('history', head))), 'v' + version, 'v' + currentVersion)
   if (typeof currentVersion !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version)) {
     discretize(cwd).diff(/./, { head, version })
     po.setPointer(head, version)
