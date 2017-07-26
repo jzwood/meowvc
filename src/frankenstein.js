@@ -1,6 +1,7 @@
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
+const lineEnd = require('os').EOL
 
 module.exports = cwd => {
 
@@ -34,13 +35,15 @@ module.exports = cwd => {
     fs.renameSync(newPath, oldpath)
   }
 
-  function writeFile(file, filehash) {
+  function writeFile(file, filehash, mtime) {
     const fileArray = fs.readJsonSync(path.join(cwd, ROOT, 'disk_mem', 'files', insert(filehash, 2, '/')), 'utf8')
     let linehash, data = ''
     while (linehash = fileArray.pop()) {
-      data += fs.readFileSync(path.join(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8')
+      data += fs.readFileSync(path.join(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8') + lineEnd
     }
     fs.outputFileSync(file, data)
+    fs.utimesSync(file, +new Date(), mtime)
+
     reverted(file)
   }
 }

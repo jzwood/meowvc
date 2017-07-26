@@ -31,7 +31,8 @@ module.exports = cwd => {
   const GlData = {
     memory: new Set(),
     recordedFileHash: new Map(),
-    outputFileQueue: []
+    outputFileQueue: [],
+    outputLineQueue: []
   }
 
   function _ignore() {
@@ -61,9 +62,12 @@ module.exports = cwd => {
       const dest = (head, version) => path.join(cwd, Root, 'history', head, 'v' + version)
       const po = pointerOps(cwd, Root)
       const saveit = () => {
-        let outputFile
+        let outputFile, outputLine
         while (outputFile = GlData.outputFileQueue.pop()) {
           fs.outputJsonSync(outputFile[0], outputFile[1])
+        }
+        while (outputLine = GlData.outputLineQueue.pop()) {
+          fs.outputFileSync(outputLine[0], outputLine[1])
         }
         fs.outputJsonSync(dest(po.head, po.version), tree) // write tree
         po.incrPointer()
@@ -102,12 +106,11 @@ module.exports = cwd => {
           GlData.recordedFileHash.delete(fp)
 
           if (!pattern || pattern.test(fp)) {
+            const mtime = GlConsts.lastSave.dat[hashsum][fp][1]
             if (equivFiles && !equivHashes) {
-              handleFile.modified(fp, hashsum)
-              // const mtime = GlConsts.lastSave.dat[hashsum][fp][1]
-              // fs.utimesSync(path.join(cwd, fp) , +new Date(), mtime)
+              handleFile.modified(fp, hashsum, mtime)
             } else if (!equivFiles){
-              handleFile.deleted(fp, hashsum)
+              handleFile.deleted(fp, hashsum, mtime)
             }
           }
         })
@@ -238,7 +241,7 @@ module.exports = cwd => {
         const lineHash = _hashIt(line)
         if (isUncached(lineHash)) {
           cacheIt(lineHash)
-          GlData.outputFileQueue.push([path.join(GlConsts.linesPath, insert(lineHash, 2, '/')), line])
+          GlData.outputLineQueue.push([path.join(GlConsts.linesPath, insert(lineHash, 2, '/')), line])
         }
         return lineHash
       })

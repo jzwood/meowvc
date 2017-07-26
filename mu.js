@@ -161,8 +161,9 @@ function get(i, args) {
   if (typeof currentVersion !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version)) {
     discretize(cwd).diff(/./, { head, version })
     po.setPointer(head, version)
+    po.incrPointer()
     po.writePointer()
-    which()
+    console.log(chalk.green('successfully switched to',head, `v${version}`))
   } else {
     console.log(errorMsg)
   }
