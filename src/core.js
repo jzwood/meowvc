@@ -2,6 +2,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const crc = require('crc')
 const chalk = require('chalk')
+const eol = require('os').EOL
+
 const pointerOps = require('./pointerOps')
 const frankenstein = require('./frankenstein')
 const prompt = require('./prompt')
@@ -13,6 +15,7 @@ module.exports = cwd => {
   const GlConsts = {
     linesPath: path.join(cwd, Root, 'disk_mem', 'lines'),
     filesPath: path.join(cwd, Root, 'disk_mem', 'files'),
+    eol: new RegExp(`(?=${eol})`),
     get baseCase() {
       return {
         'ino': {},
@@ -237,7 +240,7 @@ module.exports = cwd => {
     if (isUncached(fileHash)) {
       cacheIt(fileHash)
       const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
-      const hashes = file.split('\n').map(line => {
+      const hashes = file.split(GlConsts.eol).map(line => {
         const lineHash = _hashIt(line)
         if (isUncached(lineHash)) {
           cacheIt(lineHash)

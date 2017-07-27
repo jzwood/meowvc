@@ -1,7 +1,6 @@
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
-const lineEnd = require('os').EOL
 
 module.exports = cwd => {
 
@@ -40,7 +39,7 @@ module.exports = cwd => {
     let linehash, data = ''
     let firstLineHash = fileArray.pop()
     while (linehash = fileArray.pop()) {
-      data = fs.readFileSync(path.join(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8') + lineEnd + data
+      data = fs.readFileSync(path.join(cwd, ROOT, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8') + data
     }
     fs.outputFileSync(file, data)
     fs.utimesSync(file, +new Date(), mtime)

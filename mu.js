@@ -18,15 +18,16 @@ const USAGE = `
 Usage:
 mu <command> [<args>]
 
-  Commands:   Args:   Descriptions
-  start               - create a new mu repo
-  state               - show the working repo state
+  Commands:	Args:			Descriptions:
+  help					- shows usage
+  start					- creates a new mu repo
+  state					- shows the working repo state
 
-  save              - record snapshot of repo
-  saveas    <name>  - save under a new name
+  save					- records snapshot of repo
+  saveas	<name>			- saves repo with a new name
 
-  undo      <file>  - revert file to last save
-  get       <name>  - switch to a different named repo
+  undo		<file|pattern>		- reverts file (or pattern) to last save
+  get		<name> [version]	- switches to a different named repo
 `
 
 let cwd, isMuRepo
@@ -87,9 +88,9 @@ function which(i) {
   const historyPath = dest(path.join('history', po.head))
   fs.ensureDirSync(historyPath)
   let latest = fs.readdirSync(historyPath).pop()
-  latest = /v[0-9]+/.test(latest) ? parseInt(latest.slice(1)) + 1 : 0
+  latest = /v[0-9]+/.test(latest) ? parseInt(latest.slice(1)) : 0
   const output = Object.keys(po.branch).map(key => {
-    return (key === po.head) ? chalk.green(key, `(v${Math.max(0, po.branch[key])}/${latest})`) : key
+    return (key === po.head) ? chalk.green(key, `(v${Math.max(0, po.branch[key] - 1)}/${latest})`) : key
   }).join(' ')
   console.log(output)
 }
@@ -159,9 +160,9 @@ function get(i, args) {
   const head = args[i + 1] || '', v = args[i + 2] || ''
   const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
   const po = pointerOps(cwd, ROOT)
-  const currentVersion = head && po.branch[head]
-  const version = /v[0-9]+/.test(v) ? parseInt(v.slice(1)) : currentVersion
-  if (typeof currentVersion !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version)) {
+  const latestHead = head && po.branch[head]
+  const version = /v[0-9]+/.test(v) ? parseInt(v.slice(1)) : latestHead
+  if (typeof latestHead !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version)) {
     discretize(cwd).diff(/./, { head, version })
     po.setPointer(head, version)
     po.incrPointer()
