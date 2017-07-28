@@ -8,9 +8,9 @@ const chalk = require('chalk')
 
 const discretize = require('./src/core')
 const pointerOps = require('./src/pointerOps')
+const root = require('./src/root')
 
 
-const ROOT = '.mu'
 const none = void(0)
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 
@@ -46,7 +46,7 @@ function mu(args) {
   setup()
 
   cwd = process.cwd()
-  isMuRepo = fs.existsSync(path.join(cwd, ROOT)) // @todo make this smarter
+  isMuRepo = fs.existsSync(path.join(cwd, root)) // @todo make this smarter
 
   for (let i = 0, n = args.length; i < n; i++) {
     const command = {
@@ -71,20 +71,20 @@ function mu(args) {
 mu(process.argv)
 
 function dest(fpath) {
-  return path.join(cwd, ROOT, fpath)
+  return path.join(cwd, root, fpath)
 }
 
 function start(i) {
   isMuRepo ? console.log(chalk.yellow('Warning: repo already setup')) : console.log(chalk.green('setup done'))
   fs.ensureDirSync(dest('history'))
-  const po = pointerOps(cwd, ROOT)
+  const po = pointerOps(cwd, root)
   if (!fs.existsSync(dest('_ignore'))) {
     fs.outputFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
   }
 }
 
 function which(i) {
-  const po = pointerOps(cwd, ROOT)
+  const po = pointerOps(cwd, root)
   const historyPath = dest(path.join('history', po.head))
   fs.ensureDirSync(historyPath)
   let latest = fs.readdirSync(historyPath).pop()
@@ -102,7 +102,7 @@ function state(i) {
 }
 
 function save(i) {
-  const po = pointerOps(cwd, ROOT)
+  const po = pointerOps(cwd, root)
   const onComplete = {
     success(){
       console.log(chalk.green('saved as', po.head, 'v' + po.version))
@@ -119,7 +119,7 @@ function save(i) {
 function saveas(i, args) {
   const name = args[i + 1]
   if (name) {
-    const po = pointerOps(cwd, ROOT)
+    const po = pointerOps(cwd, root)
     const head = po.head
     po.addName(name, exists => {
       if (exists) {
@@ -159,7 +159,7 @@ function get(i, args) {
   console.log('get', i)
   const head = args[i + 1] || '', v = args[i + 2] || ''
   const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
-  const po = pointerOps(cwd, ROOT)
+  const po = pointerOps(cwd, root)
   const latestHead = head && po.branch[head]
   const version = /v[0-9]+/.test(v) ? parseInt(v.slice(1)) : latestHead
   if (typeof latestHead !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version)) {

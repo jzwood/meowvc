@@ -2,35 +2,20 @@ const fs = require('fs-extra')
 const path = require('path')
 const crc = require('crc')
 const chalk = require('chalk')
+const isBinaryFile = require("isbinaryfile")
 const eol = require('os').EOL
 
 const pointerOps = require('./pointerOps')
 const frankenstein = require('./frankenstein')
+const fst = require('./treeify')
 const prompt = require('./prompt')
+const h = require('./hashing')
+const root = require('./root')
 
 module.exports = cwd => {
 
-  const Root = '.mu'
-
-  const GlConsts = {
-    linesPath: path.join(cwd, Root, 'disk_mem', 'lines'),
-    filesPath: path.join(cwd, Root, 'disk_mem', 'files'),
-    eol: new RegExp(`(?=${eol})`),
-    get baseCase() {
-      return {
-        'ino': {},
-        'dat': {}
-      }
-    },
-    print: {
-      modified: str => console.log(chalk.cyan('%\t' + str)),
-      deleted: str => console.log(chalk.red('x\t' + str)),
-      renamed: (strOld, strNew) => console.log(chalk.magenta('&\t' + strOld, '->', strNew)),
-      added: str => console.log(chalk.yellow('+\t' + str))
-    },
-    ignore: _ignore()
-  }
-
+  const GlConsts = require('./glConsts')(cwd)
+  const GlTemp = {}
   const GlData = {
     memory: new Set(),
     recordedFileHash: new Map(),
@@ -38,32 +23,13 @@ module.exports = cwd => {
     outputLineQueue: []
   }
 
-  function _ignore() {
-    const ignore_file = fs.readFileSync(path.join(cwd, Root, '_ignore'), 'utf8').trim().split('\n').join('|')
-    const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
-    return ignore
-  }
-
-  function _getSavedData(checkout) {
-    let lastSavePath
-    if (checkout){
-      lastSavePath = path.join(cwd, Root, 'history', checkout.head, 'v' + checkout.version)
-    } else {
-      const po = pointerOps(cwd, Root)
-      const currentVersion = po.version
-      lastSavePath = path.join(cwd, Root, 'history', po.head, 'v' + Math.max(0, currentVersion - 1))
-    }
-    const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : GlConsts.baseCase
-    return lastSave
-  }
-
   return {
     save(srcHead, onComplete) {
       _preCache()
-      GlConsts.lastSave = _getSavedData()
-      const tree = blockify(cwd, false)
-      const dest = (head, version) => path.join(cwd, Root, 'history', head, 'v' + version)
-      const po = pointerOps(cwd, Root)
+      GlTemp.lastSave = fst.getSavedData(cwd)
+      const tree = fst.treeify(cwd, _forEachFile(h.diskCache.bind(null, GlData, GlConsts)))
+      const dest = (head, version) => path.join(cwd, root, 'history', head, 'v' + version)
+      const po = pointerOps(cwd, root)
       const saveit = () => {
         let outputFile, outputLine
         while (outputFile = GlData.outputFileQueue.pop()) {
@@ -91,16 +57,16 @@ module.exports = cwd => {
         return false
       }
     },
-    diff(pattern, checkout) {
+    diff(pattern, name) {
       const handleFile = pattern ? frankenstein(cwd).undo : GlConsts.print
-      GlConsts.lastSave = _getSavedData(checkout)
+      GlTemp.lastSave = fst.getSavedData(cwd, name)
       // tree implicity populates GlData.recordedFileHash
-      const tree = blockify(cwd, true)
+      const tree = fst.treeify(cwd, _forEachFile(h.hashOnly))
       // previousFileHashes = previous recorded Hashes
-      const previousFileHashes = Object.keys(GlConsts.lastSave.dat)
+      const previousFileHashes = Object.keys(GlTemp.lastSave.dat)
       let hashsum
       while (hashsum = previousFileHashes.pop()) {
-        const filepaths = Object.keys(GlConsts.lastSave.dat[hashsum]) // array
+        const filepaths = Object.keys(GlTemp.lastSave.dat[hashsum]) // array
         filepaths.forEach(fp => {
 
           const equivFiles = hash = GlData.recordedFileHash.get(fp)
@@ -109,7 +75,7 @@ module.exports = cwd => {
           GlData.recordedFileHash.delete(fp)
 
           if (!pattern || pattern.test(fp)) {
-            const mtime = GlConsts.lastSave.dat[hashsum][fp][1]
+            const mtime = GlTemp.lastSave.dat[hashsum][fp][1]
             if (equivFiles && !equivHashes) {
               handleFile.modified(fp, hashsum, mtime)
             } else if (!equivFiles){
@@ -126,54 +92,33 @@ module.exports = cwd => {
     }
   }
 
-  // iterates through every file in root directory
-  function blockify(parent, isStat) {
-    if (!fs.existsSync(parent)) return GlConsts.baseCase
-    const hashFileLookup = fs.readdirSync(parent).reduce((tree, child) => {
-      if (GlConsts.ignore && GlConsts.ignore.test(child)) return tree
-      const childPath = path.join(parent, child)
-      const status = fs.statSync(childPath)
-      const isDir = status.isDirectory()
-      const isFile = status.isFile()
-      if (isDir) {
-        const subTree = blockify(childPath, isStat)
-        Object.assign(tree.ino, subTree.ino)
-        // Object.assign(tree.dat, subTree.dat)
-        for(let h in subTree.dat){
-          tree.dat[h] = tree.dat[h] || {}
-          Object.assign(tree.dat[h], subTree.dat[h])
-        }
-      } else if (isFile) {
-        const childRelativePath = path.relative(cwd, childPath)
-        const inode = status.ino,
-          size = status.size,
-          mtime = fs._toUnixTimestamp(status.mtime)
 
-        // string
-        const lastHash = GlConsts.lastSave.ino[inode]
-        // object
-        const lastPathsFromHash = GlConsts.lastSave.dat[lastHash]
-        // array
-        const lastDataFromPath = lastHash && lastPathsFromHash && lastPathsFromHash[childRelativePath]
-
-        let data = lastDataFromPath //array
-        let hashsum = lastHash //string
-
-        if (!lastDataFromPath || lastDataFromPath[0] !== size || lastDataFromPath[1] !== mtime) {
-          data = [size, mtime]
-          hashsum = isStat ? _hashOnly(childRelativePath) : _diskCache(childRelativePath)
-        }
-
-        GlData.recordedFileHash.set(childRelativePath, hashsum)
-        tree.ino[inode] = hashsum
-
-        tree.dat[hashsum] = tree.dat[hashsum] || {}
-        tree.dat[hashsum][childRelativePath] = data
-
+  /**
+  * @description
+  */
+  function _forEachFile(cacheFxn) {
+    return (tree, childpath, relpath, status) => {
+      const inode = status.ino
+      let hashsum = fst.getHashByInode(GlTemp.lastSave, inode)
+      const data = {
+        size: status.size,
+        mtime: fs._toUnixTimestamp(status.mtime),
+        encoding: isBinaryFile.sync(childpath, size) ? 'binary' : 'utf8'
       }
-      return tree
-    }, GlConsts.baseCase)
-    return hashFileLookup
+
+      const file = fst.getFileData(GlTemp.lastSave, inode, relpath)
+
+      if(!file.exists || file.encoding !== data.encoding || file.size !== data.size || file.mtime !== data.mtime) {
+        data.size = file.size
+        data.encoding = file.encoding
+        data.mtime = file.mtime
+        hashsum = cacheFxn(relpath, data.encoding)
+      }
+
+      GlData.recordedFileHash.set(relpath, hashsum)
+      fst.setHashByInode(tree, inode, hashsum)
+      fst.setTreeData(tree, hashsum, data)
+    }
   }
 
   /**
@@ -197,59 +142,4 @@ module.exports = cwd => {
     })
   }
 
-  /*
-  * HASHING FUNCTIONS
-  */
-
-
-  /**
-  * @description hashes data w/ a cyclic redundancy check
-  * @param {String} data - utf string data
-  * @returns {String} hashsum
-  */
-  function _hashIt(data) {
-    const h = crc.crc32(data).toString(16)
-    if (h === '0') return '00000000'
-    return h
-  }
-
-  /**
-  * @description returns the hashsum key for file
-  * @param {String} fpath - file path
-  * @returns {String} hashsum
-  */
-  function _hashOnly(fpath) {
-    const file = fs.readFileSync(fpath, 'utf8')
-    return _hashIt(file)
-  }
-
-  /**
-  * @description caches lines & file to disk and returns the hashsum key for file
-  * @param {String} fpath - file path
-  * @returns {String} hashsum
-  */
-  function _diskCache(fpath) {
-    const isUncached = hash => !(GlData.memory.has(hash))
-    const cacheIt = data => {
-      GlData.memory.add(data)
-    }
-
-    const file = fs.readFileSync(fpath, 'utf8')
-    const fileHash = _hashIt(file)
-
-    if (isUncached(fileHash)) {
-      cacheIt(fileHash)
-      const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
-      const hashes = file.split(GlConsts.eol).map(line => {
-        const lineHash = _hashIt(line)
-        if (isUncached(lineHash)) {
-          cacheIt(lineHash)
-          GlData.outputLineQueue.push([path.join(GlConsts.linesPath, insert(lineHash, 2, '/')), line])
-        }
-        return lineHash
-      })
-      GlData.outputFileQueue.push([path.join(GlConsts.filesPath, insert(fileHash, 2, '/')), hashes, fpath])
-    }
-    return fileHash
-  }
 }
