@@ -1,12 +1,21 @@
+/*
+ *  fs treeify
+ */
+
+const cwd = require('./sys/cwd')
+const root = require('./sys/root')
+
 const fs = require('fs-extra')
+const chalk = require('chalk')
+
 const path = require('path')
-const root = require('./root')
 const pointerOps = require('./pointerOps')
 
 module.exports = {
-  blockify,
+  treeify,
   getHashByInode,
   setHashByInode,
+  setTreeData,
   getFileData,
   getSavedData
 }
@@ -18,15 +27,15 @@ function baseCase(){
   }
 }
 
-function ignore(){
+function _ignore(){
   const ignore_file = fs.readFileSync(path.join(cwd, root, '_ignore'), 'utf8').trim().split('\n').join('|')
   const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
   return ignore
 }
 
 // iterates through every file in root directory
-function blockify(root, forEachFile) {
-  const ignorePattern = ignore()
+function treeify(root, forEachFile) {
+  const ignorePattern = _ignore()
   const dirDive = (tree, parent) => {
     fs.readdirSync(parent).forEach((child, index, ls) => {
       if (!ignorePattern || !ignorePattern.test(child)) {
@@ -35,7 +44,7 @@ function blockify(root, forEachFile) {
         const isDir = status.isDirectory()
         const isFile = status.isFile()
         if (isDir) {
-          dirDive(tree, child)
+          dirDive(tree, childpath)
         } else if (isFile) {
           const relpath = path.relative(cwd, childpath)
           forEachFile(tree, childpath, relpath, status)
@@ -55,7 +64,7 @@ function getSavedData(cwd, name) {
   if (name){
     lastSavePath = path.join(cwd, root, 'history', name.head, 'v' + name.version)
   } else {
-    const po = pointerOps(cwd, root)
+    const po = pointerOps()
     const currentVersion = po.version
     lastSavePath = path.join(cwd, root, 'history', po.head, 'v' + Math.max(0, currentVersion - 1))
   }

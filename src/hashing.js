@@ -2,6 +2,9 @@
 * HASHING FUNCTIONS
 */
 
+const fs = require('fs-extra')
+const crc = require('crc')
+
 module.exports = {
   _hashOnly,
   _diskCache

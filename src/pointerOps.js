@@ -1,7 +1,10 @@
+const cwd = require('./sys/cwd')
+const root = require('./sys/root')
+
 const fs = require('fs-extra')
 const path = require('path')
 
-module.exports = (cwd, root) => {
+module.exports = () => {
   const pointerPath = path.join(cwd, root, '_pointer.json')
   let pointer
   if(!fs.existsSync(pointerPath)){
