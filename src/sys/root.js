@@ -1,1 +1,1 @@
-module.exports = 'mu'
+module.exports = '.mu'

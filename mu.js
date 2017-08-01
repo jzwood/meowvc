@@ -87,8 +87,9 @@ function which(i) {
   const po = pointerOps()
   const historyPath = dest(path.join('history', po.head))
   fs.ensureDirSync(historyPath)
-  let latest = fs.readdirSync(historyPath).pop()
-  latest = /v[0-9]+/.test(latest) ? parseInt(latest.slice(1)) : 0
+  let latest = fs.readdirSync(historyPath).pop() || ''
+  latest = latest.match(/^v([0-9])+/)
+  latest = latest ? parseInt(latest[1]) : 0
   const output = Object.keys(po.branch).map(key => {
     return (key === po.head) ? chalk.green(key, `(v${Math.max(0, po.branch[key] - 1)}/${latest})`) : key
   }).join(' ')

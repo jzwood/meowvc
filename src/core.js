@@ -4,7 +4,7 @@ const cwd = require('./sys/cwd')
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
-const isBinaryFile = require("isbinaryfile")
+const isBinaryFile = require('isbinaryfile')
 
 const pointerOps = require('./pointerOps')
 const frankenstein = require('./frankenstein')
@@ -33,14 +33,14 @@ module.exports = () => {
   */
   function save(srcHead, onComplete) {
     _preCache()
-    GlTemp.lastSave = fst.getSavedData(cwd)
+    GlTemp.lastSave = fst.getSavedData()
     const tree = fst.treeify(cwd, _forEachFile(h._diskCache.bind(null, GlData, GlConsts)))
-    const dest = (head, version) => path.join(cwd, root, 'history', head, 'v' + version)
+    const dest = (head, version) => path.join(cwd, root, 'history', head, 'v' + version + '.json')
     const po = pointerOps()
     const saveit = () => {
       let outputFile, outputLine
       while (outputFile = GlData.outputFileQueue.pop()) {
-        fs.outputJsonSync(outputFile[0], outputFile[1])
+        fs.outputJsonSync(outputFile[0], outputFile[1], outputFile[2])
       }
       while (outputLine = GlData.outputLineQueue.pop()) {
         fs.outputFileSync(outputLine[0], outputLine[1])
@@ -70,30 +70,32 @@ module.exports = () => {
   */
   function diff(pattern=null, name=null) {
     const handleFile = pattern ? frankenstein().undo : GlConsts.print
-    GlTemp.lastSave = fst.getSavedData(cwd, name)
+    GlTemp.lastSave = fst.getSavedData(name)
     // tree implicity populates GlData.recordedFileHash
     const tree = fst.treeify(cwd, _forEachFile(h._hashOnly))
     // previousFileHashes = previous recorded Hashes
     const previousFileHashes = Object.keys(GlTemp.lastSave.dat)
     let hashsum
     while (hashsum = previousFileHashes.pop()) {
-      const filepaths = Object.keys(GlTemp.lastSave.dat[hashsum]) // array
-      filepaths.forEach(fp => {
-
+      const data = GlTemp.lastSave.dat[hashsum]
+      const files = data[2]
+      const filepaths = Object.keys(files)
+      let fp
+      while (fp = filepaths.pop()) {
         const equivFiles = hash = GlData.recordedFileHash.get(fp)
         const equivHashes = (hash === hashsum)
 
         GlData.recordedFileHash.delete(fp)
 
         if (!pattern || pattern.test(fp)) {
-          const mtime = GlTemp.lastSave.dat[hashsum][fp][1]
+          const mtime = files[fp]
           if (equivFiles && !equivHashes) {
             handleFile.modified(fp, hashsum, mtime)
           } else if (!equivFiles){
             handleFile.deleted(fp, hashsum, mtime)
           }
         }
-      })
+      }
     }
     GlData.recordedFileHash.forEach((vHash, kFile) => {
       if (!pattern || pattern.test(kFile)) {
@@ -116,18 +118,18 @@ module.exports = () => {
         encoding: isBinaryFile.sync(childpath, status.size) ? 'binary' : 'utf8'
       }
 
-      const file = fst.getFileData(GlTemp.lastSave, inode, relpath)
+      const onfile = fst.getOnFileData(GlTemp.lastSave, inode, relpath)
 
-      if(!file.exists || file.encoding !== data.encoding || file.size !== data.size || file.mtime !== data.mtime) {
-        data.size = file.size
-        data.encoding = file.encoding
-        data.mtime = file.mtime
+      if(!onfile.exists ||
+        onfile.encoding !== onfile.encoding ||
+        onfile.size !== data.size ||
+        onfile.mtime !== data.mtime) {
         hashsum = cacheFxn(relpath, data.encoding)
       }
 
       GlData.recordedFileHash.set(relpath, hashsum)
       fst.setHashByInode(tree, inode, hashsum)
-      fst.setTreeData(tree, hashsum, data)
+      fst.setTreeData(tree, hashsum, relpath, data)
     }
   }
 

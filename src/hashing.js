@@ -3,6 +3,7 @@
 */
 
 const fs = require('fs-extra')
+const path = require('path')
 const crc = require('crc')
 
 module.exports = {
@@ -48,15 +49,21 @@ function _diskCache(GlData, GlConsts, fpath, encoding) {
   if (isUncached(fileHash)) {
     cacheIt(fileHash)
     const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
-    const hashes = file.split(GlConsts.eol).map(line => {
-      const lineHash = _hashIt(line)
-      if (isUncached(lineHash)) {
-        cacheIt(lineHash)
-        GlData.outputLineQueue.push([path.join(GlConsts.linesPath, insert(lineHash, 2, '/')), line])
-      }
-      return lineHash
-    })
-    GlData.outputFileQueue.push([path.join(GlConsts.filesPath, insert(fileHash, 2, '/')), hashes, fpath])
+    if (encoding === 'utf8') {
+      const hashes = file.split(GlConsts.eol).map(line => {
+        const lineHash = _hashIt(line)
+        if (isUncached(lineHash)) {
+          cacheIt(lineHash)
+          GlData.outputLineQueue.push([path.join(GlConsts.linesPath, insert(lineHash, 2, '/')), line])
+        }
+        return lineHash
+      })
+      GlData.outputFileQueue.push([path.join(GlConsts.filesPath, insert(fileHash, 2, '/')), hashes, encoding])
+    }
+    // else {
+    //   GlData.outputLineQueue.push([path.join(GlConsts.linesPath, insert(fileHash, 2, '/')), file])
+    //   GlData.outputFileQueue.push([path.join(GlConsts.filesPath, insert(fileHash, 2, '/')), [fileHash], encoding])
+    // }
   }
   return fileHash
 }

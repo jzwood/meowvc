@@ -16,7 +16,7 @@ module.exports = {
   getHashByInode,
   setHashByInode,
   setTreeData,
-  getFileData,
+  getOnFileData,
   getSavedData
 }
 
@@ -59,14 +59,14 @@ function treeify(root, forEachFile) {
 }
 
 
-function getSavedData(cwd, name) {
+function getSavedData(name) {
   let lastSavePath
   if (name){
     lastSavePath = path.join(cwd, root, 'history', name.head, 'v' + name.version)
   } else {
     const po = pointerOps()
     const currentVersion = po.version
-    lastSavePath = path.join(cwd, root, 'history', po.head, 'v' + Math.max(0, currentVersion - 1))
+    lastSavePath = path.join(cwd, root, 'history', po.head, 'v' + Math.max(0, currentVersion - 1) + '.json')
   }
   const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : baseCase()
   return lastSave
@@ -84,14 +84,14 @@ function setHashByInode(tree, inode, hash) {
   tree.ino[inode] = hash
 }
 
-function setTreeData(tree, hash, data) {
+function setTreeData(tree, hash, path, data) {
   tree.dat[hash] = tree.dat[hash] || ['uft8', 0, {}]
   tree.dat[hash][0] = data.encoding
   tree.dat[hash][1] = data.size
-  tree.dat[hash][2][data.relpath] = data.mtime
+  tree.dat[hash][2][path] = data.mtime
 }
 
-function getFileData(tree, inode, filepath) {
+function getOnFileData(tree, inode, filepath) {
   const hash = tree.ino[inode]
   const data = tree.dat[hash]
   const mtime = hash && data[2] && data[2][filepath]
