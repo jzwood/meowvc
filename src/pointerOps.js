@@ -1,23 +1,33 @@
+const cwd = require('./sys/cwd')
+const root = require('./sys/root')
+
 const fs = require('fs-extra')
 const path = require('path')
 
-module.exports = (cwd, root) => {
+module.exports = () => {
   const pointerPath = path.join(cwd, root, '_pointer.json')
+  let pointer
   if(!fs.existsSync(pointerPath)){
-    fs.outputJsonSync(pointerPath, {
+    pointer = {
       head: "master",
       branch: {
-        master: "0"
+        master: 0
       }
-    })
-	}
-  const pointer = fs.readJsonSync(pointerPath)
+    }
+    fs.outputJsonSync(pointerPath, pointer)
+  } else {
+    pointer = fs.readJsonSync(pointerPath)
+  }
   return {
     head: pointer.head,
     branch: pointer.branch,
     version: pointer.branch[pointer.head],
     incrPointer(){
       pointer.branch[pointer.head]++
+    },
+    setPointer(head, version){
+      pointer.head = head
+      pointer.branch[pointer.head] = version
     },
     writePointer(){
       fs.outputJsonSync(pointerPath, pointer)

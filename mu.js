@@ -6,29 +6,32 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 
+const root = require('./src/sys/root')
+const cwd = require('./src/sys/cwd')
 const discretize = require('./src/core')
 const pointerOps = require('./src/pointerOps')
 
 
-const ROOT = '.mu'
+const none = void(0)
 const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
 
 const USAGE = `
 Usage:
 mu <command> [<args>]
 
-  Commands:   Args:   Descriptions
-  start               - create a new mu repo
-  state               - show the working repo state
+  Commands:	Args:			Descriptions:
+  help					- shows usage
+  start					- creates a new mu repo
+  state					- shows the working repo state
 
-  save              - record snapshot of repo
-  saveas    <name>  - save with new namespace
+  save					- records snapshot of repo
+  saveas	<name>			- saves repo with a new name
 
-  undo      <file>  - reverts file to last save
-  get       <name>  - switch to repo with different namespace
+  undo		<file|pattern>		- reverts file (or pattern) to last save
+  get		<name> [version]	- switches to a different named repo
 `
 
-let cwd, isMuRepo
+let isRoot
 let t1, t2
 
 const setup = () => {
@@ -43,8 +46,7 @@ function mu(args) {
 
   setup()
 
-  cwd = process.cwd()
-  isMuRepo = fs.existsSync(path.join(cwd, ROOT))
+  isRoot = fs.existsSync(path.join(cwd, root)) // @todo make this smarter
 
   for (let i = 0, n = args.length; i < n; i++) {
     const command = {
@@ -52,10 +54,11 @@ function mu(args) {
       state,
       save,
       saveas,
-      undo
+      undo,
+      get
     }[sanitizeInput(args[i])]
     if (typeof command === 'function') {
-      if (isMuRepo || args[i] === 'start') {
+      if (isRoot || args[i] === 'start') {
         return command(i, args)
       } else {
         chalk.yellow('Warning:', cwd, 'is not a mu repo')
@@ -68,34 +71,39 @@ function mu(args) {
 mu(process.argv)
 
 function dest(fpath) {
-  return path.join(cwd, ROOT, fpath)
+  return path.join(cwd, root, fpath)
 }
 
 function start(i) {
-  isMuRepo ? console.log(chalk.yellow('Warning: repo already setup')) : console.log(chalk.green('setup done'))
+  isRoot ? console.log(chalk.yellow('Warning: repo already setup')) : console.log(chalk.green('setup done'))
   fs.ensureDirSync(dest('history'))
-  const po = pointerOps(cwd, ROOT)
+  const po = pointerOps()
   if (!fs.existsSync(dest('_ignore'))) {
     fs.outputFileSync(dest('_ignore'), `node_modules\n^\\.`, 'utf8')
   }
 }
 
 function which(i) {
-  const po = pointerOps(cwd, ROOT)
+  const po = pointerOps()
+  const historyPath = dest(path.join('history', po.head))
+  fs.ensureDirSync(historyPath)
+  let latest = fs.readdirSync(historyPath).pop() || ''
+  latest = latest.match(/^v([0-9])+/)
+  latest = latest ? parseInt(latest[1]) : 0
   const output = Object.keys(po.branch).map(key => {
-    return (key === po.head) ? chalk.green(key, '(v' + Math.max(0, po.branch[key]) + ')') : key
+    return (key === po.head) ? chalk.green(key, `(v${Math.max(0, po.branch[key] - 1)}/${latest})`) : key
   }).join(' ')
   console.log(output)
 }
 
 function state(i) {
   which()
-  discretize(cwd).diff(false)
+  discretize(cwd).diff(none, none)
   cleanup()
 }
 
 function save(i) {
-  const po = pointerOps(cwd, ROOT)
+  const po = pointerOps()
   const onComplete = {
     success(){
       console.log(chalk.green('saved as', po.head, 'v' + po.version))
@@ -106,13 +114,13 @@ function save(i) {
       cleanup()
     }
   }
-  const success = discretize(cwd).save(false, onComplete)
+  const success = discretize().save(none, onComplete)
 }
 
 function saveas(i, args) {
   const name = args[i + 1]
   if (name) {
-    const po = pointerOps(cwd, ROOT)
+    const po = pointerOps()
     const head = po.head
     po.addName(name, exists => {
       if (exists) {
@@ -128,7 +136,7 @@ function saveas(i, args) {
             cleanup()
           }
         }
-        discretize(cwd).save(head, onComplete)
+        discretize().save(head, onComplete)
         console.log(chalk.green('done'))
       }
     })
@@ -141,7 +149,7 @@ function undo(i, args) {
   let pattern = args[i + 1]
   if (pattern) {
     pattern = new RegExp(pattern.trim())
-    discretize(cwd).diff(pattern)
+    discretize().diff(pattern, none)
   } else {
     console.log(chalk.yellow('undo expects a filename or pattern, e.g.'), chalk.inverse('$ mu undo path/to/file.txt'))
   }
@@ -150,16 +158,20 @@ function undo(i, args) {
 
 function get(i, args) {
   console.log('get', i)
-
-  // const name = args[i + 1]
-  // if (name) {
-  // 	let pointer = getPointer()
-  // 	if(name !== pointer.head){
-  // 		checkout(cwd, name)
-  // 	}else{
-  // 		console.log(chalk.red('working directory already \"', name, '\"'))
-  // 	}
-  // }else{
-  // 	console.log(chalk.red('Mu expects'), chalk.inverse('get'), chalk.red('to include the name of a save, e.g.'), chalk.inverse('$ mu get master'))
-  // }
+  const head = args[i + 1] || '', v = args[i + 2] || ''
+  const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
+  const po = pointerOps()
+  // @todo refactor this. latest head should be done like which()
+  const latestHead = head && po.branch[head]
+  let version = v.match(/^v([0-9])+/)
+  version = version ? parseInt(version[1]) : latestHead
+  if (typeof latestHead !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version + '.json')) {
+    discretize().diff(/./, { head, version })
+    po.setPointer(head, version)
+    po.incrPointer()
+    po.writePointer()
+    console.log(chalk.green('successfully switched to',head, `v${version}`))
+  } else {
+    console.log(errorMsg)
+  }
 }
