@@ -69,11 +69,13 @@ module.exports = () => {
   * @description can show difference to last save, undo differences and switch branches
   */
   function diff(pattern=null, name=null) {
-    const handleFile = pattern ? frankenstein().undo : GlConsts.print
+    //@todo look at in the context of get()
+    const handleFile = pattern ? frankenstein.undo : GlConsts.print
     GlTemp.lastSave = fst.getSavedData(name)
     // tree implicity populates GlData.recordedFileHash
     const tree = fst.treeify(cwd, _forEachFile(h._hashOnly))
     // previousFileHashes = previous recorded Hashes
+    console.info(tree,GlTemp.lastSave.dat)
     const previousFileHashes = Object.keys(GlTemp.lastSave.dat)
     let hashsum
     while (hashsum = previousFileHashes.pop()) {
@@ -84,6 +86,8 @@ module.exports = () => {
       while (fp = filepaths.pop()) {
         const equivFiles = hash = GlData.recordedFileHash.get(fp)
         const equivHashes = (hash === hashsum)
+
+        console.log(equivFiles, equivHashes)
 
         GlData.recordedFileHash.delete(fp)
 

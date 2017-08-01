@@ -161,9 +161,11 @@ function get(i, args) {
   const head = args[i + 1] || '', v = args[i + 2] || ''
   const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
   const po = pointerOps()
+  // @todo refactor this. latest head should be done like which()
   const latestHead = head && po.branch[head]
-  const version = /v[0-9]+/.test(v) ? parseInt(v.slice(1)) : latestHead
-  if (typeof latestHead !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version)) {
+  let version = v.match(/^v([0-9])+/)
+  version = version ? parseInt(version[1]) : latestHead
+  if (typeof latestHead !== 'undefined' && fs.readdirSync(dest(path.join('history', head))).includes('v' + version + '.json')) {
     discretize().diff(/./, { head, version })
     po.setPointer(head, version)
     po.incrPointer()
