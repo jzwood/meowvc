@@ -1,13 +1,4 @@
-const fs = require('fs-extra')
-const path = require('path')
 const chalk = require('chalk')
-
-const root = require('../sys/root')
-const cwd = require('../sys/cwd')
-const pointerOps = require('../pointerOps')
-
-const utils = require('../utils')
-
 const core = require('../core')()
 
 // + 1
