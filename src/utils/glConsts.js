@@ -1,5 +1,5 @@
-const root = require('./sys/root')
 const cwd = require('./sys/cwd')
+const root = require('./sys/root')
 const chalk = require('chalk')
 const path = require('path')
 const eol = require('os').EOL
