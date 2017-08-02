@@ -34,7 +34,8 @@ function _ignore(){
 }
 
 // iterates through every file in root directory
-function treeify(root, forEachFile) {
+function treeify(forEachFile) {
+  const root = cwd
   const ignorePattern = _ignore()
   const dirDive = (tree, parent) => {
     fs.readdirSync(parent).forEach((child, index, ls) => {

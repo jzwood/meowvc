@@ -34,7 +34,7 @@ module.exports = () => {
   function save(srcHead, onComplete) {
     _preCache()
     GlTemp.lastSave = fst.getSavedData()
-    const tree = fst.treeify(cwd, _forEachFile(h._diskCache.bind(null, GlData, GlConsts)))
+    const tree = fst.treeify(_forEachFile(h._diskCache.bind(null, GlData, GlConsts)))
     const dest = (head, version) => path.join(cwd, root, 'history', head, 'v' + version + '.json')
     const po = pointerOps()
     const saveit = () => {
@@ -46,8 +46,7 @@ module.exports = () => {
         fs.outputFileSync(outputLine[0], outputLine[1])
       }
       fs.outputJsonSync(dest(po.head, po.version), tree) // write tree
-      po.incrPointer()
-      po.writePointer()
+      po.update()
     }
     if (GlData.outputFileQueue.length) {
       saveit()
@@ -73,9 +72,8 @@ module.exports = () => {
     const handleFile = pattern ? frankenstein.undo : GlConsts.print
     GlTemp.lastSave = fst.getSavedData(name)
     // tree implicity populates GlData.recordedFileHash
-    const tree = fst.treeify(cwd, _forEachFile(h._hashOnly))
+    const tree = fst.treeify(_forEachFile(h._hashOnly))
     // previousFileHashes = previous recorded Hashes
-    console.info(tree,GlTemp.lastSave.dat)
     const previousFileHashes = Object.keys(GlTemp.lastSave.dat)
     let hashsum
     while (hashsum = previousFileHashes.pop()) {
@@ -86,8 +84,6 @@ module.exports = () => {
       while (fp = filepaths.pop()) {
         const equivFiles = hash = GlData.recordedFileHash.get(fp)
         const equivHashes = (hash === hashsum)
-
-        console.log(equivFiles, equivHashes)
 
         GlData.recordedFileHash.delete(fp)
 
