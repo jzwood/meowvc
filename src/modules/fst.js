@@ -1,15 +1,14 @@
 /*
- *  fs treeify
+ *  FS TREEIFY
  */
 
-const cwd = require('./sys/cwd')
-const root = require('./sys/root')
-
 const fs = require('fs-extra')
-const chalk = require('chalk')
-
 const path = require('path')
+
 const pointerOps = require('./pointerOps')
+const gl = require('../consts')
+const utils = require('../utils')
+
 
 module.exports = {
   treeify,
@@ -20,22 +19,15 @@ module.exports = {
   getSavedData
 }
 
-function baseCase(){
-  return {
-    'ino': {},
-    'dat': {}
-  }
-}
-
 function _ignore(){
-  const ignore_file = fs.readFileSync(path.join(cwd, root, '_ignore'), 'utf8').trim().split('\n').join('|')
+  const ignore_file = fs.readFileSync(path.join(gl.cwd, root.cwd, '_ignore'), 'utf8').trim().split('\n').join('|')
   const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
   return ignore
 }
 
 // iterates through every file in root directory
 function treeify(forEachFile) {
-  const root = cwd
+  const treeRoot = gl.cwd
   const ignorePattern = _ignore()
   const dirDive = (tree, parent) => {
     fs.readdirSync(parent).forEach((child, index, ls) => {
@@ -47,27 +39,26 @@ function treeify(forEachFile) {
         if (isDir) {
           dirDive(tree, childpath)
         } else if (isFile) {
-          const relpath = path.relative(cwd, childpath)
+          const relpath = path.relative(gl.cwd, childpath)
           forEachFile(tree, childpath, relpath, status)
         }
       }
     })
   }
   const tree = baseCase()
-  if (!fs.existsSync(root)) return tree
-  dirDive(tree, root)
+  if (!fs.existsSync(treeRoot)) return tree
+  dirDive(tree, treeRoot)
   return tree
 }
 
 
-function getSavedData(name) {
+function getSavedData(head, version) {
   let lastSavePath
-  if (name){
-    lastSavePath = path.join(cwd, root, 'history', name.head, 'v' + name.version)
+  if (head && version){
+    lastSavePath = path.join(gl.cwd, root.cwd, 'history', head, 'v' + version)
   } else {
     const po = pointerOps()
-    const currentVersion = po.version
-    lastSavePath = path.join(cwd, root, 'history', po.head, 'v' + Math.max(0, currentVersion - 1) + '.json')
+    lastSavePath = utils.dest('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
   }
   const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : baseCase()
   return lastSave

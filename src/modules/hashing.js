@@ -5,6 +5,7 @@
 const fs = require('fs-extra')
 const path = require('path')
 const crc = require('crc')
+const gl = require('../consts')
 
 module.exports = {
   _hashOnly,
@@ -37,7 +38,7 @@ function _hashOnly(fpath, encoding) {
 * @param {String} fpath - file path
 * @returns {String} hashsum
 */
-function _diskCache(GlData, GlConsts, fpath, encoding) {
+function _diskCache(GlData, fpath, encoding) {
   const isUncached = hash => !(GlData.memory.has(hash))
   const cacheIt = data => {
     GlData.memory.add(data)
@@ -50,19 +51,19 @@ function _diskCache(GlData, GlConsts, fpath, encoding) {
     cacheIt(fileHash)
     const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
     if (encoding === 'utf8') {
-      const hashes = file.split(GlConsts.eol).map(line => {
+      const hashes = file.split(gl.eol).map(line => {
         const lineHash = _hashIt(line)
         if (isUncached(lineHash)) {
           cacheIt(lineHash)
-          GlData.outputLineQueue.push([path.join(GlConsts.linesPath, insert(lineHash, 2, '/')), line])
+          GlData.outputLineQueue.push([path.join(gl.linesPath, insert(lineHash, 2, '/')), line])
         }
         return lineHash
       })
-      GlData.outputFileQueue.push([path.join(GlConsts.filesPath, insert(fileHash, 2, '/')), hashes, encoding])
+      GlData.outputFileQueue.push([path.join(gl.filesPath, insert(fileHash, 2, '/')), hashes, encoding])
     }
     // else {
-    //   GlData.outputLineQueue.push([path.join(GlConsts.linesPath, insert(fileHash, 2, '/')), file])
-    //   GlData.outputFileQueue.push([path.join(GlConsts.filesPath, insert(fileHash, 2, '/')), [fileHash], encoding])
+    //   GlData.outputLineQueue.push([path.join(gl.linesPath, insert(fileHash, 2, '/')), file])
+    //   GlData.outputFileQueue.push([path.join(gl.filesPath, insert(fileHash, 2, '/')), [fileHash], encoding])
     // }
   }
   return fileHash

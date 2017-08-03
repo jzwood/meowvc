@@ -1,18 +1,10 @@
-const root = require('./sys/root')
-const cwd = require('./sys/cwd')
-
 const fs = require('fs-extra')
 const path = require('path')
-const chalk = require('chalk')
 const isBinaryFile = require('isbinaryfile')
 
-const pointerOps = require('./pointerOps')
-const frankenstein = require('./frankenstein')
-const fst = require('./fst')
-const prompt = require('./prompt')
-const h = require('./hashing')
-const GlConsts = require('./glConsts')
-
+const loader = require('./utils/loader')
+const mods = loader.require('modules')
+const gl = require('./constant')
 
 module.exports = () => {
 
@@ -25,7 +17,10 @@ module.exports = () => {
   }
 
   return {
-    save, diff
+    save,
+    switchRepoTo,
+    state: difference,
+    undo: difference.bind(undefined, /./)
   }
 
   /**
@@ -33,10 +28,10 @@ module.exports = () => {
   */
   function save(srcHead, onComplete) {
     _preCache()
-    GlTemp.lastSave = fst.getSavedData()
-    const tree = fst.treeify(_forEachFile(h._diskCache.bind(null, GlData, GlConsts)))
+    GlTemp.lastSave = mod.fst.getSavedData()
+    const tree = mod.fst.treeify(_forEachFile(mod.hashing_diskCache.bind(null, GlData)))
     const dest = (head, version) => path.join(cwd, root, 'history', head, 'v' + version + '.json')
-    const po = pointerOps()
+    const po = mods.pointerOps()
     const saveit = () => {
       let outputFile, outputLine
       while (outputFile = GlData.outputFileQueue.pop()) {
@@ -59,7 +54,7 @@ module.exports = () => {
       po.writePointer()
       return true
     } else {
-      prompt(saveit, onComplete)
+      mod.prompt(saveit, onComplete)
       return false
     }
   }
@@ -67,12 +62,12 @@ module.exports = () => {
   /**
   * @description can show difference to last save, undo differences and switch branches
   */
-  function diff(pattern=null, name=null) {
+  function difference(head, version, pattern=null) {
     //@todo look at in the context of get()
-    const handleFile = pattern ? frankenstein.undo : GlConsts.print
-    GlTemp.lastSave = fst.getSavedData(name)
+    const handleFile = pattern ? mod.frankenstein.undo : gl.print
+    GlTemp.lastSave = mod.fst.getSavedData(head, version)
     // tree implicity populates GlData.recordedFileHash
-    const tree = fst.treeify(_forEachFile(h._hashOnly))
+    const tree = mod.fst.treeify(_forEachFile(mod.hashing_hashOnly))
     // previousFileHashes = previous recorded Hashes
     const previousFileHashes = Object.keys(GlTemp.lastSave.dat)
     let hashsum
@@ -111,14 +106,14 @@ module.exports = () => {
   function _forEachFile(cacheFxn) {
     return (tree, childpath, relpath, status) => {
       const inode = status.ino
-      let hashsum = fst.getHashByInode(GlTemp.lastSave, inode)
+      let hashsum = mod.fst.getHashByInode(GlTemp.lastSave, inode)
       const data = {
         size: status.size,
         mtime: fs._toUnixTimestamp(status.mtime),
         encoding: isBinaryFile.sync(childpath, status.size) ? 'binary' : 'utf8'
       }
 
-      const onfile = fst.getOnFileData(GlTemp.lastSave, inode, relpath)
+      const onfile = mod.fst.getOnFileData(GlTemp.lastSave, inode, relpath)
 
       if(!onfile.exists ||
         onfile.encoding !== onfile.encoding ||
@@ -128,8 +123,8 @@ module.exports = () => {
       }
 
       GlData.recordedFileHash.set(relpath, hashsum)
-      fst.setHashByInode(tree, inode, hashsum)
-      fst.setTreeData(tree, hashsum, relpath, data)
+      mod.fst.setHashByInode(tree, inode, hashsum)
+      mod.fst.setTreeData(tree, hashsum, relpath, data)
     }
   }
 
@@ -137,8 +132,8 @@ module.exports = () => {
   * @description stores every hash on disk into RAM
   */
   function _preCache() {
-    const lp = GlConsts.linesPath,
-      fp = GlConsts.filesPath
+    const lp = gl.linesPath,
+      fp = gl.filesPath
     fs.ensureDirSync(lp)
     fs.ensureDirSync(fp)
 

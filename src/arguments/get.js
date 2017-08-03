@@ -1,14 +1,5 @@
-const fs = require('fs-extra')
-const path = require('path')
 const chalk = require('chalk')
-
-const root = require('../sys/root')
-const cwd = require('../sys/cwd')
-
 const pointerOps = require('../modules/pointerOps')
-const utils = require('../utils')
-
-// + 1
 
 /********
 *  GET  *
@@ -23,7 +14,7 @@ module.exports = function get(i, args){
   if(head){
     version = version || po.latest(head)
     if(po.exists(head, version)){
-      core.switchRepoTo(head, version) // /./, { head, version }
+      core.switchRepoTo(head, version)
       po.setPointer(head, version)
       po.update()
     }else{

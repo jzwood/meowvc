@@ -1,11 +1,10 @@
-const cwd = require('./sys/cwd')
-const root = require('./sys/root')
+/*
+ *  FS WRITING / REMOVING
+ */
 
 const fs = require('fs-extra')
-const path = require('path')
 const chalk = require('chalk')
-
-
+const gl = require('../consts')
 
 module.exports = {
   undo: {
@@ -30,11 +29,11 @@ function rename(oldpath, newPath) {
 
 function writeFile(file, filehash, mtime) {
   const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
-  const fileArray = fs.readJsonSync(path.join(cwd, root, 'disk_mem', 'files', insert(filehash, 2, '/')), 'utf8')
+  const fileArray = fs.readJsonSync(gl.dest('disk_mem', 'files', insert(filehash, 2, '/')), 'utf8')
   let linehash, data = ''
   let firstLineHash = fileArray.pop()
   while (linehash = fileArray.pop()) {
-    data = fs.readFileSync(path.join(cwd, root, 'disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8') + data
+    data = fs.readFileSync(gl.dest('disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8') + data
   }
   fs.outputFileSync(file, data)
   fs.utimesSync(file, +new Date(), mtime)

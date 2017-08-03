@@ -2,11 +2,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 
-const root = require('../sys/root')
-const cwd = require('../sys/cwd')
+const gl = require('../consts')
 const pointerOps = require('../pointerOps')
-
-// + 1
 
 /**********
 *  START  *
@@ -15,10 +12,10 @@ const pointerOps = require('../pointerOps')
 module.exports = function start(){
   //checks to see if any parent of cwd has .mu directory
   const isSubDir = () => {
-    const parentDirs = cwd.split(path.sep)
+    const parentDirs = gl.cwd.split(path.sep)
     while (parentDirs) {
       parentDirs.pop()
-      const parentPath = path.join(...parentDirs, root)
+      const parentPath = path.join(...parentDirs, gl.root)
       if (fs.existsSync(parentPath)) {
         return true
       }
@@ -36,9 +33,8 @@ module.exports = function start(){
     //init pointer
     pointerOps()
     //init ignore
-    const dest = fpath => path.join(cwd, root, fpath)
-    if (!fs.existsSync(dest('_ignore'))) {
-      fs.outputFileSync(dest('_ignore'), 'node_modules\n^\\.', 'utf8')
+    if (!fs.existsSync(gl.dest('_ignore'))) {
+      fs.outputFileSync(gl.dest('_ignore'), 'node_modules\n^\\.', 'utf8')
     }
     console.info(chalk.green('setup done'))
   }

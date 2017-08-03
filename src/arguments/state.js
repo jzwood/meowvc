@@ -2,8 +2,6 @@ const chalk = require('chalk')
 const pointerOps = require('../pointerOps')
 const core = require('../core')()
 
-// + 1
-
 /**********
 *  STATE  *
 **********/
