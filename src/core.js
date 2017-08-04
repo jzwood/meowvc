@@ -18,34 +18,24 @@ module.exports = () => {
 
   return {
     save,
-    switchRepoTo,
+    checkout,
     state: difference,
-    undo: difference.bind(undefined, /./)
+    undo: difference.bind(undefined, null, null)
   }
 
-  function switchRepoTo(){
-
+  function checkout(head, version){
+    difference(head, version, /./)
   }
-
-  function state(){
-
-  }
-
-  function undo(){
-
-  }
-
-
 
   /**
   * @description stores every hash on disk into RAM
   */
-  function save(srcHead, onComplete) {
+  function save(onComplete, srcHead) {
     _preCache()
     GlTemp.lastSave = mod.fst.getSavedData()
     const tree = mod.fst.treeify(_forEachFile(mod.hashing.diskCache.bind(null, GlData)))
     const dest = (head, version) => gl.dest('history', head, 'v' + version + '.json')
-    const po = mods.pointerOps()
+    const po = mod.pointerOps()
     const saveit = () => {
       let outputFile, outputLine
       while (outputFile = GlData.outputFileQueue.pop()) {
@@ -57,15 +47,15 @@ module.exports = () => {
       fs.outputJsonSync(dest(po.head, po.version), tree) // write tree
       po.update()
     }
+
     if (GlData.outputFileQueue.length) {
       saveit()
       onComplete.success(po)
       return true
     } else if (srcHead) {
-      fs.copySync(dest(srcHead, po.branch[srcHead] - 1), dest(po.head, po.version))
+      fs.copySync(dest(srcHead, Math.max(0, po.branch[srcHead] - 1)), dest(po.head, po.version))
       onComplete.success(po)
-      po.incrPointer()
-      po.writePointer()
+      po.update()
       return true
     } else {
       mod.prompt(saveit, onComplete)
@@ -81,13 +71,13 @@ module.exports = () => {
     const handleFile = pattern ? mod.frankenstein.undo : gl.print
     GlTemp.lastSave = mod.fst.getSavedData(head, version)
     // tree implicity populates GlData.recordedFileHash
-    const tree = mod.fst.treeify(_forEachFile(mod.hashing.hashOnly))
+    mod.fst.treeify(_forEachFile(mod.hashing.hashOnly))
     // previousFileHashes = previous recorded Hashes
     const previousFileHashes = Object.keys(GlTemp.lastSave.dat)
     let hashsum
     while (hashsum = previousFileHashes.pop()) {
       const data = GlTemp.lastSave.dat[hashsum]
-      const files = data[2]
+      const [encoding, size, files] = data
       const filepaths = Object.keys(files)
       let fp
       while (fp = filepaths.pop()) {
@@ -99,9 +89,9 @@ module.exports = () => {
         if (!pattern || pattern.test(fp)) {
           const mtime = files[fp]
           if (equivFiles && !equivHashes) {
-            handleFile.modified(fp, hashsum, mtime)
+            handleFile.modified(fp, hashsum, encoding, mtime)
           } else if (!equivFiles){
-            handleFile.deleted(fp, hashsum, mtime)
+            handleFile.deleted(fp, hashsum, encoding, mtime)
           }
         }
       }

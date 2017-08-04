@@ -13,13 +13,14 @@ function mu(args) {
 
   const isRoot = fs.existsSync(gl.dest())
 
+
   for (let i = 0, n = args.length; i < n; i++) {
     const command = commands[args[i]]
     if (typeof command === 'function') {
       if (isRoot || args[i] === 'start') {
         return command(i, args)
       }
-      console.info(chalk.yellow('Warning:', gl.cwd, 'is not a mu repo'))
+      console.info(chalk.yellow(`Warning: ${gl.cwd} is not a mu repo`))
       return 0
     }
   }

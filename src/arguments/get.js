@@ -1,5 +1,6 @@
 const chalk = require('chalk')
 const pointerOps = require('../modules/pointerOps')
+const core = require('../core')()
 
 /********
 *  GET  *
@@ -14,7 +15,7 @@ module.exports = function get(i, args){
   if(head){
     version = version || po.latest(head)
     if(po.exists(head, version)){
-      core.switchRepoTo(head, version)
+      core.checkout(head, version)
       po.setPointer(head, version)
       po.update()
     }else{

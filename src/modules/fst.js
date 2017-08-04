@@ -53,7 +53,7 @@ function treeify(forEachFile) {
 function getSavedData(head, version) {
   let lastSavePath
   if (head && version){
-    lastSavePath = path.join(gl.cwd, root.cwd, 'history', head, 'v' + version)
+    lastSavePath = gl.dest('history', head, 'v' + version)
   } else {
     const po = pointerOps()
     lastSavePath = gl.dest('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')

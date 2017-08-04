@@ -20,7 +20,7 @@ module.exports = () => {
 
   function setPointer(head, version){
     pointer.head = head
-    pointer.branch[pointer.head] = version
+    pointer.branch[head] = version
   }
 
   function update(){
@@ -39,7 +39,7 @@ module.exports = () => {
   }
 
   function exists(name, version){
-    version = path.parse(version) + '.json'
+    version = path.parse(version).name + '.json'
     return fs.existsSync(gl.dest('history', name, version))
   }
 

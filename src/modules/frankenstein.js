@@ -27,15 +27,15 @@ function rename(oldpath, newPath) {
   fs.renameSync(newPath, oldpath)
 }
 
-function writeFile(file, filehash, mtime) {
+function writeFile(file, filehash, encoding, mtime) {
   const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
   const fileArray = fs.readJsonSync(gl.dest('disk_mem', 'files', insert(filehash, 2, '/')), 'utf8')
   let linehash, data = ''
   let firstLineHash = fileArray.pop()
   while (linehash = fileArray.pop()) {
-    data = fs.readFileSync(gl.dest('disk_mem', 'lines', insert(linehash, 2, '/')), 'utf8') + data
+    data = fs.readFileSync(gl.dest('disk_mem', 'lines', insert(linehash, 2, '/')), encoding) + data
   }
-  fs.outputFileSync(file, data)
+  fs.outputFileSync(file, data, encoding)
   fs.utimesSync(file, +new Date(), mtime)
 
   console.log(chalk.green('✓\t' + file))
