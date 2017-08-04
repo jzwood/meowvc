@@ -4,7 +4,7 @@
 
 const fs = require('fs-extra')
 const chalk = require('chalk')
-const gl = require('../consts')
+const gl = require('../constant')
 
 module.exports = {
   undo: {

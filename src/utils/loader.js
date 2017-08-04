@@ -7,7 +7,7 @@ module.exports = {
     directory = path.join(__dirname,'../', directory)
     if(fs.existsSync(directory)) {
       fs.readdirSync(directory).forEach(script => {
-        files[script] = require(path.join(directory, script))
+        files[path.parse(script).name] = require(path.join(directory, script))
       })
     }
     return files

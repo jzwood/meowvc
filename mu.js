@@ -1,35 +1,29 @@
 /*
-*	MU.JS ENTRY POINT / MAIN / CONTROLLER / BRAINZ
-*/
-
-// +1
+ *  MU.JS ENTRY
+ */
 
 const fs = require('fs-extra')
-const path = require('path')
 const chalk = require('chalk')
 
-const root = require('./src/sys/root')
-const cwd = require('./src/sys/cwd')
-
-const help = require('./src/help')
-const commands = require('./src/arguments')
-
+const gl = require('./src/constant')
+const loader = require('./src/utils/loader')
+const commands = loader.require('arguments')
 
 function mu(args) {
 
-  const isRoot = fs.existsSync(path.join(cwd, root))
-  const sanitizeInput = str => str.toString().toLowerCase().replace(/-?_?/g, '')
+  const isRoot = fs.existsSync(gl.dest())
+
   for (let i = 0, n = args.length; i < n; i++) {
-    const command = commands[sanitizeInput(args[i])]
+    const command = commands[args[i]]
     if (typeof command === 'function') {
       if (isRoot || args[i] === 'start') {
         return command(i, args)
       }
-      console.info(chalk.yellow('Warning:', cwd, 'is not a mu repo'))
+      console.info(chalk.yellow('Warning:', gl.cwd, 'is not a mu repo'))
       return 0
     }
   }
-  console.info(chalk.gray(help))
+  console.info(chalk.gray(gl.help))
 }
 
 mu(process.argv)

@@ -3,7 +3,7 @@ const path = require('path')
 const isBinaryFile = require('isbinaryfile')
 
 const loader = require('./utils/loader')
-const mods = loader.require('modules')
+const mod = loader.require('modules')
 const gl = require('./constant')
 
 module.exports = () => {
@@ -23,14 +23,28 @@ module.exports = () => {
     undo: difference.bind(undefined, /./)
   }
 
+  function switchRepoTo(){
+
+  }
+
+  function state(){
+
+  }
+
+  function undo(){
+
+  }
+
+
+
   /**
   * @description stores every hash on disk into RAM
   */
   function save(srcHead, onComplete) {
     _preCache()
     GlTemp.lastSave = mod.fst.getSavedData()
-    const tree = mod.fst.treeify(_forEachFile(mod.hashing_diskCache.bind(null, GlData)))
-    const dest = (head, version) => path.join(cwd, root, 'history', head, 'v' + version + '.json')
+    const tree = mod.fst.treeify(_forEachFile(mod.hashing.diskCache.bind(null, GlData)))
+    const dest = (head, version) => gl.dest('history', head, 'v' + version + '.json')
     const po = mods.pointerOps()
     const saveit = () => {
       let outputFile, outputLine
@@ -67,7 +81,7 @@ module.exports = () => {
     const handleFile = pattern ? mod.frankenstein.undo : gl.print
     GlTemp.lastSave = mod.fst.getSavedData(head, version)
     // tree implicity populates GlData.recordedFileHash
-    const tree = mod.fst.treeify(_forEachFile(mod.hashing_hashOnly))
+    const tree = mod.fst.treeify(_forEachFile(mod.hashing.hashOnly))
     // previousFileHashes = previous recorded Hashes
     const previousFileHashes = Object.keys(GlTemp.lastSave.dat)
     let hashsum

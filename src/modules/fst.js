@@ -6,9 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const pointerOps = require('./pointerOps')
-const gl = require('../consts')
-const utils = require('../utils')
-
+const gl = require('../constant')
 
 module.exports = {
   treeify,
@@ -20,7 +18,7 @@ module.exports = {
 }
 
 function _ignore(){
-  const ignore_file = fs.readFileSync(path.join(gl.cwd, root.cwd, '_ignore'), 'utf8').trim().split('\n').join('|')
+  const ignore_file = fs.readFileSync(gl.dest('_ignore'), 'utf8').trim().split('\n').join('|')
   const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
   return ignore
 }
@@ -45,7 +43,7 @@ function treeify(forEachFile) {
       }
     })
   }
-  const tree = baseCase()
+  const tree = gl.baseCase
   if (!fs.existsSync(treeRoot)) return tree
   dirDive(tree, treeRoot)
   return tree
@@ -58,9 +56,9 @@ function getSavedData(head, version) {
     lastSavePath = path.join(gl.cwd, root.cwd, 'history', head, 'v' + version)
   } else {
     const po = pointerOps()
-    lastSavePath = utils.dest('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
+    lastSavePath = gl.dest('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
   }
-  const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : baseCase()
+  const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : gl.baseCase
   return lastSave
 }
 

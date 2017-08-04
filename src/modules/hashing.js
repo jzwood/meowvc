@@ -5,11 +5,11 @@
 const fs = require('fs-extra')
 const path = require('path')
 const crc = require('crc')
-const gl = require('../consts')
+const gl = require('../constant')
 
 module.exports = {
-  _hashOnly,
-  _diskCache
+  hashOnly,
+  diskCache
 }
 
 /**
@@ -28,7 +28,7 @@ function _hashIt(data) {
 * @param {String} fpath - file path
 * @returns {String} hashsum
 */
-function _hashOnly(fpath, encoding) {
+function hashOnly(fpath, encoding) {
   const file = fs.readFileSync(fpath, encoding)
   return _hashIt(file)
 }
@@ -38,7 +38,7 @@ function _hashOnly(fpath, encoding) {
 * @param {String} fpath - file path
 * @returns {String} hashsum
 */
-function _diskCache(GlData, fpath, encoding) {
+function diskCache(GlData, fpath, encoding) {
   const isUncached = hash => !(GlData.memory.has(hash))
   const cacheIt = data => {
     GlData.memory.add(data)

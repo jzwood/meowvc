@@ -1,5 +1,4 @@
 const readline = require('readline')
-const chalk = require('chalk')
 
 module.exports = (save, onComplete) => {
 

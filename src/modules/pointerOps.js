@@ -1,11 +1,10 @@
-// const cwd = require('./sys/cwd')
-// const root = require('./sys/root')
-
 const fs = require('fs-extra')
 const path = require('path')
 
+const gl = require('../constant')
+
 module.exports = () => {
-  const pointerPath = path.join(cwd, root, '_pointer.json')
+  const pointerPath = gl.dest('_pointer.json')
   let pointer
   if(!fs.existsSync(pointerPath)){
     pointer = {
@@ -41,11 +40,11 @@ module.exports = () => {
 
   function exists(name, version){
     version = path.parse(version) + '.json'
-    return fs.existsSync(utils.dest('history', name, version))
+    return fs.existsSync(gl.dest('history', name, version))
   }
 
   function latest(name=pointer.head){
-    const historyPath = utils.dest('history', name)
+    const historyPath = gl.dest('history', name)
     let latest = 0
     if(fs.existsSync(historyPath)){
       let lastFile = fs.readdirSync(historyPath).pop() || ''

@@ -2,8 +2,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 
-const gl = require('../consts')
-const pointerOps = require('../pointerOps')
+const gl = require('../constant')
+const pointerOps = require('../modules/pointerOps')
 
 /**********
 *  START  *
@@ -13,7 +13,7 @@ module.exports = function start(){
   //checks to see if any parent of cwd has .mu directory
   const isSubDir = () => {
     const parentDirs = gl.cwd.split(path.sep)
-    while (parentDirs) {
+    while (parentDirs.length) {
       parentDirs.pop()
       const parentPath = path.join(...parentDirs, gl.root)
       if (fs.existsSync(parentPath)) {
@@ -23,13 +23,13 @@ module.exports = function start(){
     return false
   }
 
-  if (fs.existsSync(utils.dest())) {
+  if (fs.existsSync(gl.dest())) {
     console.warn(chalk.yellow('Warning: repo already setup'))
   } else if(isSubDir()) {
     console.warn(chalk.yellow('Warning: mu subdirectory. Please invoke mu from root:', parentPath))
   } else {
     //init history folder
-    fs.ensureDirSync(utils.dest('history'))
+    fs.ensureDirSync(gl.dest('history'))
     //init pointer
     pointerOps()
     //init ignore

@@ -1,5 +1,5 @@
 const chalk = require('chalk')
-const pointerOps = require('../pointerOps')
+const pointerOps = require('../modules/pointerOps')
 const core = require('../core')()
 
 /**********
