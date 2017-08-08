@@ -20,7 +20,7 @@ module.exports = () => {
 
   function setPointer(head, version){
     pointer.head = head
-    pointer.branch[head] = version
+    pointer.branch[head] = parseInt(version.match(/([0-9])+/)[1])
   }
 
   function update(){

@@ -1,4 +1,4 @@
-/*
+/**
  *  FS TREEIFY
  */
 
@@ -49,9 +49,7 @@ function treeify(forEachFile) {
   return tree
 }
 
-
 function getSavedData(head, version) {
-  console.log(head, version)
   let lastSavePath
   if (head && version){
     lastSavePath = gl.dest('history', head, version + '.json')
