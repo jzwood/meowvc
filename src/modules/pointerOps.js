@@ -8,7 +8,7 @@ module.exports = () => {
   let pointer
   if(!fs.existsSync(pointerPath)){
     pointer = {
-      head: "master",
+      head: 'master',
       branch: {
         master: 0
       }
