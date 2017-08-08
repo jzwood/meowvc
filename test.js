@@ -1,7 +1,4 @@
-// inode -> hash
-//
-// hash -> dat1, dat2, dat3
+const loader = require('./src/utils/loader')
 
-var t
-var a = {}
-console.log(a[t])
+const src = loader.load('arguments')
+console.info(src)
