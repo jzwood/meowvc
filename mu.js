@@ -20,7 +20,7 @@ function mu(args) {
       if (isRoot || args[i] === 'start') {
         return command(i, args)
       }
-      console.info(chalk.yellow(`Warning: ${gl.cwd} is not a mu repo`))
+      console.info(chalk.yellow(`Warning: ${gl.cwd} is not a mu repo root`))
       return 0
     }
   }
