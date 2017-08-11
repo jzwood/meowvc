@@ -28,6 +28,7 @@ module.exports = {
   },
   linesPath: path.join(cwd, root, 'disk_mem', 'lines'),
   filesPath: path.join(cwd, root, 'disk_mem', 'files'),
+  binPath: path.join(cwd, root, 'disk_mem', 'bin'),
   eol: new RegExp(`(?=${eol})`),
   get baseCase() {
     return {
@@ -35,7 +36,7 @@ module.exports = {
       'dat': {}
     }
   },
-  print: {
+  status: {
     modified: str => console.log(chalk.cyan('%\t' + str)),
     deleted: str => console.log(chalk.red('x\t' + str)),
     renamed: (strOld, strNew) => console.log(chalk.magenta('&\t' + strOld, '->', strNew)),

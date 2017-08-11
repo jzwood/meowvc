@@ -28,14 +28,16 @@ module.exports = () => {
     fs.outputJsonSync(pointerPath, pointer)
   }
 
-  function addName(name){
+  // switches current head to name
+  function pointToNewHead(name){
+    let success = false
     if(typeof pointer.branch[name] === 'undefined'){
       pointer.head = name
       pointer.branch[name] = 0
       fs.outputJsonSync(pointerPath, pointer)
-      return true
+      success = true
     }
-    return false
+    return {success}
   }
 
   function exists(name, version){
@@ -60,7 +62,7 @@ module.exports = () => {
     version: pointer.branch[pointer.head],
     setPointer,
     update,
-    addName,
+    pointToNewHead,
     exists,
     latest
   }
