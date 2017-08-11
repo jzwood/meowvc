@@ -6,7 +6,7 @@ const core = require('../core')()
 *  STATE  *
 **********/
 
-module.exports = function state(){
+module.exports = function status(){
   which()
   core.state()
 }

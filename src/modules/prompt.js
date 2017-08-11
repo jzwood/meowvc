@@ -7,7 +7,7 @@ module.exports = (save, onComplete) => {
     output: process.stdout
   })
 
-  rl.question('No new changes. Continue [Y/n]? ', answer => {
+  rl.question('No new data. Continue [Y/n]? ', answer => {
     rl.close()
     answer = answer.toUpperCase().trim()
     if (!answer || answer === 'Y') {
