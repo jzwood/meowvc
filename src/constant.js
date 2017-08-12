@@ -26,6 +26,9 @@ module.exports = {
   dest(){
     return path.join(cwd, root, ...arguments)
   },
+  insert(string, index, substr){
+    return string.slice(0, index) + substr + string.slice(index)
+  },
   linesPath: path.join(cwd, root, 'disk_mem', 'lines'),
   filesPath: path.join(cwd, root, 'disk_mem', 'files'),
   binPath: path.join(cwd, root, 'disk_mem', 'bin'),
@@ -35,12 +38,6 @@ module.exports = {
       'ino': {},
       'dat': {}
     }
-  },
-  status: {
-    modified: str => console.log(chalk.cyan('%\t' + str)),
-    deleted: str => console.log(chalk.red('x\t' + str)),
-    renamed: (strOld, strNew) => console.log(chalk.magenta('&\t' + strOld, '->', strNew)),
-    added: str => console.log(chalk.yellow('+\t' + str))
   },
   help: usage.trim()
 }

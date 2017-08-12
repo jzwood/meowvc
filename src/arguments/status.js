@@ -8,7 +8,7 @@ const core = require('../core')()
 
 module.exports = function status(){
   which()
-  core.state()
+  core.status()
 }
 
 function which() {

@@ -1,5 +1,5 @@
 /**
- *  FS TREEIFY
+ *  TREE OPERATIONS
  */
 
 const fs = require('fs-extra')
