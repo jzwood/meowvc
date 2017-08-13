@@ -40,17 +40,15 @@ function diskCache(GlMem, buffer, isutf8) {
     const file = buffer.toString('utf8')
     if (isUncached(fileHash)) {
       cacheIt(fileHash)
-      if (encoding === 'utf8') {
-        const hashes = file.split(gl.eol).map(line => {
-          const lineHash = hashIt(line)
-          if (isUncached(lineHash)) {
-            cacheIt(lineHash)
-            GlMem.lineQueue.push([path.join(gl.linesPath, gl.insert(lineHash, 2, '/')), line])
-          }
-          return lineHash
-        })
-        GlMem.fileQueue.push([path.join(gl.filesPath, gl.insert(fileHash, 2, '/')), hashes])
-      }
+      const hashes = file.split(gl.eol).map(line => {
+        const lineHash = hashIt(line)
+        if (isUncached(lineHash)) {
+          cacheIt(lineHash)
+          GlMem.lineQueue.push([path.join(gl.linesPath, gl.insert(lineHash, 2, '/')), line])
+        }
+        return lineHash
+      })
+      GlMem.fileQueue.push([path.join(gl.filesPath, gl.insert(fileHash, 2, '/')), hashes])
     }
   }
   return fileHash

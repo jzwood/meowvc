@@ -74,8 +74,8 @@ function setHashByInode(tree, inode, hash) {
 }
 
 function setTreeData(tree, hash, path, data) {
-  tree.dat[hash] = tree.dat[hash] || ['uft8', 0, {}]
-  tree.dat[hash][0] = data.encoding
+  tree.dat[hash] = tree.dat[hash] || [ -1, -1, {}]
+  tree.dat[hash][0] = data.isutf8
   tree.dat[hash][1] = data.size
   tree.dat[hash][2][path] = data.mtime
 }
@@ -88,7 +88,7 @@ function getOnFileData(tree, inode, filepath) {
     get exists() {
       return !!(mtime)
     },
-    get encoding() {
+    get isutf8() {
       return data && data[0]
     },
     get size() {

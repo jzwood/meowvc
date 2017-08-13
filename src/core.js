@@ -19,34 +19,15 @@ module.exports = () => {
   let lastSave
 
   return {
-    status,
     save,
-    checkout,
-    undo
-  }
-
-  function status(){
-    const forEach = _forEachFile(mod.hashing.hashIt)
-    const handle = diff => {
-      let data
-      while(data = diff.modified.pop()) {
-        console.info(chalk.cyan('+\t' + data[0]))
-      }
-      while(data = diff.added.pop()) {
-        console.info(chalk.yellow('+\t' + data[0]))
-      }
-      while(data = diff.deleted.pop()) {
-        console.info(chalk.red('+\t' + data[0]))
-      }
-    }
-    difference(null, null, forEach, handle)
+    difference
   }
 
   /**
   * @description stores every hash on disk into RAM
   */
-  function save(head, version){
-    const forEach = _forEachFile(mod.hashing.diskCache.bind(null, GlMem))
+  function save(head){
+    const hash = mod.hashing.diskCache.bind(null, GlMem)
     const handle = diff => {
       const po = mod.pointerOps()
       if(diff.nothingChanged && !head){
@@ -55,11 +36,11 @@ module.exports = () => {
         _writeToDisk()
         fs.outputJsonSync(gl.dest('history', po.head, 'v' + po.version + '.json'), diff.tree)
         po.update()
-        console.info(chalk.green(`${po.head} (${po.version}) successfully saved! @todo make this better`))
+        console.info(chalk.green(`${po.head} v${po.version} successfully saved!`))
       }
     }
     _preCache()
-    difference(head, version, forEach, handle)
+    difference(head, null, handle, null, hash)
   }
 
   function checkout(head, version, filterPattern=null){
@@ -83,14 +64,13 @@ module.exports = () => {
     checkout(null, null, filterPattern)
   }
 
-
   /**
   * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
-  function difference(head, version, forEach, handle, filterPattern=null) {
+  function difference(head, version, handle, filterPattern, hash=mod.hashing.hashIt) {
     lastSave = mod.treeOps.getSavedData(head, version)
     // tree implicity populates GlMem.fileHashLog
-    const tree = mod.treeOps.treeify(forEach)
+    const tree = mod.treeOps.treeify(_forEachFile(hash))
     // previousFileHashes = previous recorded Hashes
     const previousFileHashes = Object.keys(lastSave.dat)
 
@@ -117,7 +97,7 @@ module.exports = () => {
       }
     }
     let added = Array.from(GlMem.fileHashLog)
-    if(!filter){
+    if(filterPattern){
       added = added.filter(hash0fp1 => filterPattern.test(hash0fp1[1]))
     }
 
