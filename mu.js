@@ -9,10 +9,11 @@ const gl = require('./src/constant')
 const loader = require('./src/utils/loader')
 const commands = loader.require('arguments')
 
+mu(process.argv)
+
 function mu(args) {
 
   const isRoot = fs.existsSync(gl.dest())
-
 
   for (let i = 0, n = args.length; i < n; i++) {
     const command = commands[args[i]]
@@ -26,5 +27,3 @@ function mu(args) {
   }
   console.info(chalk.gray(gl.help))
 }
-
-mu(process.argv)

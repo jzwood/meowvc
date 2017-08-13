@@ -1,7 +1,7 @@
 const fs = require('fs-extra')
 const path = require('path')
-const isBinaryFile = require('isbinaryfile')
-
+const chalk = require('chalk')
+const isUtf8 = require('is-utf8')
 const loader = require('./utils/loader')
 const mod = loader.require('modules')
 const gl = require('./constant')
@@ -9,97 +9,107 @@ const gl = require('./constant')
 module.exports = () => {
 
   const GlTemp = {}
-  const GlData = {
+  const GlMem = {
     memory: new Set(),
-    recordedFileHash: new Map(),
-    outputFileQueue: [],
-    outputLineQueue: []
+    fileHashLog: new Map(),
+    fileQueue: [],
+    lineQueue: [],
+    binQueue: []
   }
+  let lastSave
 
   return {
     save,
-    checkout,
-    state: difference,
-    undo: difference.bind(undefined, null, null)
-  }
-
-  function checkout(head, version){
-    difference(head, version, /./)
+    difference
   }
 
   /**
   * @description stores every hash on disk into RAM
   */
-  function save(onComplete, srcHead) {
+  function save(head){
+    const hash = mod.hashing.diskCache.bind(null, GlMem)
+    const handle = diff => {
+      const po = mod.pointerOps()
+      if(diff.nothingChanged && !head){
+        console.info(chalk.yellow('Warning: no changes detected. Save aborted.'))
+      }else{
+        _writeToDisk()
+        fs.outputJsonSync(gl.dest('history', po.head, 'v' + po.version + '.json'), diff.tree)
+        po.update()
+        console.info(chalk.green(`${po.head} v${po.version} successfully saved!`))
+      }
+    }
     _preCache()
-    GlTemp.lastSave = mod.fst.getSavedData()
-    const tree = mod.fst.treeify(_forEachFile(mod.hashing.diskCache.bind(null, GlData)))
-    const dest = (head, version) => gl.dest('history', head, 'v' + version + '.json')
-    const po = mod.pointerOps()
-    const saveit = () => {
-      let outputFile, outputLine
-      while (outputFile = GlData.outputFileQueue.pop()) {
-        fs.outputJsonSync(outputFile[0], outputFile[1], outputFile[2])
-      }
-      while (outputLine = GlData.outputLineQueue.pop()) {
-        fs.outputFileSync(outputLine[0], outputLine[1])
-      }
-      fs.outputJsonSync(dest(po.head, po.version), tree) // write tree
-      po.update()
-    }
+    difference(head, null, handle, null, hash)
+  }
 
-    if (GlData.outputFileQueue.length) {
-      saveit()
-      onComplete.success(po)
-      return true
-    } else if (srcHead) {
-      fs.copySync(dest(srcHead, Math.max(0, po.branch[srcHead] - 1)), dest(po.head, po.version))
-      onComplete.success(po)
-      po.update()
-      return true
-    } else {
-      mod.prompt(saveit, onComplete)
-      return false
+  function checkout(head, version, filterPattern=null){
+    const forEach = _forEachFile(mod.hashing.hashIt)
+    const handle = diff => {
+      let data
+      while(data = diff.modified.pop()) {
+        mod.fileOps.unmodify(data)
+      }
+      while(data = diff.added.pop()) {
+        mod.fileOps.unadd(data)
+      }
+      while(data = diff.deleted.pop()) {
+        mod.fileOps.undelete(data)
+      }
     }
+    difference(head, version, forEach, handle, filterPattern)
+  }
+
+  function undo(filterPattern){
+    checkout(null, null, filterPattern)
   }
 
   /**
-  * @description can show difference to last save, undo differences and switch branches
+  * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
-  function difference(head, version, pattern=null) {
-    //@todo look at in the context of get()
-    const handleFile = pattern ? mod.frankenstein.undo : gl.print
-    GlTemp.lastSave = mod.fst.getSavedData(head, version)
-    // tree implicity populates GlData.recordedFileHash
-    mod.fst.treeify(_forEachFile(mod.hashing.hashOnly))
+  function difference(head, version, handle, filterPattern, hash=mod.hashing.hashIt) {
+    lastSave = mod.treeOps.getSavedData(head, version)
+    // tree implicity populates GlMem.fileHashLog
+    const tree = mod.treeOps.treeify(_forEachFile(hash))
     // previousFileHashes = previous recorded Hashes
-    const previousFileHashes = Object.keys(GlTemp.lastSave.dat)
-    let hashsum
-    while (hashsum = previousFileHashes.pop()) {
-      const data = GlTemp.lastSave.dat[hashsum]
-      const [encoding, size, files] = data
+    const previousFileHashes = Object.keys(lastSave.dat)
+
+    const modified = [], deleted = []
+
+    let hashsum; while (hashsum = previousFileHashes.pop()) {
+      const data = lastSave.dat[hashsum]
+      const [isutf8, size, files] = data
       const filepaths = Object.keys(files)
-      let fp
-      while (fp = filepaths.pop()) {
-        const equivFiles = hash = GlData.recordedFileHash.get(fp)
+      let fp; while (fp = filepaths.pop()) {
+        const equivFiles = hash = GlMem.fileHashLog.get(fp)
         const equivHashes = (hash === hashsum)
 
-        GlData.recordedFileHash.delete(fp)
+        GlMem.fileHashLog.delete(fp)
 
-        if (!pattern || pattern.test(fp)) {
+        if (!filterPattern || filterPattern.test(fp)) {
           const mtime = files[fp]
           if (equivFiles && !equivHashes) {
-            handleFile.modified(fp, hashsum, encoding, mtime)
+            modified.push([fp, hashsum, isutf8, mtime])
           } else if (!equivFiles){
-            handleFile.deleted(fp, hashsum, encoding, mtime)
+            deleted.push([fp, hashsum, isutf8, mtime])
           }
         }
       }
     }
-    GlData.recordedFileHash.forEach((vHash, kFile) => {
-      if (!pattern || pattern.test(kFile)) {
-        handleFile.added(kFile)
-      }
+    let added = Array.from(GlMem.fileHashLog)
+    if(filterPattern){
+      added = added.filter(hash0fp1 => filterPattern.test(hash0fp1[1]))
+    }
+
+    const nothingChanged = !added.length && !deleted.length && !modified.length
+
+    // added, modified, & deleted collected
+    handle({
+      tree,
+      nothingChanged,
+      added,
+      deleted,
+      modified
     })
   }
 
@@ -110,25 +120,25 @@ module.exports = () => {
   function _forEachFile(cacheFxn) {
     return (tree, childpath, relpath, status) => {
       const inode = status.ino
-      let hashsum = mod.fst.getHashByInode(GlTemp.lastSave, inode)
+      const onfile = mod.treeOps.getOnFileData(lastSave, inode, relpath)
       const data = {
         size: status.size,
         mtime: fs._toUnixTimestamp(status.mtime),
-        encoding: isBinaryFile.sync(childpath, status.size) ? 'binary' : 'utf8'
+        isutf8: onfile.isutf8
       }
 
-      const onfile = mod.fst.getOnFileData(GlTemp.lastSave, inode, relpath)
-
+      let hashsum = mod.treeOps.getHashByInode(lastSave, inode)
       if(!onfile.exists ||
-        onfile.encoding !== onfile.encoding ||
         onfile.size !== data.size ||
         onfile.mtime !== data.mtime) {
-        hashsum = cacheFxn(relpath, data.encoding)
+        const buffer = fs.readFileSync(relpath) //don't include encoding
+        data.isutf8 = isUtf8(buffer) ? 1 : 0
+        hashsum = cacheFxn(buffer, data.isutf8)
       }
 
-      GlData.recordedFileHash.set(relpath, hashsum)
-      mod.fst.setHashByInode(tree, inode, hashsum)
-      mod.fst.setTreeData(tree, hashsum, relpath, data)
+      GlMem.fileHashLog.set(relpath, hashsum)
+      mod.treeOps.setHashByInode(tree, inode, hashsum)
+      mod.treeOps.setTreeData(tree, hashsum, relpath, data)
     }
   }
 
@@ -143,14 +153,26 @@ module.exports = () => {
 
     fs.readdirSync(lp).forEach(d => {
       fs.readdirSync(path.join(lp, d)).forEach(f => {
-        GlData.memory.add('' + d + f)
+        GlMem.memory.add('' + d + f)
       })
     })
     fs.readdirSync(fp).forEach(d => {
       fs.readdirSync(path.join(fp, d)).forEach(f => {
-        GlData.memory.add('' + d + f)
+        GlMem.memory.add('' + d + f)
       })
     })
+  }
+
+  function _writeToDisk(){
+    let outputFile; while (outputFile = GlMem.fileQueue.pop()) {
+      fs.outputJsonSync(outputFile[0], outputFile[1], {encoding: 'utf8'})
+    }
+    let outputLine; while (outputLine = GlMem.lineQueue.pop()) {
+      fs.outputFileSync(outputLine[0], outputLine[1], {encoding: 'utf8'})
+    }
+    let outputBinary; while (outputBinary = GlMem.binQueue.pop()) {
+      fs.outputFileSync(outputBinary[0], outputBinary[1], {encoding: null})
+    }
   }
 
 }
