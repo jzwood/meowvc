@@ -35,7 +35,7 @@ function diskCache(GlMem, buffer, isutf8) {
 
   const fileHash = hashIt(buffer)
   if(!isutf8){
-    GlMem.binQueue.push([path.join(gl.binPath, gl.insert(fileHash, 2, '/')), file])
+    GlMem.binQueue.push([path.join(gl.binPath, gl.insert(fileHash, 2, '/')), buffer])
   }else{
     const file = buffer.toString('utf8')
     if (isUncached(fileHash)) {
