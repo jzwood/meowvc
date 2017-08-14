@@ -8,7 +8,6 @@ const gl = require('./constant')
 
 module.exports = () => {
 
-  const GlTemp = {}
   const GlMem = {
     memory: new Set(),
     fileHashLog: new Map(),
@@ -20,6 +19,7 @@ module.exports = () => {
 
   return {
     save,
+    checkout,
     difference
   }
 
@@ -44,7 +44,6 @@ module.exports = () => {
   }
 
   function checkout(head, version, filterPattern=null){
-    const forEach = _forEachFile(mod.hashing.hashIt)
     const handle = diff => {
       let data
       while(data = diff.modified.pop()) {
@@ -57,11 +56,7 @@ module.exports = () => {
         mod.fileOps.undelete(data)
       }
     }
-    difference(head, version, forEach, handle, filterPattern)
-  }
-
-  function undo(filterPattern){
-    checkout(null, null, filterPattern)
+    difference(head, version, handle, filterPattern)
   }
 
   /**
