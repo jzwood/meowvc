@@ -12,7 +12,7 @@ module.exports = {
   unadd: remove
 }
 
-function remove(fp) {
+function remove([fp, hashsum, isutf8, mtime]) {
   const status = fs.statSync(fp)
   if (status && status.isFile()) {
     fs.removeSync(fp)

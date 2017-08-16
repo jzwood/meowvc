@@ -31,7 +31,7 @@ module.exports = () => {
     const handle = diff => {
       const po = mod.pointerOps()
       if(diff.nothingChanged && !head){
-        console.info(chalk.yellow('Warning: no changes detected. Save aborted.'))
+        console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
       }else{
         _writeToDisk()
         fs.outputJsonSync(gl.dest('history', po.head, 'v' + po.version + '.json'), diff.tree)
@@ -45,6 +45,7 @@ module.exports = () => {
 
   function checkout(head, version, filterPattern=null){
     const handle = diff => {
+
       let data
       while(data = diff.modified.pop()) {
         mod.fileOps.unmodify(data)
