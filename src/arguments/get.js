@@ -14,10 +14,14 @@ module.exports = function get(i, args){
   if(head){
     version = version || 'v' + po.latest(head)
     if(po.exists(head, version)){
-      core.checkout(head, version)
-      po.setPointer(head, version)
-      po.update()
-      console.info(chalk.green(`Repo switched to ${head} ${version}`))
+      if(core.difference(null, null, diff => diff.nothingChanged)){
+        core.checkout(head, version)
+        po.setPointer(head, version)
+        po.update()
+        console.info(chalk.green(`Repo switched to ${head} ${version}`))
+      }else {
+        console.info(chalk.yellow('Warning: Save or undo changes before calling get'))
+      }
     }else{
       console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))
     }

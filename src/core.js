@@ -15,7 +15,7 @@ module.exports = () => {
     lineQueue: [],
     binQueue: []
   }
-  let lastSave
+  let tree, lastSave
 
   return {
     save,
@@ -66,7 +66,7 @@ module.exports = () => {
   function difference(head, version, handle, filterPattern, hash=mod.hashing.hashIt) {
     lastSave = mod.treeOps.getSavedData(head, version)
     // tree implicity populates GlMem.fileHashLog
-    const tree = mod.treeOps.treeify(_forEachFile(hash))
+    tree = tree || mod.treeOps.treeify(_forEachFile(hash))
     // previousFileHashes = previous recorded Hashes
     const previousFileHashes = Object.keys(lastSave.dat)
 
@@ -100,7 +100,7 @@ module.exports = () => {
     const nothingChanged = !added.length && !deleted.length && !modified.length
 
     // added, modified, & deleted collected
-    handle({
+    return handle({
       tree,
       nothingChanged,
       added,
