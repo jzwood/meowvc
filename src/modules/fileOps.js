@@ -7,6 +7,7 @@ const chalk = require('chalk')
 const gl = require('../constant')
 
 module.exports = {
+  overwrite: writeFile,
   undelete: writeFile,
   unmodify: writeFile,
   unadd: remove

@@ -45,7 +45,6 @@ module.exports = () => {
 
   function checkout(head, version, filterPattern=null){
     const handle = diff => {
-
       let data
       while(data = diff.modified.pop()) {
         mod.fileOps.unmodify(data)
