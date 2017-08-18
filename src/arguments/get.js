@@ -14,7 +14,7 @@ module.exports = function get(i, args){
   if(head){
     version = version || 'v' + po.latest(head)
     if(po.exists(head, version)){
-      if(core.difference(null, null, diff => diff.nothingChanged)){
+      if(core.isUnchanged()){
         core.checkout(head, version)
         po.setPointer(head, version)
         po.update()

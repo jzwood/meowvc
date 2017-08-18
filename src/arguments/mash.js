@@ -22,11 +22,11 @@ module.exports = function mash(i, args) {
   if (head) {
     version = version || 'v' + po.latest(head)
     const exists = po.exists(head, version)
-    const noChanges = core.difference(null, null, diff => diff.nothingChanged)
-    if (exists && noChanges) {
+    const isUnchanged = core.isUnchanged()
+    if (exists && isUnchanged) {
       core.difference(head, version, handle)
       console.info(chalk.green(`Repo ${head} ${version} mashed with ${po.head} ${po.version}`), chalk.yellow('Note: Mash unsaved!'))
-    } else if (exists && !noChanges) {
+    } else if (exists && !isUnchanged) {
       console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
     } else {
       console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))

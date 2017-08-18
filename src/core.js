@@ -20,7 +20,24 @@ module.exports = () => {
   return {
     save,
     checkout,
-    difference
+    difference,
+    isUnchanged
+  }
+
+  function clearMemory(){
+    GlMem.memory.clear()
+    GlMem.fileHashLog.clear()
+    GlMem.fileQueue.length = 0
+    GlMem.lineQueue.length = 0
+    GlMem.binQueue.length = 0
+  }
+
+  function isUnchanged(){
+    const handle = diff => {
+      clearMemory()
+      return diff.nothingChanged
+    }
+    difference(null, null, handle)
   }
 
   /**
