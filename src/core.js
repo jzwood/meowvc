@@ -24,20 +24,8 @@ module.exports = () => {
     isUnchanged
   }
 
-  function clearMemory(){
-    GlMem.memory.clear()
-    GlMem.fileHashLog.clear()
-    GlMem.fileQueue.length = 0
-    GlMem.lineQueue.length = 0
-    GlMem.binQueue.length = 0
-  }
-
-  function isUnchanged(){
-    const handle = diff => {
-      clearMemory()
-      return diff.nothingChanged
-    }
-    difference(null, null, handle)
+  function isUnchanged() {
+    return difference(null, null, diff => diff.nothingChanged)
   }
 
   /**
@@ -83,6 +71,7 @@ module.exports = () => {
     lastSave = mod.treeOps.getSavedData(head, version)
     // tree implicity populates GlMem.fileHashLog
     tree = tree || mod.treeOps.treeify(_forEachFile(hash))
+    const fileHashLog = new Map(GlMem.fileHashLog) //shallow clone
     // previousFileHashes = previous recorded Hashes
     const previousFileHashes = Object.keys(lastSave.dat)
 
@@ -93,10 +82,10 @@ module.exports = () => {
       const [isutf8, size, files] = data
       const filepaths = Object.keys(files)
       let fp; while (fp = filepaths.pop()) {
-        const equivFiles = hash = GlMem.fileHashLog.get(fp)
+        const equivFiles = hash = fileHashLog.get(fp)
         const equivHashes = (hash === hashsum)
 
-        GlMem.fileHashLog.delete(fp)
+        fileHashLog.delete(fp)
 
         if (!filterPattern || filterPattern.test(fp)) {
           const mtime = files[fp]
@@ -108,7 +97,7 @@ module.exports = () => {
         }
       }
     }
-    let added = Array.from(GlMem.fileHashLog)
+    let added = Array.from(fileHashLog)
     if(filterPattern){
       added = added.filter(hash0fp1 => filterPattern.test(hash0fp1[1]))
     }
