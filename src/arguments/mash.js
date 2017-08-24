@@ -16,7 +16,7 @@ module.exports = function mash(i, args) {
     while (data = diff.deleted.pop()) {
       mod.fileOps.undelete(data)
     }
-    return mod.handleConflicts(diff.modified)
+    return mod.handleConflicts(diff.modified, head, version)
   }
 
   if (head) {
@@ -25,7 +25,6 @@ module.exports = function mash(i, args) {
     const isUnchanged = core.isUnchanged()
     if (exists && isUnchanged) {
       core.difference(head, version, handle)
-      console.info(chalk.green(`Repo ${head} ${version} mashed with ${po.head} ${po.version}`), chalk.yellow('Note: Mash unsaved!'))
     } else if (exists && !isUnchanged) {
       console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
     } else {

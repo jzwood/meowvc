@@ -4,7 +4,7 @@ const path = require('path')
 const chalk = require('chalk')
 const fileOps = require('./fileOps')
 
-module.exports = conflicts => {
+module.exports = (conflicts, head, version) => {
   return conflicts.length ? handle(conflicts.pop()) : false
 
   function handle(data){
@@ -21,7 +21,7 @@ Select: (o) keep original file
     rl.question(prompt, answer => {
       rl.close()
       answer = answer.toLowerCase().trim()
-      let extension = 1
+      let extension = -1
       switch(answer){
       case 'o':
         break
@@ -30,13 +30,16 @@ Select: (o) keep original file
         break
       case 'b':
         while(fs.existsSync(`${fname}_copy-${++extension}${fext}`)){ /*intentionally empty*/ }
-        data[0] = `${fname}_copy-${++extension}${fext}`
+        data[0] = `${fname}_copy-${extension}${fext}`
         fileOps.overwrite(data)
         break
       default:
         handle(data)
       }
-      return conflicts.length ? handle(conflicts.pop()) : false
+      return conflicts.length ? handle(conflicts.pop()) : (
+        console.info(chalk.green(`Repo ${head} ${version} mashed with ${head} ${version}`), chalk.yellow('Note: Mash unsaved!')),
+        false
+      )
     })
   }
 }
