@@ -15,6 +15,8 @@ function mu(args) {
 
   const isRoot = fs.existsSync(gl.dest())
 
+  commands['status'] = commands['state']
+
   for (let i = 0, n = args.length; i < n; i++) {
     const command = commands[args[i]]
     if (typeof command === 'function') {
