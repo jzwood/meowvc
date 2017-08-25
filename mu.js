@@ -5,13 +5,11 @@
 const fs = require('fs-extra')
 const chalk = require('chalk')
 
-const gl = require('./src/constant')
-const loader = require('./src/utils/loader')
-const commands = loader.require('arguments')
+module.exports = function mu(args) {
 
-mu(process.argv)
-
-function mu(args) {
+  const gl = require('./src/constant')
+  const loader = require('./src/utils/loader')
+  const commands = loader.require('arguments')
 
   const isRoot = fs.existsSync(gl.dest())
 
