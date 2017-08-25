@@ -5,14 +5,15 @@
 const fs = require('fs-extra')
 const chalk = require('chalk')
 
-const gl = require('./src/constant')
-const loader = require('./src/utils/loader')
-const commands = loader.require('arguments')
+module.exports = function mu(args) {
 
-function mu(args) {
+  const gl = require('./src/constant')
+  const loader = require('./src/utils/loader')
+  const commands = loader.require('arguments')
 
   const isRoot = fs.existsSync(gl.dest())
 
+  commands['status'] = commands['state']
 
   for (let i = 0, n = args.length; i < n; i++) {
     const command = commands[args[i]]
@@ -20,11 +21,9 @@ function mu(args) {
       if (isRoot || args[i] === 'start') {
         return command(i, args)
       }
-      console.info(chalk.yellow(`Warning: ${gl.cwd} is not a mu repo`))
+      console.info(chalk.yellow(`Warning: ${gl.cwd} is not a mu repo root`))
       return 0
     }
   }
   console.info(chalk.gray(gl.help))
 }
-
-mu(process.argv)

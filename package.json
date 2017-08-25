@@ -1,20 +1,23 @@
 {
   "name": "MU",
   "version": "1.0.0",
-  "description": "",
-  "main": "mu.js",
+  "description": "a version control system for dummies",
   "dependencies": {
     "chalk": "^1.1.3",
     "crc": "^3.4.4",
     "fs-extra": "^3.0.1",
-    "isbinaryfile": "^3.0.2"
+    "is-utf8": "^0.2.1"
   },
   "devDependencies": {
     "eslint": "^4.2.0"
   },
   "scripts": {
-    "test": "node test/test.js"
+    "test": "node test/index.js"
   },
-  "author": "Jake Wood",
-  "license": "MIT"
+  "preferGlobal": true,
+  "license": "MIT",
+  "bin": {
+    "mu": "./index.js"
+  },
+  "author": "Jake Wood"
 }

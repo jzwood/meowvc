@@ -2,13 +2,12 @@
 * HASHING FUNCTIONS
 */
 
-const fs = require('fs-extra')
 const path = require('path')
 const crc = require('crc')
 const gl = require('../constant')
 
 module.exports = {
-  hashOnly,
+  hashIt,
   diskCache
 }
 
@@ -17,20 +16,10 @@ module.exports = {
 * @param {String} data - utf string data
 * @returns {String} hashsum
 */
-function _hashIt(data) {
-  const h = crc.crc32(data).toString(16)
+function hashIt(buffer) {
+  const h = crc.crc32(buffer).toString(16)
   if (h === '0') return '00000000'
   return h
-}
-
-/**
-* @description returns the hashsum key for file
-* @param {String} fpath - file path
-* @returns {String} hashsum
-*/
-function hashOnly(fpath, encoding) {
-  const file = fs.readFileSync(fpath, encoding)
-  return _hashIt(file)
 }
 
 /**
@@ -38,33 +27,29 @@ function hashOnly(fpath, encoding) {
 * @param {String} fpath - file path
 * @returns {String} hashsum
 */
-function diskCache(GlData, fpath, encoding) {
-  const isUncached = hash => !(GlData.memory.has(hash))
+function diskCache(GlMem, buffer, isutf8) {
+  const isUncached = hash => !(GlMem.memory.has(hash))
   const cacheIt = data => {
-    GlData.memory.add(data)
+    GlMem.memory.add(data)
   }
 
-  const file = fs.readFileSync(fpath, encoding)
-  const fileHash = _hashIt(file)
-
-  if (isUncached(fileHash)) {
-    cacheIt(fileHash)
-    const insert = (string, index, substr) => string.slice(0, index) + substr + string.slice(index)
-    if (encoding === 'utf8') {
+  const fileHash = hashIt(buffer)
+  if(!isutf8){
+    GlMem.binQueue.push([path.join(gl.binPath, gl.insert(fileHash, 2, '/')), buffer])
+  }else{
+    const file = buffer.toString('utf8')
+    if (isUncached(fileHash)) {
+      cacheIt(fileHash)
       const hashes = file.split(gl.eol).map(line => {
-        const lineHash = _hashIt(line)
+        const lineHash = hashIt(line)
         if (isUncached(lineHash)) {
           cacheIt(lineHash)
-          GlData.outputLineQueue.push([path.join(gl.linesPath, insert(lineHash, 2, '/')), line])
+          GlMem.lineQueue.push([path.join(gl.linesPath, gl.insert(lineHash, 2, '/')), line])
         }
         return lineHash
       })
-      GlData.outputFileQueue.push([path.join(gl.filesPath, insert(fileHash, 2, '/')), hashes, encoding])
+      GlMem.fileQueue.push([path.join(gl.filesPath, gl.insert(fileHash, 2, '/')), hashes])
     }
-    // else {
-    //   GlData.outputLineQueue.push([path.join(gl.linesPath, insert(fileHash, 2, '/')), file])
-    //   GlData.outputFileQueue.push([path.join(gl.filesPath, insert(fileHash, 2, '/')), [fileHash], encoding])
-    // }
   }
   return fileHash
 }
