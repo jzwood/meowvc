@@ -32,7 +32,7 @@ mu <command> [<args>]
   Commands:   Args:         Descriptions:
   help                      - shows usage
   start                     - creates a new mu repo
-  status                    - shows the working repo state
+  state                     - shows the working repo state
 
   save                      - records snapshot of repo
   saveas  <name>            - saves repo with a new name

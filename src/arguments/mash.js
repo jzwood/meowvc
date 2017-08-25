@@ -1,42 +1,36 @@
 const chalk = require('chalk')
-const pointerOps = require('../modules/pointerOps')
+const loader = require('../utils/loader')
+const mod = loader.require('modules')
 const core = require('../core')()
 
 /*********
 *  MASH  *
 *********/
 
-module.exports = function mash(i, args){
+module.exports = function mash(i, args) {
   const head = args[i + 1] || ''
   let version = args[i + 2] || ''
-  const errorMsg = chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3')
-  const po = pointerOps()
+  const po = mod.pointerOps()
   const handle = diff => {
-    if(diff.nothingChanged){
-      console.info(chalk.yellow('Warning: no changes detected. Mash cancelled.'))
-    }else{
-      let data
-      while(data = diff.modified.pop()) {
-        console.info(chalk.cyan('%\t' + data[0]))
-      }
-      while(data = diff.added.pop()) {
-        console.info(chalk.yellow('+\t' + data[0]))
-      }
-      while(data = diff.deleted.pop()) {
-        console.info(chalk.red('x\t' + data[0]))
-      }
+    let data
+    while (data = diff.deleted.pop()) {
+      mod.fileOps.undelete(data)
     }
-    console.info(chalk.green(`Repo ${head} ${version} mashed with ${po.head} ${po.version}`),chalk.yellow('Note: Mash unsaved!'))
+    return mod.handleConflicts(diff.modified, head, version)
   }
 
-  if(head){
+  if (head) {
     version = version || 'v' + po.latest(head)
-    if(po.exists(head, version)){
+    const exists = po.exists(head, version)
+    const isUnchanged = core.isUnchanged()
+    if (exists && isUnchanged) {
       core.difference(head, version, handle)
-    }else{
+    } else if (exists && !isUnchanged) {
+      console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
+    } else {
       console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))
     }
-  }else{
-    console.log(errorMsg)
+  } else {
+    console.log(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
   }
 }

@@ -6,7 +6,7 @@ const core = require('../core')()
 *  STATUS  *
 **********/
 
-module.exports = function status(){
+module.exports = function state(){
   const po = pointerOps()
   const latest = po.latest()
   console.info(chalk.green(po.head, `(v${Math.max(0, po.version - 1)}/${latest})`))
