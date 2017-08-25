@@ -7,7 +7,6 @@ const core = require('../core')()
 ***********/
 
 module.exports = function saveas(i, args) {
-  console.log('saveas', i)
   const name = args[i + 1]
   if (name) {
     const po = pointerOps()
@@ -16,7 +15,7 @@ module.exports = function saveas(i, args) {
       core.save(head)
       console.info(chalk.green('done'))
     } else {
-      console.warn(chalk.red(`ERROR: Save named "${name}" already exists. Save aborted.`))
+      console.warn(chalk.red(`ERROR: Save named "${name}" already exists. Save cancelled.`))
     }
   } else {
     console.warn(chalk.yellow('saveas expects a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
