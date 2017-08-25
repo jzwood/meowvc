@@ -1,14 +1,15 @@
 # mµ
 
+![node ≥ v6.10](https://img.shields.io/badge/node-%E2%89%A5%20v6.10-orange.svg)
+
 Version control for dummies (_by a dummy_)
 
-Everyone who uses a computer to create things should have tools for backing up their work. If you use Dropbox or similar you have only really solved one problem: the need to access one's files anytime and any place. You have not, however, done anything other than preserve the most recent snapshot of your work.
+Everyone who uses a computer to create things should have tools for backing up their work. If you use Dropbox or similar you have only really solved one problem: the need to access your files anytime and any place. Rad, yes, but you have not done anything other than preserve the most recent snapshot of your work. Enter version control.
 
-Luckily, there is a better way.
-
-## Version Control Systems (VCS)
-VCS are file databases that track file changes over time. In many respects, VCS replace the manual versioning that many people do instinctively (_see below_) with an intelligent management system.
+## Version Control
+Version control systems (VCS) are file databases that track file changes over time. VCS replace manual file versioning with software management. This simplification facilitates complex workflows unachievable by hand.
 ```
+# Managed by hand
 ── final
    ├── finalpaper.docx
    ├── finalpaper1.docx
@@ -16,31 +17,44 @@ VCS are file databases that track file changes over time. In many respects, VCS 
    ├── finalpaper-final.docx
    ├── finalpaper-final_REAL.docx
    └── finalpaper-THISONEISWEAR.docx
+
+# Managed with code
+── final
+   ├── .mu
+   └── finalpaper.docx
 ```
-(Thanks to _[@willzfarmer](https://github.com/willzfarmer/gitgud)_ for the brilliant example above)
+Thanks to _[willzfarmer](https://github.com/willzfarmer/gitgud)_ for the brilliant "Managed by hand"  example.
 
-Most VCS are complex and if used without care can be dangerous; mµ, however, is the simplest and safest VCS ever.
+The big takeaway from the above example is that version control lets you work with the version of the files you want (e.g. finalpaper.docx) and keeps archived files accessible but out of sight.
 
-## install
+For more information on version control check out the <u>[visual guide to version control](https://betterexplained.com/articles/a-visual-guide-to-version-control/)</u>.
 
+## mµ
 
-## usage
-```shell
-Usage:
-mu <command> [<args>]
+Most version control systems are complex and scary. mµ, however, is simple and approachable. Let's get started!
 
-  Commands:   Args:         Descriptions:
-  help                      - shows usage
-  start                     - creates a new mu repo
-  state                     - shows the working repo state
+### get mµ
 
-  save                      - records snapshot of repo
-  saveas  <name>            - saves repo with a new name
+`$ git clone https://github.com/jzwood/meowvc.git && cd meowvc`<br>
+`$ npm install && npm link`
 
-  undo    <file|pattern>    - reverts file (or pattern) to last save
-  get     <name> [version]  - switches to a different named repo
-```
+### use mµ
+`$ mu <command> [<args>]`
 
-For more information on version control checkout (a visual guide to version control)[https://betterexplained.com/articles/a-visual-guide-to-version-control/] from betterexplained.com.
+Commands and arguments:
 
-As great as mµ is, anyone serious about version control should use [git](https://git-scm.com/) on pain of death.
+**help:** shows usage
+
+**start:** creates a new mu repo
+
+**state:** shows the working repo state
+
+**save:** records snapshot of repo
+
+**which:** shows name of current working repo
+
+**saveas <name>:** saves repo with a new name
+
+**undo <file|pattern>:** reverts file (or pattern) to last save
+
+**get <name> [version]:** switches to a different named repo
