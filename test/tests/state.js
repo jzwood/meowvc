@@ -9,7 +9,7 @@ module.exports = () => {
   console.info(chalk.inverse('ADD FILES'))
   let newFiles = testOps.addFiles(4)
 
-  console.info(chalk.inverse('MU'))
+  console.info(chalk.inverse('MU STATUS, MU SAVE'))
   testOps.testMu(['state'])
   testOps.testMu(['save'])
 
@@ -20,7 +20,7 @@ module.exports = () => {
     testOps.removeFile(newFiles[i])
   }
 
-  console.info(chalk.inverse('MU'))
+  console.info(chalk.inverse('MU STATUS, MU SAVE'))
   testOps.testMu(['state'])
   testOps.testMu(['save'])
 
@@ -31,7 +31,7 @@ module.exports = () => {
     testOps.modFile(newFiles[i])
   }
 
-  console.info(chalk.inverse('MU'))
+  console.info(chalk.inverse('MU STATUS, MU SAVE'))
   testOps.testMu(['state'])
   testOps.testMu(['save'])
 
@@ -42,7 +42,7 @@ module.exports = () => {
     testOps.rename(newFiles[i])
   }
 
-  console.info(chalk.inverse('MU'))
+  console.info(chalk.inverse('MU STATUS, MU SAVE'))
   testOps.testMu(['state'])
   testOps.testMu(['save'])
 }

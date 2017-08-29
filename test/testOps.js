@@ -6,7 +6,6 @@ module.exports = {
   testMu, setupTest, addRandomFile, removeFile, addFiles, newline, modFile, rename
 }
 
-
 function testMu(){
   // whack all references in require cache
   for (const req of Object.keys(require.cache)) {
