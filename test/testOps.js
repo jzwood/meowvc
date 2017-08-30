@@ -3,7 +3,7 @@ const path = require('path')
 const chalk = require('chalk')
 
 module.exports = {
-  testMu, setupTest, addRandomFile, removeFile, addFiles, newline, modFile, rename
+  testMu, setupTest, removeFile, addFiles, newline, modFile, rename, verify
 }
 
 function testMu(){
@@ -32,6 +32,15 @@ function newline(){
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 }
 
+function verify(fpathMap){
+  Object.keys(fpathMap).forEach(f => {
+    const oldData = fpathMap[f]
+    const newData = fs.readFileSync(f)
+    let isEq = oldData.equals(newData) ? chalk.green('Yes!') : chalk.red('No')
+    console.log(`old == new (${f})`, isEq)
+  })
+}
+
 function rename(fpath){
   let fp = path.parse(fpath)
   const fpNew = path.join(fp.dir, makeWord(5) + fp.ext)
@@ -45,10 +54,11 @@ function makeWord(){
 
 function addRandomFile(depth=1){
   const fpath = path.join(...Array(Math.max(1, depth)).fill('').map(makeWord)) + '.txt'
-  const data = randomAscii(0,255,~~(Math.random() * 5000))
+  let data = randomAscii(0,255,~~(Math.random() * 5000))
   fs.outputFileSync(fpath, data)
+  data = fs.readFileSync(fpath)
   console.info(chalk.yellow(`+\t${fpath}`))
-  return fpath
+  return [fpath, data]
 }
 
 function modFile(fpath){
@@ -63,9 +73,10 @@ function removeFile(fpath){
 }
 
 function addFiles(num){
-  let fpaths = []
+  let fpaths = {}
   for(let i=0; i<num; i++){
-    fpaths.push(addRandomFile(~~(Math.random() * 5)))
+    let [fpath, data] = addRandomFile(~~(Math.random() * 5))
+    fpaths[fpath] = data
   }
   return fpaths
 }

@@ -7,7 +7,7 @@ module.exports = () => {
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES'))
-  let newFiles = testOps.addFiles(4)
+  let newFiles = Object.keys(testOps.addFiles(4))
 
   console.info(chalk.inverse('MU STATUS, MU SAVE'))
   testOps.testMu(['state'])

@@ -7,9 +7,9 @@ module.exports = () => {
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES & SAVE'))
-  let newFiles = testOps.addFiles(4)
+  const fileDataMap = testOps.addFiles(4)
+  let newFiles = Object.keys(fileDataMap)
   console.info(chalk.inverse('MU'))
-  testOps.testMu(['state'])
   testOps.testMu(['save'])
 
   testOps.newline()
@@ -41,4 +41,8 @@ module.exports = () => {
 
   console.info(chalk.inverse('MU UNDO'))
   testOps.testMu(['undo','.'])
+
+  testOps.newline()
+
+  testOps.verify(fileDataMap)
 }
