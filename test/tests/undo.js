@@ -21,6 +21,7 @@ module.exports = () => {
 
   console.info(chalk.inverse('MU UNDO'))
   testOps.testMu(['undo','.'])
+  testOps.verify(fileDataMap)
 
   testOps.newline()
 
@@ -31,6 +32,7 @@ module.exports = () => {
 
   console.info(chalk.inverse('MU UNDO'))
   testOps.testMu(['undo','.'])
+  testOps.verify(fileDataMap)
 
   testOps.newline()
 
@@ -41,8 +43,5 @@ module.exports = () => {
 
   console.info(chalk.inverse('MU UNDO'))
   testOps.testMu(['undo','.'])
-
-  testOps.newline()
-
   testOps.verify(fileDataMap)
 }
