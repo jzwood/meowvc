@@ -17,7 +17,7 @@ function remove([fp, hashsum, isutf8, mtime]) {
   const status = fs.statSync(fp)
   if (status && status.isFile()) {
     fs.removeSync(fp)
-    console.log(chalk.red('✗\t' + fp))
+    console.log(chalk.red('x\t' + fp))
   }
 }
 

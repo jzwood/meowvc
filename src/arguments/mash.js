@@ -1,6 +1,7 @@
 const chalk = require('chalk')
 const loader = require('../utils/loader')
 const mod = loader.require('modules')
+const gl = require('../constant')
 const core = require('../core')()
 
 /*********
@@ -10,13 +11,15 @@ const core = require('../core')()
 module.exports = function mash(i, args) {
   const head = args[i + 1] || ''
   let version = args[i + 2] || ''
+
   const po = mod.pointerOps()
+
   const handle = diff => {
     let data
     while (data = diff.deleted.pop()) {
       mod.fileOps.undelete(data)
     }
-    return mod.handleConflicts(diff.modified, head, version)
+    return mod.handleConflicts(diff.modified, head, version, po.head, 'v' + gl.vnorm(po.version))
   }
 
   if (head) {
