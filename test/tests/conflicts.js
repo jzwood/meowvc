@@ -14,20 +14,14 @@ module.exports = () => {
   testOps.testMu(['save'])
   testOps.testMu(['which'])
 
-  console.info(chalk.inverse('DEL FILES'))
+  console.info(chalk.inverse('MOD FILES'))
   files1.forEach(fp => {
-    testOps.removeFile(fp)
+    testOps.modFile(fp)
   })
-
-  const save2 = testOps.addFiles(4)
-  let files2 = Object.keys(save2)
 
   console.info(chalk.inverse('MU SAVEAS'))
   testOps.testMu(['saveas', 'develop'])
-  console.info(chalk.inverse('MU WHICH'))
-  testOps.testMu(['which'])
+
   console.info(chalk.inverse('MU MASH'))
   testOps.testMu(['mash', 'master'])
-  console.info(chalk.inverse('MU STATUS'))
-  testOps.testMu(['status'])
 }

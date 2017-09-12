@@ -14,12 +14,12 @@ function testMu(){
     }
   }
   const mu = require('../mu')
-  return mu.apply(null,arguments)
+  return mu.apply(null, arguments)
 }
 
 function setupTest(){
   const cwd = process.cwd()
-  const cwdTemp = path.join(cwd, 'test','temp')
+  const cwdTemp = path.join(cwd, 'test', 'temp')
   fs.emptyDirSync(cwdTemp)
   process.chdir(cwdTemp)
 }
@@ -30,7 +30,7 @@ function insert(string, index, substr){
 
 function randomAscii(validIndices, numOfChars){
   const getValidIndex = () => validIndices[~~(validIndices.length * Math.random())]
-  return String.fromCharCode.apply(undefined,Array(numOfChars).fill(0).map(getValidIndex))
+  return String.fromCharCode.apply(undefined, Array(numOfChars).fill(0).map(getValidIndex))
 }
 
 function newline(){
@@ -54,7 +54,7 @@ function rename(fpath){
 }
 
 function makeWord(){
-  return randomAscii(range(97,122) ,~~(3+Math.random()*3))
+  return randomAscii(range(97, 122), ~~(3+Math.random()*3))
 }
 
 function range(lo, hi){
@@ -63,11 +63,11 @@ function range(lo, hi){
 
 function safeInds(newLineFreq=0.1){
   const nls = Array(~~(newLineFreq * (127-32))).fill(10)
-  return range(32,127).concat(nls)
+  return range(32, 127).concat(nls)
 }
 
 function allInds(){
-  return range(0,256)
+  return range(0, 256)
 }
 
 function coinFlip(){
