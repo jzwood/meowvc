@@ -4,7 +4,7 @@ const path = require('path')
 const chalk = require('chalk')
 const fileOps = require('./fileOps')
 
-module.exports = (conflicts, head, version) => {
+module.exports = (conflicts, mergedHead, mergedVersion, currentHead, CurrentVersion) => {
   return conflicts.length ? handle(conflicts.pop()) : false
 
   function handle(data){
@@ -34,10 +34,10 @@ Select: (o) keep original file
         fileOps.overwrite(data)
         break
       default:
-        handle(data)
+        return handle(data)
       }
       return conflicts.length ? handle(conflicts.pop()) : (
-        console.info(chalk.green(`Repo ${head} ${version} mashed with ${head} ${version}`), chalk.yellow('Note: Mash unsaved!')),
+        console.info(chalk.green(`Repo ${mergedHead} ${mergedVersion} mashed into ${currentHead} ${CurrentVersion}`), chalk.yellow('Note: Mash unsaved!')),
         false
       )
     })
