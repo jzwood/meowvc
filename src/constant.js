@@ -29,6 +29,9 @@ module.exports = {
   insert(string, index, substr){
     return string.slice(0, index) + substr + string.slice(index)
   },
+  vnorm(v){
+    return Math.max(0, parseInt(v,10) - 1)
+  },
   linesPath: path.join(cwd, root, 'disk_mem', 'lines'),
   filesPath: path.join(cwd, root, 'disk_mem', 'files'),
   binPath: path.join(cwd, root, 'disk_mem', 'bin'),

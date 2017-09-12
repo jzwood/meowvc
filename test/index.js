@@ -1,3 +1,4 @@
+const chalk = require('chalk')
 const loader = require('../src/utils/loader')
 const tests = loader.require('../test/tests')
 
@@ -7,6 +8,6 @@ const test = tests[args.pop()]
 if(typeof test === 'function'){
   test()
 }else{
-  console.info('npm test <option>')
-  console.info(`options: ${Object.keys(tests).join(', ')}`)
+  console.info(`npm test <${chalk.magenta('option')}>`)
+  console.info(`options: ${Object.keys(tests).map(op => chalk.magenta(op)).join(', ')}`)
 }

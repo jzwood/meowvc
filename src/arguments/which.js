@@ -19,9 +19,9 @@ module.exports = function which() {
     let branches = fs.readdirSync(historyPath)
     branches.forEach(head => {
       if(head === po.head){
-        console.info('* ' + chalk.green(head, `(v${Math.max(0, po.branch[head] - 1)}/${po.latest()})`))
+        console.info('* ' + chalk.green(head, `(v${gl.vnorm(po.branch[head])}/${po.latest()})`))
       }else{
-        console.info(chalk.gray(`  ${head} v${po.branch[head]}`))
+        console.info(chalk.gray(`  ${head} v${gl.vnorm(po.branch[head])}`))
       }
     })
   }
