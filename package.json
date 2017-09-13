@@ -19,5 +19,9 @@
   "bin": {
     "mu": "./index.js"
   },
-  "author": "Jake Wood"
+  "author": "Jake Wood",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jzwood/meowvc.git"
+  }
 }
