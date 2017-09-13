@@ -45,16 +45,18 @@ Commands and arguments:
 
 **help:** shows usage
 
-**start:** creates a new mu repo
+**start:** creates a new mµ repo
 
-**state:** shows the working repo state
+**state:** shows the current repo state
 
-**save:** records snapshot of repo
+**save:** records snapshot of current repo
 
-**which:** shows name of current working repo
+**which:** shows name of current repo
 
-**saveas <name>:** saves repo with a new name
+**saveas <name>:** saves current repo with a new name
 
-**undo <file|pattern>:** reverts file(s) (by name or pattern) to last save
+**undo \<file|pattern>:** reverts file(s) (by name or pattern) to last save
 
-**get <name> [version]:** switches to a different named repo
+**get \<name> [version]:** switches to a different named repo
+
+**mash \<name> [version]:** mashes (ie merges) named repo into current repo
