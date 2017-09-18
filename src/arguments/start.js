@@ -2,13 +2,13 @@ const fs = require('fs-extra')
 const chalk = require('chalk')
 
 const pointerOps = require('../modules/pointerOps')
-const muOps = require('./modules/muOps')
+const muOps = require('../modules/muOps')
 
 /**********
 *  START  *
 **********/
 
-module.exports = function start(){
+module.exports = function start(i, args){
   const name = args[i + 1]
   if (name) {
     let ancestor

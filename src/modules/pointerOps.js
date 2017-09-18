@@ -4,7 +4,7 @@
 
 const fs = require('fs-extra')
 const path = require('path')
-const muOps = require('../muOps')
+const muOps = require('./muOps')
 
 module.exports = () => {
   const pointerPath = muOps.path('_pointer.json')

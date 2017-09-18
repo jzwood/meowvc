@@ -6,18 +6,25 @@ const fs = require('fs-extra')
 const os = require('os')
 const path = require('path')
 
-const muidContents = readMuid()
 const cwd = process.cwd()
 
 const MU = {
   muid: '.muid',
-  local: '.mu'
+  local: '.mu',
+  get muidPath(){
+    return path.join(cwd, this.muid)
+  }
 }
 
+const muidContents = readMuid()
+
 const paths = {
-  muid: path.join(cwd, MU.muid),
-  local: () => path.join(cwd, MU.local, ...arguments),
-  remote: () => path.join(muidContents.remotePath, ...arguments)
+  local(){
+    return path.join(cwd, MU.local, ...arguments)
+  },
+  remote(){
+    return path.join(muidContents.remotePath, ...arguments)
+  }
 }
 
 
@@ -40,7 +47,7 @@ function setupRemote(name){
   }else{
     fs.ensureDirSync(paths.local())
   }
-  fs.writeJsonSync(paths.muid, remote)
+  fs.writeJsonSync(MU.muidPath, remote)
 }
 
 function findMuidAncestor(){
@@ -74,13 +81,13 @@ function getDropboxPath(){
 }
 
 function readMuid(){
-  if(fs.existsSync(paths.muid)){
-    const muidContents = fs.readJsonSync(paths.muid)
-    if(!muJson.isLocal && !fs.existsSync(muJson.remotePath)){
-      muJson.isLocal = true //resets a corrupted remote path to local
-      fs.writeJsonSync(paths.muid, muidContents)
+  if(fs.existsSync(MU.muidPath)){
+    const muidContents = fs.readJsonSync(MU.muidPath)
+    if(!muidContents.isLocal && !fs.existsSync(muidContents.remotePath)){
+      muidContents.isLocal = true //resets a corrupted remote path to local
+      fs.writeJsonSync(MU.muidPath, muidContents)
     }
     return muidContents
   }
-  return null
+  return {isLocal: '', remotePath: '', isNull: true}
 }

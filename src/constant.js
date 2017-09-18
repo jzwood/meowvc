@@ -1,4 +1,5 @@
 const eol = require('os').EOL
+const muOps = require('./modules/muOps')
 
 const usage = `
 Usage:
@@ -21,9 +22,9 @@ module.exports = {
   eol: new RegExp(`(?=${eol})`),
   insert: (string, index, substr) => string.slice(0, index) + substr + string.slice(index),
   vnorm: v => Math.max(0, parseInt(v,10) - 1),
-  linesPath: dest('disk_mem', 'lines'),
-  filesPath: dest('disk_mem', 'files'),
-  binPath: dest('disk_mem', 'bin'),
+  linesPath: muOps.path('disk_mem', 'lines'),
+  filesPath: muOps.path('disk_mem', 'files'),
+  binPath: muOps.path('disk_mem', 'bin'),
   get baseCase() {
     return {
       'ino': {},
