@@ -42,7 +42,7 @@ function setupRemote(name){
   }
   if(dropboxPath){
     remote.local = false
-    remote.remotePath = path.join(dropboxPath, 'Mu Repositories', name)
+    remote.remotePath = path.join(dropboxPath, name)
     fs.ensureDirSync(remote.remotePath)
   }else{
     fs.ensureDirSync(paths.local())
@@ -64,7 +64,7 @@ function findMuidAncestor(){
 function getDropboxPath(){
   const home = os.homedir()
   const dropboxConfigPath = path.join(home, '.dropbox/info.json')
-  if(!fs.existsSync(dropboxConfig)){
+  if(!fs.existsSync(dropboxConfigPath)){
     return false
   }
 
@@ -75,7 +75,7 @@ function getDropboxPath(){
     return false
   }
 
-  const dropboxProjects = path.join(dropBoxPath, 'Mu Projects')
+  const dropboxProjects = path.join(dropBoxPath, 'Mu Repositories')
   fs.ensureDirSync(dropboxProjects)
   return dropboxProjects
 }
