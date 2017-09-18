@@ -1,8 +1,8 @@
 const chalk = require('chalk')
-const pointerOps = require('../modules/pointerOps')
 const fs = require('fs-extra')
-const path = require('path')
 
+const pointerOps = require('../modules/pointerOps')
+const muOps = require('./modules/muOps')
 const core = require('../core')()
 const gl = require('../constant')
 
@@ -12,7 +12,7 @@ const gl = require('../constant')
 
 module.exports = function which() {
 
-  const historyPath = gl.dest('history')
+  const historyPath = muOps.path('history')
   if(fs.existsSync(historyPath)){
     const po = pointerOps()
 

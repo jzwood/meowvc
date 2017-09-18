@@ -1,3 +1,8 @@
+/*
+ *  REPL MASH CONFLICT HANDLING
+ */
+
+
 const readline = require('readline')
 const fs = require('fs-extra')
 const path = require('path')

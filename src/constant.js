@@ -1,9 +1,5 @@
-const chalk = require('chalk')
-const path = require('path')
 const eol = require('os').EOL
 
-const cwd = process.cwd()
-const root = '.mu'
 const usage = `
 Usage:
 mu <command> [<args>]
@@ -21,26 +17,17 @@ mu <command> [<args>]
 `
 
 module.exports = {
-  cwd,
-  root,
-  dest(){
-    return path.join(cwd, root, ...arguments)
-  },
-  insert(string, index, substr){
-    return string.slice(0, index) + substr + string.slice(index)
-  },
-  vnorm(v){
-    return Math.max(0, parseInt(v,10) - 1)
-  },
-  linesPath: path.join(cwd, root, 'disk_mem', 'lines'),
-  filesPath: path.join(cwd, root, 'disk_mem', 'files'),
-  binPath: path.join(cwd, root, 'disk_mem', 'bin'),
+  help: usage.trim(),
   eol: new RegExp(`(?=${eol})`),
+  insert: (string, index, substr) => string.slice(0, index) + substr + string.slice(index),
+  vnorm: v => Math.max(0, parseInt(v,10) - 1),
+  linesPath: dest('disk_mem', 'lines'),
+  filesPath: dest('disk_mem', 'files'),
+  binPath: dest('disk_mem', 'bin'),
   get baseCase() {
     return {
       'ino': {},
       'dat': {}
     }
-  },
-  help: usage.trim()
+  }
 }

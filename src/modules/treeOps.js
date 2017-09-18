@@ -6,6 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const pointerOps = require('./pointerOps')
+const muOps = require('./muOps')
 const gl = require('../constant')
 
 module.exports = {
@@ -18,14 +19,14 @@ module.exports = {
 }
 
 function _ignore(){
-  const ignore_file = fs.readFileSync(gl.dest('_ignore'), 'utf8').trim().split('\n').join('|')
+  const ignore_file = fs.readFileSync(muOps.path('_ignore'), 'utf8').trim().split('\n').join('|')
   const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
   return ignore
 }
 
 // iterates through every file in root directory
 function treeify(forEachFile) {
-  const treeRoot = gl.cwd
+  const treeRoot = process.cwd()
   const ignorePattern = _ignore()
   const dirDive = (tree, parent) => {
     fs.readdirSync(parent).forEach((child, index, ls) => {
@@ -37,7 +38,7 @@ function treeify(forEachFile) {
         if (isDir) {
           dirDive(tree, childpath)
         } else if (isFile) {
-          const relpath = path.relative(gl.cwd, childpath)
+          const relpath = path.relative(treeRoot, childpath)
           forEachFile(tree, childpath, relpath, status)
         }
       }
@@ -52,10 +53,10 @@ function treeify(forEachFile) {
 function getSavedData(head, version) {
   let lastSavePath
   if (head && version){
-    lastSavePath = gl.dest('history', head, version + '.json')
+    lastSavePath = muOps.path('history', head, version + '.json')
   } else {
     const po = pointerOps()
-    lastSavePath = gl.dest('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
+    lastSavePath = muOps.path('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
   }
   const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : gl.baseCase
   return lastSave

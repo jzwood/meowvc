@@ -29,9 +29,13 @@ The big takeaway from the above example is that version control lets you work wi
 
 For more information on version control check out the <u>[visual guide to version control](https://betterexplained.com/articles/a-visual-guide-to-version-control/)</u>.
 
-## mµ
+## why mµ
 
-Most version control systems are complex and scary. mµ, however, is simple and approachable. Let's get started!
+Most version control systems are complex and scary, e.g. **git**.
+> "Git has 145 commands, but there’s no git undo."
+\~ [Peter Lundgren](http://www.peterlundgren.com/blog/on-gits-shortcomings/)
+
+mµ, however, is simple and approachable. Let's get started!
 
 ### get mµ
 
