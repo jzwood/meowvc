@@ -36,7 +36,7 @@ function cleanupTest(){
 
   const remoteDir = path.parse(remote).dir
 
-  if(remoteDir.indexOf(MU.local) >= 0 || remoteDir.indexOf(MU.remote) >= 0){
+  if(remoteDir.indexOf(MU.local) === -1 && remoteDir.indexOf(MU.remote) >= 0){
     fs.emptyDirSync(remote)
     trash(remote).then(() => {
       console.info(chalk.magenta('cleaning up...'))
