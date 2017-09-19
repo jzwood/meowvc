@@ -11,12 +11,13 @@ const cwd = process.cwd()
 const MU = {
   muid: '.muid',
   local: '.mu',
+  remote: 'Mu Repositories',
   get muidPath(){
     return path.join(cwd, this.muid)
   }
 }
 
-const muidContents = readMuid()
+let muidContents = readMuid()
 
 const paths = {
   local(){
@@ -48,6 +49,7 @@ function setupRemote(name){
     fs.ensureDirSync(paths.local())
   }
   fs.writeJsonSync(MU.muidPath, remote)
+  muidContents = readMuid()
 }
 
 function findMuidAncestor(){
@@ -75,7 +77,7 @@ function getDropboxPath(){
     return false
   }
 
-  const dropboxProjects = path.join(dropBoxPath, 'Mu Repositories')
+  const dropboxProjects = path.join(dropBoxPath, MU.remote)
   fs.ensureDirSync(dropboxProjects)
   return dropboxProjects
 }

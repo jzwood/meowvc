@@ -3,7 +3,7 @@ const testOps = require('../testOps')
 
 module.exports = () => {
   testOps.setupTest()
-  testOps.testMu(['start'])
+  testOps.testMu(['start','test-undo'])
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES & SAVE'))
@@ -44,4 +44,6 @@ module.exports = () => {
   console.info(chalk.inverse('MU UNDO'))
   testOps.testMu(['undo','.'])
   testOps.verify(fileDataMap)
+
+  testOps.cleanupTest()
 }

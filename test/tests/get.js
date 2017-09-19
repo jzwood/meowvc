@@ -3,7 +3,7 @@ const testOps = require('../testOps')
 
 module.exports = () => {
   testOps.setupTest()
-  testOps.testMu(['start'])
+  testOps.testMu(['start','test-get'])
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES & SAVE'))
@@ -35,4 +35,6 @@ module.exports = () => {
 
   console.info(chalk.inverse('VERIFYING'))
   testOps.verify(save2)
+
+  testOps.cleanupTest()
 }

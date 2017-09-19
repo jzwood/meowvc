@@ -9,7 +9,8 @@
     "is-utf8": "^0.2.1"
   },
   "devDependencies": {
-    "eslint": "^4.2.0"
+    "eslint": "^4.2.0",
+    "trash": "^4.1.0"
   },
   "scripts": {
     "test": "node test/index.js"

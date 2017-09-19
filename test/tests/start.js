@@ -8,6 +8,8 @@ module.exports = () => {
 
   testOps.newline()
 
-  console.info(chalk.inverse('my-first-webapp'))
-  testOps.testMu(['start','my-first-webapp'])
+  console.info(chalk.inverse('test-start'))
+  testOps.testMu(['start','test-start'])
+
+  testOps.cleanupTest()
 }
