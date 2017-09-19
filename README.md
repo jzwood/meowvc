@@ -35,6 +35,8 @@ No matter what you change within this directory, recovering the previous snapsho
 
 `$ mu undo .`
 
+For more information on version control check out the <u>[visual guide to version control](https://betterexplained.com/articles/a-visual-guide-to-version-control/)</u>.
+
 ## why mµ
 
 Most version control systems are complex and scary, e.g. **git**.
@@ -50,6 +52,8 @@ mµ, on the other hand, is simple and approachable. Let's get started!
 
 ### use mµ
 `$ mu <command> [<args>]`
+
+For more information on version control check out the <u>[visual guide to version control](https://betterexplained.com/articles/a-visual-guide-to-version-control/)</u>.
 
 Commands and arguments:
 
