@@ -3,13 +3,13 @@ const testOps = require('../testOps')
 
 module.exports = () => {
   testOps.setupTest()
-  testOps.testMu(['start'])
+  testOps.testMu(['start','test/state'])
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES'))
   let newFiles = Object.keys(testOps.addFiles(4))
 
-  console.info(chalk.inverse('MU STATUS, MU SAVE'))
+  console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
   testOps.testMu(['save'])
 
@@ -20,7 +20,7 @@ module.exports = () => {
     testOps.removeFile(newFiles[i])
   }
 
-  console.info(chalk.inverse('MU STATUS, MU SAVE'))
+  console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
   testOps.testMu(['save'])
 
@@ -31,7 +31,7 @@ module.exports = () => {
     testOps.modFile(newFiles[i])
   }
 
-  console.info(chalk.inverse('MU STATUS, MU SAVE'))
+  console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
   testOps.testMu(['save'])
 
@@ -42,7 +42,9 @@ module.exports = () => {
     testOps.rename(newFiles[i])
   }
 
-  console.info(chalk.inverse('MU STATUS, MU SAVE'))
+  console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
   testOps.testMu(['save'])
+
+  testOps.cleanupTest()
 }

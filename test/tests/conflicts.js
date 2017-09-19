@@ -3,7 +3,7 @@ const testOps = require('../testOps')
 
 module.exports = () => {
   testOps.setupTest()
-  testOps.testMu(['start'])
+  testOps.testMu(['start','test/conflict'])
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES & SAVE'))
@@ -24,4 +24,13 @@ module.exports = () => {
 
   console.info(chalk.inverse('MU MASH'))
   testOps.testMu(['mash', 'master'])
+
+
+  const cleanup = setInterval(() => {
+    if(!global.muReplOpen){
+      clearInterval(cleanup)
+      testOps.cleanupTest()
+    }
+  }, 2000)
+
 }
