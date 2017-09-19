@@ -39,6 +39,7 @@ function cleanupTest(){
   if(remoteDir.indexOf(MU.local) >= 0 || remoteDir.indexOf(MU.remote) >= 0){
     fs.emptyDirSync(remote)
     trash(remote).then(() => {
+      console.info(chalk.magenta('cleaning up...'))
       console.info(chalk.yellow(remote, 'moved to trash'))
     })
   }

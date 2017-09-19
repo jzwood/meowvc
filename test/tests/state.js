@@ -3,7 +3,7 @@ const testOps = require('../testOps')
 
 module.exports = () => {
   testOps.setupTest()
-  testOps.testMu(['start','test-state'])
+  testOps.testMu(['start','test/state'])
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES'))

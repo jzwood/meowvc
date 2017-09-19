@@ -1,1 +1,2 @@
 - add timer
+- add test flags: -p (preserve), -l (local)

@@ -21,5 +21,5 @@ module.exports = function mu(args) {
       return 0
     }
   }
-  console.info(chalk.gray(gl.help))
+  console.info(gl.help)
 }

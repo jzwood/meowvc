@@ -6,7 +6,7 @@ Version control for dummies (_by a dummy_)
 
 Everyone who uses a computer to create things should have tools for backing up their work. If you use Dropbox or similar you have only really solved one problem: the need to access your files anytime and any place. Rad, yes, but you have not done anything other than preserve the most recent snapshot of your work. Enter version control.
 
-## Version Control
+## version control
 Version control systems (VCS) are file databases that track file changes over time. VCS replace manual file versioning with software management. This simplification facilitates complex workflows unachievable by hand.
 ```
 # Managed by hand
@@ -27,7 +27,13 @@ Thanks to _[willzfarmer](https://github.com/willzfarmer/gitgud)_ for the brillia
 
 The big takeaway from the above example is that version control lets you work with the version of the files you want (e.g. finalpaper.docx) and keeps archived files accessible but out of sight.
 
-For more information on version control check out the <u>[visual guide to version control](https://betterexplained.com/articles/a-visual-guide-to-version-control/)</u>.
+Another big win of version control is disaster prevention! If you ever loose work or screw up, it's easy to recover with version control. For instance, to save a snapshot of everything in a directory with mu is:
+
+`$ mu save`
+
+No matter what you change within this directory, recovering the previous snapshot is simple:
+
+`$ mu undo .`
 
 ## why mµ
 
@@ -35,7 +41,7 @@ Most version control systems are complex and scary, e.g. **git**.
 > "Git has 145 commands, but there’s no git undo."
 \~ [Peter Lundgren](http://www.peterlundgren.com/blog/on-gits-shortcomings/)
 
-mµ, however, is simple and approachable. Let's get started!
+mµ, on the other hand, is simple and approachable. Let's get started!
 
 ### get mµ
 

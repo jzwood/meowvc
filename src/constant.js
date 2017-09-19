@@ -9,12 +9,12 @@ mu <command> [<args>]
   help					- shows usage
   start					- creates a new mu repo
   state					- shows the working repo state
-
   save					- records snapshot of repo
+  which					- shows name of current repo
   saveas	<name>			- saves repo with a new name
-
   undo		<file|pattern>		- reverts file (or pattern) to last save
   get		<name> [version]	- switches to a different named repo
+  mash		<name> [version]	- mashes (ie merges) named repo into current repo
 `
 
 module.exports = {

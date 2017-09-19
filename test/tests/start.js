@@ -9,7 +9,7 @@ module.exports = () => {
   testOps.newline()
 
   console.info(chalk.inverse('test-start'))
-  testOps.testMu(['start','test-start'])
+  testOps.testMu(['start','test/start'])
 
   testOps.cleanupTest()
 }
