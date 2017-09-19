@@ -3,7 +3,7 @@ const testOps = require('../testOps')
 
 module.exports = () => {
   testOps.setupTest()
-  testOps.testMu(['start'])
+  testOps.testMu(['start', 'test/mash'])
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES & SAVE'))
@@ -19,6 +19,7 @@ module.exports = () => {
     testOps.removeFile(fp)
   })
 
+  console.info(chalk.inverse('ADD FILES'))
   const save2 = testOps.addFiles(4)
   let files2 = Object.keys(save2)
 
@@ -29,5 +30,7 @@ module.exports = () => {
   console.info(chalk.inverse('MU MASH'))
   testOps.testMu(['mash', 'master'])
   console.info(chalk.inverse('MU STATUS'))
-  testOps.testMu(['status'])
+  testOps.testMu(['state'])
+
+  testOps.cleanupTest()
 }

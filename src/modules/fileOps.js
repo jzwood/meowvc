@@ -5,6 +5,7 @@
 const fs = require('fs-extra')
 const chalk = require('chalk')
 const gl = require('../constant')
+const muOps = require('./muOps')
 
 module.exports = {
   overwrite: writeFile,
@@ -24,14 +25,14 @@ function remove([fp, hashsum, isutf8, mtime]) {
 function writeFile([fp, hashsum, isutf8, mtime]) {
 
   const getUtf8Data = () => {
-    const fileArray = fs.readJsonSync(gl.dest('disk_mem', 'files', gl.insert(hashsum, 2, '/')), 'utf8')
+    const fileArray = fs.readJsonSync(muOps.path('disk_mem', 'files', gl.insert(hashsum, 2, '/')), 'utf8')
     let linehash, data = ''; while (linehash = fileArray.pop()) {
-      data = fs.readFileSync(gl.dest('disk_mem', 'lines', gl.insert(linehash, 2, '/')), 'utf8') + data
+      data = fs.readFileSync(muOps.path('disk_mem', 'lines', gl.insert(linehash, 2, '/')), 'utf8') + data
     }
     return data
   }
 
-  const getBinaryData = () => fs.readFileSync(gl.dest('disk_mem', 'bin', gl.insert(hashsum, 2, '/')))
+  const getBinaryData = () => fs.readFileSync(muOps.path('disk_mem', 'bin', gl.insert(hashsum, 2, '/')))
 
   const data = isutf8 ? getUtf8Data() : getBinaryData()
   fs.outputFileSync(fp, data)

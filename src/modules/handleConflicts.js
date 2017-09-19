@@ -1,3 +1,8 @@
+/*
+ *  REPL MASH CONFLICT HANDLING
+ */
+
+
 const readline = require('readline')
 const fs = require('fs-extra')
 const path = require('path')
@@ -18,8 +23,10 @@ Select: (o) keep original file
         (n) replace with new file
         (b) keep both `
 
+    global.muReplOpen = true
     rl.question(prompt, answer => {
       rl.close()
+      global.muReplOpen = false
       answer = answer.toLowerCase().trim()
       let extension = -1
       switch(answer){

@@ -1,9 +1,10 @@
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
+const trash = require('trash')
 
 module.exports = {
-  testMu, setupTest, removeFile, addFiles, newline, modFile, rename, verify
+  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify
 }
 
 function testMu(){
@@ -22,6 +23,26 @@ function setupTest(){
   const cwdTemp = path.join(cwd, 'test', 'temp')
   fs.emptyDirSync(cwdTemp)
   process.chdir(cwdTemp)
+}
+
+function cleanupTest(){
+  const muOps = require('../src/modules/muOps')
+  const remote = muOps.path()
+
+  const MU = {
+    local: '.mu',
+    remote: 'Mu Repositories',
+  }
+
+  const remoteDir = path.parse(remote).dir
+
+  if(remoteDir.indexOf(MU.local) >= 0 || remoteDir.indexOf(MU.remote) >= 0){
+    fs.emptyDirSync(remote)
+    trash(remote).then(() => {
+      console.info(chalk.magenta('cleaning up...'))
+      console.info(chalk.yellow(remote, 'moved to trash'))
+    })
+  }
 }
 
 function insert(string, index, substr){

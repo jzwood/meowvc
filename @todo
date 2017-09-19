@@ -1,3 +1,2 @@
-- testing
-  * make ascii-only file add
 - add timer
+- add test flags: -p (preserve), -l (local)

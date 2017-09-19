@@ -32,14 +32,14 @@ module.exports = () => {
   * @description stores every hash on disk into RAM
   */
   function save(head){
-    const hash = mod.hashing.diskCache.bind(null, GlMem)
+    const hash = mod.hashOps.diskCache.bind(null, GlMem)
     const handle = diff => {
       const po = mod.pointerOps()
       if(diff.nothingChanged && !head){
         console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
       }else{
         _writeToDisk()
-        fs.outputJsonSync(gl.dest('history', po.head, 'v' + po.version + '.json'), diff.tree)
+        fs.outputJsonSync(mod.muOps.path('history', po.head, 'v' + po.version + '.json'), diff.tree)
         po.update()
         console.info(chalk.green(`${po.head} v${po.version} successfully saved!`))
       }
@@ -67,7 +67,7 @@ module.exports = () => {
   /**
   * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
-  function difference(head, version, handle, filterPattern, hash=mod.hashing.hashIt) {
+  function difference(head, version, handle, filterPattern, hash=mod.hashOps.hashIt) {
     lastSave = mod.treeOps.getSavedData(head, version)
     // tree implicity populates GlMem.fileHashLog
     tree = tree || mod.treeOps.treeify(_forEachFile(hash))
