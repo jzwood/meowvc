@@ -1,5 +1,6 @@
 const fs = require('fs-extra')
 const chalk = require('chalk')
+const eol = require('os').EOL
 
 const pointerOps = require('../modules/pointerOps')
 const muOps = require('../modules/muOps')
@@ -24,7 +25,7 @@ module.exports = function start(i, args){
       pointerOps()
       //init ignore
       if (!fs.existsSync(muOps.path('_ignore'))) {
-        fs.outputFileSync(muOps.path('_ignore'), 'node_modules\n^\\.', 'utf8')
+        fs.outputFileSync(muOps.path('_ignore'), `node_modules${eol}^\\.`, 'utf8')
       }
       console.info(chalk.green('setup done'))
     }

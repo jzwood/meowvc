@@ -8,6 +8,6 @@ const test = tests[args.pop()]
 if(typeof test === 'function'){
   test()
 }else{
-  console.info(`npm test <${chalk.magenta('option')}>`)
-  console.info(`options: ${Object.keys(tests).map(op => chalk.magenta(op)).join(', ')}`)
+  console.info(`npm test <${chalk.cyan('option')}>`)
+  console.info(`options: ${Object.keys(tests).map(op => chalk.cyan(op)).join(', ')}`)
 }

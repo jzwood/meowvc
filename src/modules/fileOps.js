@@ -36,7 +36,7 @@ function writeFile([fp, hashsum, isutf8, mtime]) {
 
   const data = isutf8 ? getUtf8Data() : getBinaryData()
   fs.outputFileSync(fp, data)
-  fs.utimesSync(fp, +new Date(), parseInt(mtime,10))
+  fs.utimesSync(fp, Date.now()/1000, mtime)
 
   console.log(chalk.green('✓\t' + fp))
 }
