@@ -46,22 +46,34 @@ function findMuidAncestor() {
 }
 
 function getDropboxPath() {
-  const home = os.homedir()
-  const dropboxConfigPath = path.join(home, '.dropbox', 'info.json')
-  if (!fs.existsSync(dropboxConfigPath)) {
+
+  let dropboxConfigPath
+  const isWin = /^win/i.test(os.platform())
+
+  const winPath1 = path.join('%APPDATA%','Dropbox','info.json')
+  const winPath2 = path.join('%LOCALAPPDATA%','Dropbox','info.json')
+  const unixPath = path.join(os.homedir(), '.dropbox', 'info.json')
+
+  if(!isWin && fs.existsSync(unixPath)){
+    dropboxConfigPath = unixPath
+  }else if(isWin && fs.existsSync(winPath1)){
+    dropboxConfigPath = winPath1
+  }else if (isWin && fs.existsSync(winPath2)){
+    dropboxConfigPath = winPath2
+  }else{
     return false
   }
 
   const dropboxConfig = fs.readJsonSync(dropboxConfigPath)
   const dropBoxPath = dropboxConfig.personal.path
 
-  if (!fs.existsSync(dropBoxPath)) {
+  if (fs.existsSync(dropBoxPath)) {
+    const dropboxProjects = path.join(dropBoxPath, MU.remote)
+    fs.ensureDirSync(dropboxProjects)
+    return dropboxProjects
+  }else{
     return false
   }
-
-  const dropboxProjects = path.join(dropBoxPath, MU.remote)
-  fs.ensureDirSync(dropboxProjects)
-  return dropboxProjects
 }
 
 function getRepoPath() {
