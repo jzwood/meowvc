@@ -4,6 +4,7 @@
 
 const fs = require('fs-extra')
 const path = require('path')
+const eol = require('os').EOL
 
 const pointerOps = require('./pointerOps')
 const muOps = require('./muOps')
@@ -19,7 +20,7 @@ module.exports = {
 }
 
 function _ignore(){
-  const ignore_file = fs.readFileSync(muOps.path('_ignore'), 'utf8').trim().split('\n').join('|')
+  const ignore_file = fs.readFileSync(muOps.path('_ignore'), 'utf8').trim().split(eol).join('|')
   const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
   return ignore
 }
