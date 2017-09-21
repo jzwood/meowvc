@@ -14,7 +14,7 @@ module.exports = function mu(args) {
   for (let i = 0, n = args.length; i < n; i++) {
     const command = commands[args[i]]
     if (typeof command === 'function') {
-      if (!muOps.muidContents.isNull || args[i] === 'start') {
+      if (muOps.repoPath || args[i] === 'start') {
         return command(i, args)
       }
       console.info(chalk.yellow(`Warning: ${process.cwd()} is not a mu repo root`))
