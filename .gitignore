@@ -1,3 +1,4 @@
 .mu
 node_modules/
 test/temp/
+.DS_Store

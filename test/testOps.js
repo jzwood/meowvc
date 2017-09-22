@@ -4,7 +4,7 @@ const chalk = require('chalk')
 const trash = require('trash')
 
 module.exports = {
-  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify
+  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify, muStart
 }
 
 function testMu(){
@@ -25,25 +25,34 @@ function setupTest(){
   process.chdir(cwdTemp)
 }
 
-function cleanupTest(){
+function parseFlags(flags = []){
+  const local = flags.some(f => f.startsWith('-') && f.includes('l'))
+  const preserve = flags.some(f => f.startsWith('-') && f.includes('p'))
+  return [local, preserve]
+}
+
+function cleanupTest(flags){
   const muOps = require('../src/modules/muOps')
   const remote = muOps.path()
-
-  const MU = {
-    local: '.mu',
-    remote: 'Mu Repositories',
-  }
-
   const remoteDir = path.parse(remote).dir
 
-  if(remoteDir.indexOf(MU.local) === -1 && remoteDir.indexOf(MU.remote) >= 0){
-    fs.emptyDirSync(remote)
+  const [local, preserve] = parseFlags(flags)
+  if(!preserve){
     trash(remote).then(() => {
       console.info(chalk.cyan('cleaning up...'))
-      console.info(chalk.yellow(remote, 'moved to trash'))
+      console.info(chalk.yellow(remote), chalk.inverse('moved to trash'))
     })
+  } else {
+    console.info(chalk.yellow(remote), chalk.inverse('preserved'))
   }
 }
+
+function muStart(flags){
+  const [local, preserve] = parseFlags(flags)
+  console.info(`${ local ? chalk.inverse('MU START LOCAL') : chalk.inverse('MU START DROPBOX')}`)
+  local ? testMu(['start']) : testMu(['start','test/start'])
+}
+
 
 function insert(string, index, substr){
   return string.slice(0, index) + substr + string.slice(index)
