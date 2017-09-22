@@ -57,20 +57,20 @@ For more information on version control check out the <u>[visual guide to versio
 
 Commands and arguments:
 
-**help:** shows usage
+**help:** shows usage.
 
-**start:** creates a new mµ repo
+**start [name]:** creates a new mµ repo. If repo name is included mµ tries to save repo data in Dropbox.
 
-**state:** shows the current repo state
+**state:** shows the current repo state.
 
-**save:** records snapshot of current repo
+**save \<message>:** records snapshot of current repo with a short message.
 
-**which:** shows name of current repo
+**which:** shows name of current repo.
 
-**saveas <name>:** saves current repo with a new name
+**saveas <name>:** saves current repo with a new name.
 
-**undo \<file|pattern>:** reverts file(s) (by name or pattern) to last save
+**undo \<file|pattern>:** reverts file(s) (by name or pattern) to last save.
 
-**get \<name> [version]:** switches to a different named repo
+**get \<name> [version]:** switches to a different named repo.
 
-**mash \<name> [version]:** mashes (ie merges) named repo into current repo
+**mash \<name> [version]:** mashes (ie merges) named repo into current repo.

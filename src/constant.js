@@ -7,9 +7,9 @@ mu <command> [<args>]
 
   Commands:	Args:			Descriptions:
   help					- shows usage
-  start					- creates a new mu repo
+  start		[name]			- creates a new mu repo
   state					- shows the working repo state
-  save					- records snapshot of repo
+  save		<message>		- records snapshot of repo
   which					- shows name of current repo
   saveas	<name>			- saves repo with a new name
   undo		<file|pattern>		- reverts file (or pattern) to last save
@@ -27,6 +27,7 @@ module.exports = {
   binPath: muOps.path('disk_mem', 'bin'),
   get baseCase() {
     return {
+      'msg': '',
       'ino': {},
       'dat': {}
     }
