@@ -1,9 +1,9 @@
 const chalk = require('chalk')
 const testOps = require('../testOps')
 
-module.exports = () => {
+module.exports = flags => {
   testOps.setupTest()
-  testOps.testMu(['start', 'test/mash'])
+  testOps.muStart(flags,'mash')
 
   testOps.newline()
   console.info(chalk.inverse('ADD FILES & SAVE'))
@@ -32,5 +32,5 @@ module.exports = () => {
   console.info(chalk.inverse('MU STATUS'))
   testOps.testMu(['state'])
 
-  testOps.cleanupTest()
+  testOps.cleanupTest(flags)
 }

@@ -1,15 +1,13 @@
 const chalk = require('chalk')
 const testOps = require('../testOps')
 
-module.exports = () => {
+module.exports = flags => {
+
   testOps.setupTest()
-  console.info(chalk.inverse('NO NAME'))
-  testOps.testMu(['start'])
+  testOps.muStart(flags,'start')
 
   testOps.newline()
+  testOps.muStart(flags)
 
-  console.info(chalk.inverse('test-start'))
-  testOps.testMu(['start','test/start'])
-
-  testOps.cleanupTest()
+  testOps.cleanupTest(flags)
 }

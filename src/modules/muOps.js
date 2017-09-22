@@ -27,10 +27,8 @@ const muOps = {
 }
 
 function setupRemote(name) {
-  const dropboxPath = getDropboxPath()
-  let repoPath = dropboxPath ? path.join(dropboxPath, name) : MU.local
-  fs.ensureDirSync(repoPath)
-  fs.writeFileSync(MU.muidPath, repoPath)
+  const repoPath = name ? getDropboxPath(name) : MU.local
+  fs.outputFileSync(MU.muidPath, repoPath)
   muOps.repoPath = getRepoPath()
 }
 
@@ -45,7 +43,7 @@ function findMuidAncestor() {
   return null
 }
 
-function getDropboxPath() {
+function getDropboxPath(name) {
 
   let dropboxConfigPath
   const isWin = /^win/i.test(os.platform())
@@ -68,9 +66,9 @@ function getDropboxPath() {
   const dropBoxPath = dropboxConfig.personal.path
 
   if (fs.existsSync(dropBoxPath)) {
-    const dropboxProjects = path.join(dropBoxPath, MU.remote)
-    fs.ensureDirSync(dropboxProjects)
-    return dropboxProjects
+    const dropboxMuPath = path.join(dropBoxPath, MU.remote, name)
+    fs.ensureDirSync(dropboxMuPath)
+    return dropboxMuPath
   }else{
     return false
   }

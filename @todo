@@ -1,2 +1,8 @@
-- add timer
+- add flag for dropbox vs local for $ mu start
 - add test flags: -p (preserve), -l (local)
+- add tab autocomplete
+- add save msg
+- add $ mu history
+- add timer
+
+- diff (ugh)
