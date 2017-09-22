@@ -27,8 +27,10 @@ Select: (o) keep original file
     rl.question(prompt, answer => {
       rl.close()
       global.muReplOpen = false
+      const inner = '.copy.'
       answer = answer.toLowerCase().trim()
       let extension = -1
+
       switch(answer){
       case 'o':
         break
@@ -36,8 +38,8 @@ Select: (o) keep original file
         fileOps.overwrite(data)
         break
       case 'b':
-        while(fs.existsSync(`${fname}.copy${++extension}${fext}`)){ /*intentionally empty*/ }
-        data[0] = `${fname}.copy${extension}${fext}`
+        while(fs.existsSync(`${fname}${inner}${++extension}${fext}`)){ /*intentionally empty*/ }
+        data[0] = `${fname}${inner}${extension}${fext}`
         fileOps.overwrite(data)
         break
       default:

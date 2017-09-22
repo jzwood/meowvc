@@ -42,7 +42,7 @@ function purge(preserve){
   const muOps = require('../src/modules/muOps')
   const remote = muOps.path()
   const output = { success: false, remote }
-  if(!preserve && /mu/i.test(path.parse(remote).dir)){
+  if(!preserve && /mu/i.test(remote)){
     fs.emptyDirSync(remote)
     output.success = true
   }
