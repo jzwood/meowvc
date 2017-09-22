@@ -1,12 +1,12 @@
 const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
-const trash = require('trash')
 
 module.exports = {
-  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify
+  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify, muStart
 }
 
+// runs $ mu <param> in test environment
 function testMu(){
   // whack all references in require cache
   for (const req of Object.keys(require.cache)) {
@@ -18,35 +18,46 @@ function testMu(){
   return mu.apply(null, arguments)
 }
 
-function setupTest(){
-  const cwd = process.cwd()
-  const cwdTemp = path.join(cwd, 'test', 'temp')
-  fs.emptyDirSync(cwdTemp)
-  process.chdir(cwdTemp)
+function parseFlags(flags = []){
+  const local = flags.some(f => f.startsWith('-') && f.includes('l'))
+  const preserve = flags.some(f => f.startsWith('-') && f.includes('p'))
+  return {local, preserve}
 }
 
-function cleanupTest(){
+function setupTest(){
+  purge(false) //whacks everything in temp dir associated mu repo
+  const tempPath = path.join(process.cwd(), 'test', 'temp')
+  fs.emptyDirSync(tempPath)
+  process.chdir(tempPath)
+}
+
+//runs mu start in the right place (local|dropbox)
+function muStart(flags, name=''){
+  const local = parseFlags(flags).local
+  console.info(`${ local ? chalk.inverse('MU START LOCAL') : chalk.inverse('MU START DROPBOX')}`)
+  local ? testMu(['start']) : testMu(['start', path.join('test', name)])
+}
+
+function purge(preserve){
   const muOps = require('../src/modules/muOps')
   const remote = muOps.path()
-
-  const MU = {
-    local: '.mu',
-    remote: 'Mu Repositories',
-  }
-
-  const remoteDir = path.parse(remote).dir
-
-  if(remoteDir.indexOf(MU.local) === -1 && remoteDir.indexOf(MU.remote) >= 0){
+  const output = { success: false, remote }
+  if(!preserve && /mu/i.test(remote)){
     fs.emptyDirSync(remote)
-    trash(remote).then(() => {
-      console.info(chalk.cyan('cleaning up...'))
-      console.info(chalk.yellow(remote, 'moved to trash'))
-    })
+    output.success = true
   }
+  return output
 }
 
-function insert(string, index, substr){
-  return string.slice(0, index) + substr + string.slice(index)
+function cleanupTest(flags){
+  const preserve = parseFlags(flags).preserve
+  const p = purge(preserve)
+  if(p.success){
+    console.info(chalk.cyan('cleaning up...'))
+    console.info(chalk.yellow(p.remote), chalk.inverse('deleted'))
+  }else{
+    console.info(chalk.yellow(p.remote), chalk.inverse('preserved'))
+  }
 }
 
 function randomAscii(validIndices, numOfChars){
