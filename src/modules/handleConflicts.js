@@ -36,8 +36,8 @@ Select: (o) keep original file
         fileOps.overwrite(data)
         break
       case 'b':
-        while(fs.existsSync(`${fname}_copy-${++extension}${fext}`)){ /*intentionally empty*/ }
-        data[0] = `${fname}_copy-${extension}${fext}`
+        while(fs.existsSync(`${fname}.copy${++extension}${fext}`)){ /*intentionally empty*/ }
+        data[0] = `${fname}.copy${extension}${fext}`
         fileOps.overwrite(data)
         break
       default:

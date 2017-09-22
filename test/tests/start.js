@@ -4,7 +4,7 @@ const testOps = require('../testOps')
 module.exports = flags => {
 
   testOps.setupTest()
-  testOps.muStart(flags)
+  testOps.muStart(flags,'start')
 
   testOps.newline()
   testOps.muStart(flags)
