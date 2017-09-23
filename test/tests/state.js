@@ -11,7 +11,7 @@ module.exports = flags => {
 
   console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
-  testOps.testMu(['save'])
+  testOps.muSave()
 
   testOps.newline()
 
@@ -22,7 +22,7 @@ module.exports = flags => {
 
   console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
-  testOps.testMu(['save'])
+  testOps.muSave()
 
   testOps.newline()
 
@@ -33,7 +33,7 @@ module.exports = flags => {
 
   console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
-  testOps.testMu(['save'])
+  testOps.muSave()
 
   testOps.newline()
 
@@ -44,7 +44,7 @@ module.exports = flags => {
 
   console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
-  testOps.testMu(['save'])
+  testOps.muSave()
 
   testOps.cleanupTest(flags)
 }
