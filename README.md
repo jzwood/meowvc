@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://github.com/jzwood/meowvc"><img src="logo.svg" alt="" width="100"></a>
+  <a href="https://github.com/jzwood/meowvc"><img src="logo.png" alt="" width="100"></a>
   <br>
   mμ
   <br>
