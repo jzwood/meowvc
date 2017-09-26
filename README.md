@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://github.com/jzwood/meowvc"><img src="sticker.png" alt="" width="100"></a>
+  <a href="https://github.com/jzwood/meowvc"><img src="sticker.png" alt="" width="100" height="100"></a>
   <br>
   mμ
   <br>
@@ -70,11 +70,11 @@ Commands and arguments:
 
 **help:** shows usage
 
-**start:** creates a new mµ repo
+**start [name]:** creates a new mµ repo
 
 **state:** shows the current repo state
 
-**save:** records snapshot of current repo
+**save \<message>:** records snapshot of current repo
 
 **which:** shows name of current repo
 
