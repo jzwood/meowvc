@@ -31,7 +31,7 @@ module.exports = () => {
   /**
   * @description stores every hash on disk into RAM
   */
-  function save(head, meta){
+  function save(head, mdata){
     const hash = mod.hashOps.diskCache.bind(null, GlMem)
     const handle = diff => {
       const po = mod.pointerOps()
@@ -39,7 +39,15 @@ module.exports = () => {
         console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
       }else{
         _writeToDisk()
-        Object.assign(diff.tree.meta, meta)
+
+        const metafp = mod.muOps.path('history', po.head, 'meta.json')
+        const initMeta = { 'messages': [] }
+        const meta = fs.existsSync(metafp) ? fs.readJsonSync(metafp) : initMeta
+
+        meta.messages[po.version] = mdata.msg || meta.messages[po.version]
+        meta.parent = mdata.parent || meta.parent
+        fs.outputJsonSync(metafp, meta)
+
         fs.outputJsonSync(mod.muOps.path('history', po.head, 'v' + po.version + '.json'), diff.tree)
         po.update()
         console.info(chalk.green(`${po.head} v${po.version} successfully saved!`))
