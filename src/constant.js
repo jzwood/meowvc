@@ -27,7 +27,7 @@ module.exports = {
   binPath: muOps.path('disk_mem', 'bin'),
   get baseCase() {
     return {
-      'msg': '',
+      'meta': {},
       'ino': {},
       'dat': {}
     }

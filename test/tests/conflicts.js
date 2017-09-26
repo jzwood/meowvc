@@ -11,7 +11,7 @@ module.exports = flags => {
   let files1 = Object.keys(save1)
 
   console.info(chalk.inverse('MU'))
-  testOps.testMu(['save'])
+  testOps.muSave()
   testOps.testMu(['which'])
 
   console.info(chalk.inverse('MOD FILES'))

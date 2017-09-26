@@ -10,7 +10,7 @@ module.exports = flags => {
   const fileDataMap = testOps.addFiles(4)
   let newFiles = Object.keys(fileDataMap)
   console.info(chalk.inverse('MU'))
-  testOps.testMu(['save'])
+  testOps.muSave()
 
   testOps.newline()
 
