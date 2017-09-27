@@ -7,7 +7,7 @@ const core = require('../core')()
 ********/
 
 module.exports = function get(i, args){
-  const head = args[i + 1] || ''
+  const head = args[i + 1]
   let version = args[i + 2] || ''
   const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
   const po = pointerOps()

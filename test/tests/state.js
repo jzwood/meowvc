@@ -45,6 +45,7 @@ module.exports = flags => {
   console.info(chalk.inverse('MU STATE, MU SAVE'))
   testOps.testMu(['state'])
   testOps.muSave()
+  testOps.testMu(['history', 'master'])
 
   testOps.cleanupTest(flags)
 }
