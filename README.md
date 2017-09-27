@@ -1,10 +1,23 @@
-# mµ
+<h1 align="center">
+  <a href="https://github.com/jzwood/meowvc"><img src="sticker.png" alt="" width="100" height="100"></a>
+  <br>
+  mμ
+  <br>
+  <br>
+</h1>
 
-![node ≥ v6.10](https://img.shields.io/badge/node-%E2%89%A5%20v6.10-orange.svg)
+<p align="center">
+  <img src="https://img.shields.io/badge/node-%E2%89%A5%20v6.10-orange.svg" alt="node ≥ v6.10"/>
+</p>
 
-Version control for dummies (_by a dummy_)
+<h4 align="center">Casual version control</h4>
 
-Everyone who uses a computer to create things should have tools for backing up their work. If you use Dropbox or similar you have only really solved one problem: the need to access your files anytime and any place. Rad, yes, but you have not done anything other than preserve the most recent snapshot of your work. Enter version control.
+If you tap on computers regularly it is likely that at one time or another you have lost work.
+If this is true then it is possible you are also someone who obsessively saves and makes copies to placate your anxiety about loosing work.
+
+> I would cmd-s all the time: web pages, email, listening to music. I knew I had a problem when my ⌘ key broke.
+
+mμ is a version control system geared towards chilling out the stress endemenic to digital creation.
 
 ## version control
 Version control systems (VCS) are file databases that track file changes over time. VCS replace manual file versioning with software management. This simplification facilitates complex workflows unachievable by hand.
@@ -41,7 +54,7 @@ For more information on version control check out the <u>[visual guide to versio
 
 Most version control systems are complex and scary, e.g. **git**.
 > "Git has 145 commands, but there’s no git undo."
-\~ [Peter Lundgren](http://www.peterlundgren.com/blog/on-gits-shortcomings/)
+\~ [Peter Lundgren](http://www.peterlundgren.com/blog/on-gits-shortcomings/)
 
 mµ, on the other hand, is simple and approachable. Let's get started!
 
@@ -53,21 +66,21 @@ mµ, on the other hand, is simple and approachable. Let's get started!
 ### use mµ
 `$ mu <command> [<args>]`
 
-For more information on version control check out the <u>[visual guide to version control](https://betterexplained.com/articles/a-visual-guide-to-version-control/)</u>.
-
 Commands and arguments:
 
 **help:** shows usage
 
-**start:** creates a new mµ repo
+**start [name]:** creates a new mµ repo
 
 **state:** shows the current repo state
 
-**save:** records snapshot of current repo
+**save \<message>:** records snapshot of current repo
 
 **which:** shows name of current repo
 
 **saveas <name>:** saves current repo with a new name
+
+**history [limit=∞]:** shows ≤ the limit number of save messages for current repo
 
 **undo \<file|pattern>:** reverts file(s) (by name or pattern) to last save
 
