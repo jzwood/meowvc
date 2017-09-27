@@ -39,18 +39,11 @@ module.exports = () => {
         console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
       }else{
         _writeToDisk()
-
-        const metafp = mod.muOps.path('history', po.head, 'meta.json')
-        const initMeta = { 'messages': [] }
-        const meta = fs.existsSync(metafp) ? fs.readJsonSync(metafp) : initMeta
-
-        meta.messages[po.version] = mdata.msg || meta.messages[po.version]
-        meta.parent = mdata.parent || meta.parent
-        fs.outputJsonSync(metafp, meta)
-
-        fs.outputJsonSync(mod.muOps.path('history', po.head, 'v' + po.version + '.json'), diff.tree)
+        const [head, version] = [po.head, po.version]
+        mod.metaOps(head).update(version, mdata)
+        fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.tree)
         po.update()
-        console.info(chalk.green(`${po.head} v${po.version} successfully saved!`))
+        console.info(chalk.green(`${head} v${version} successfully saved!`))
       }
     }
     _preCache()

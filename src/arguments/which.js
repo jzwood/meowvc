@@ -3,7 +3,6 @@ const fs = require('fs-extra')
 
 const pointerOps = require('../modules/pointerOps')
 const muOps = require('../modules/muOps')
-const core = require('../core')()
 const gl = require('../constant')
 
 /**********
