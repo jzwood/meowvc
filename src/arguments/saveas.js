@@ -1,6 +1,7 @@
 const chalk = require('chalk')
 const pointerOps = require('../modules/pointerOps')
 const core = require('../core')()
+const stopwatch = require('../utils/timer')()
 
 /***********
 *  SAVEAS  *
@@ -13,7 +14,9 @@ module.exports = function saveas(i, args) {
     const [head, version] = [po.head, po.version]
     const parent = { head, version }
     if (po.pointToNewHead(name).success) {
+      stopwatch.start()
       core.save(head, {parent})
+      stopwatch.stop()
     } else {
       console.warn(chalk.red(`ERROR: Save named "${name}" already exists. Save cancelled.`))
     }
