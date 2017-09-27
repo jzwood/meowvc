@@ -12,23 +12,32 @@ module.exports = flags => {
 
   console.info(chalk.inverse('MU'))
   testOps.muSave()
-  testOps.testMu(['which'])
 
   console.info(chalk.inverse('MOD FILES'))
   files1.forEach(fp => {
     testOps.modFile(fp)
   })
+  console.info(chalk.inverse('MU SAVE'))
+  testOps.muSave()
 
-  console.info(chalk.inverse('MU SAVEAS'))
+  console.info(chalk.inverse('MU GET MASTER V0 && SAVEAS DEVELOP'))
+  testOps.testMu(['get', 'master', 'v0'])
   testOps.testMu(['saveas', 'develop'])
+
+  console.info(chalk.inverse('MOD FILES'))
+  files1.forEach(fp => {
+    testOps.modFile(fp)
+  })
+  console.info(chalk.inverse('MU SAVE'))
+  testOps.muSave()
 
   console.info(chalk.inverse('MU MASH'))
   testOps.testMu(['mash', 'master'])
 
-
   const cleanup = setInterval(() => {
     if(!global.muReplOpen){
       clearInterval(cleanup)
+      testOps.testMu(['state'])
       testOps.cleanupTest(flags)
     }
   }, 2000)

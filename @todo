@@ -1,10 +1,8 @@
 FOCUS:
-- add $ mu history
+- smarter mashing (ie some conflicts can be automerged)
 
 TODO:
-- smarter mashing (ie some conflicts can be automerged)
 - add tab autocomplete (?)
-- add timer (?)
 
 - diff (ugh)
 
@@ -12,3 +10,5 @@ DONE:
 - add flag for dropbox vs local for $ mu start
 - add test flags: -p (preserve), -l (local)
 - add save msg
+- add $ mu history
+- add timer (?)
