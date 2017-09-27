@@ -15,8 +15,7 @@ module.exports = function mash(i, args) {
   const po = mod.pointerOps()
 
   const handle = diff => {
-    let data
-    while (data = diff.deleted.pop()) {
+    let data; while (data = diff.deleted.pop()) {
       mod.fileOps.undelete(data)
     }
     return mod.handleConflicts(diff.modified, head, version, po.head, 'v' + gl.vnorm(po.version))

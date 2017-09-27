@@ -11,7 +11,7 @@ module.exports = function saveas(i, args) {
   const name = args[i + 1]
   if (name) {
     const po = pointerOps()
-    const [head, version] = [po.head, po.version]
+    const [head, version] = [po.head, po.version - 1]
     const parent = { head, version }
     if (po.pointToNewHead(name).success) {
       stopwatch.start()
