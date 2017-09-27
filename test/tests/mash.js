@@ -10,24 +10,26 @@ module.exports = flags => {
   const save1 = testOps.addFiles(4)
   let files1 = Object.keys(save1)
 
-  console.info(chalk.inverse('MU'))
+  console.info(chalk.inverse('STATE'))
   testOps.muSave()
   testOps.testMu(['which'])
 
-  console.info(chalk.inverse('DEL FILES'))
-  files1.forEach(fp => {
-    testOps.removeFile(fp)
+  console.info(chalk.inverse('MOD 2 FILES & 2 RM FILES'))
+  files1.forEach((fp,i) => {
+    if(i%2){
+      testOps.modFile(fp)
+    }else{
+      testOps.removeFile(fp)
+    }
   })
-
-  console.info(chalk.inverse('ADD FILES'))
-  const save2 = testOps.addFiles(4)
-  let files2 = Object.keys(save2)
 
   console.info(chalk.inverse('MU SAVEAS'))
   testOps.testMu(['saveas', 'develop'])
-  console.info(chalk.inverse('MU WHICH'))
-  testOps.testMu(['which'])
-  console.info(chalk.inverse('MU MASH'))
+
+  console.info(chalk.inverse('MU STATE'))
+  testOps.testMu(['state'])
+
+  console.info(chalk.inverse('MU MASH MASTER'))
   testOps.testMu(['mash', 'master'])
   console.info(chalk.inverse('MU STATUS'))
   testOps.testMu(['state'])
