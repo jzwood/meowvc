@@ -7,11 +7,12 @@ mu <command> [<args>]
 
   Commands:	Args:			Descriptions:
   help					- shows usage
-  start					- creates a new mu repo
+  start		[name]			- creates a new mu repo
   state					- shows the working repo state
-  save					- records snapshot of repo
+  save		<message>		- records snapshot of repo
   which					- shows name of current repo
   saveas	<name>			- saves repo with a new name
+  history	[limit]			- shows ≤ the limit number of save messages for current repo
   undo		<file|pattern>		- reverts file (or pattern) to last save
   get		<name> [version]	- switches to a different named repo
   mash		<name> [version]	- mashes (ie merges) named repo into current repo

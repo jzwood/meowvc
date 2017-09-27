@@ -10,9 +10,10 @@ module.exports = function saveas(i, args) {
   const name = args[i + 1]
   if (name) {
     const po = pointerOps()
-    const head = po.head
+    const [head, version] = [po.head, po.version]
+    const parent = { head, version }
     if (po.pointToNewHead(name).success) {
-      core.save(head)
+      core.save(head, {parent})
     } else {
       console.warn(chalk.red(`ERROR: Save named "${name}" already exists. Save cancelled.`))
     }

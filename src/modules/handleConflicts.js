@@ -1,4 +1,4 @@
-/*
+/**
  *  REPL MASH CONFLICT HANDLING
  */
 

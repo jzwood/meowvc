@@ -3,7 +3,7 @@ const path = require('path')
 const chalk = require('chalk')
 
 module.exports = {
-  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify, muStart
+  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify, muStart, muSave
 }
 
 // runs $ mu <param> in test environment
@@ -36,6 +36,10 @@ function muStart(flags, name=''){
   const local = parseFlags(flags).local
   console.info(`${ local ? chalk.inverse('MU START LOCAL') : chalk.inverse('MU START DROPBOX')}`)
   local ? testMu(['start']) : testMu(['start', path.join('test', name)])
+}
+
+function muSave(){
+  testMu(['save','save message ' + makeWord()])
 }
 
 function purge(preserve){

@@ -1,6 +1,6 @@
-/*
-* HASHING FUNCTIONS
-*/
+/**
+ * HASHING FUNCTIONS
+ */
 
 const path = require('path')
 const crc = require('crc')
