@@ -42,7 +42,7 @@ The big takeaway from the above example is that version control lets you work wi
 
 Another big win of version control is disaster prevention! If you ever loose work or screw up, it's easy to recover with version control. For instance, to save a snapshot of everything in a directory with mu is:
 
-`$ mu save`
+`$ mu save "short explanation"`
 
 No matter what you change within this directory, recovering the previous snapshot is simple:
 
@@ -70,7 +70,7 @@ Commands and arguments:
 
 **help:** shows usage
 
-**start [name]:** creates a new mµ repo
+**start [\<name>]:** creates a new mµ repo
 
 **state:** shows the current repo state
 
@@ -80,10 +80,10 @@ Commands and arguments:
 
 **saveas <name>:** saves current repo with a new name
 
-**history [limit=∞]:** shows ≤ the limit number of save messages for current repo
+**history [\<limit=∞>]:** shows ≤ the limit number of save messages for current repo
 
 **undo \<file|pattern>:** reverts file(s) (by name or pattern) to last save
 
-**get \<name> [version]:** switches to a different named repo
+**get \<name> [\<version>]:** switches to a different named repo
 
-**mash \<name> [version]:** mashes (ie merges) named repo into current repo
+**mash \<name> [\<version>]:** mashes (ie merges) named repo into current repo
