@@ -1,5 +1,6 @@
 FOCUS:
 - smarter mashing (ie some conflicts can be automerged)
+- prevent mashing of branch with itself (?)
 
 TODO:
 - add tab autocomplete (?)
