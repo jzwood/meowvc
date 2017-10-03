@@ -40,5 +40,5 @@ function writeFile(fileDiff) {
   fs.outputFileSync(fileDiff.fp, data)
   fs.utimesSync(fileDiff.fp, Date.now()/1000, fileDiff.mtime)
 
-  console.log(chalk.green('✓\t' + fp))
+  console.log(chalk.green('✓\t' + fileDiff.fp))
 }

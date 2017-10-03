@@ -49,13 +49,17 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
     return {head, version}
   }
 
+  // data = {fp, currentHashsum, targetHashsum, isutf8, mtime}
   function handle(data){
-    const isMergeDataTheSame = get(ancestorTree, 'dat', data[1], 2, data[0])
-    const isCurrentDataTheSame = get(ancestorTree, 'dat', data[1], 2, data[0])
-    if(isCurrentDataTheSame){
+    const isMergeDataNew = !(get(ancestorTree, 'dat', data.targetHashsum, 2, data.fp))
+    const isCurrentDataNew = !(get(ancestorTree, 'dat', data.currentHashsum, 2, data.fp))
+
+    if(isCurrentDataNew && !isMergeDataNew){
+      return next()
+    }else if(!isCurrentDataNew && isMergeDataNew){
       mod.fileOps.overwrite(data)
       return next()
-    }else{
+    }else{ // isCurrentDataNew = isMergeDataNew = true
       return promptUser(data)
     }
   }
