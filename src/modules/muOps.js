@@ -18,6 +18,7 @@ const MU = {
 }
 
 const muOps = {
+  findRemotePath,
   setupRemote,
   findMuidAncestor,
   repoPath: getRepoPath(),
@@ -26,8 +27,12 @@ const muOps = {
   }
 }
 
+function findRemotePath(name){
+  return name ? getDropboxPath(name) : MU.local
+}
+
 function setupRemote(name) {
-  const repoPath = name ? getDropboxPath(name) : MU.local
+  const repoPath = findRemotePath(name)
   fs.outputFileSync(MU.muidPath, repoPath)
   muOps.repoPath = getRepoPath()
 }

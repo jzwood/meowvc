@@ -3,7 +3,7 @@ const path = require('path')
 const chalk = require('chalk')
 
 module.exports = {
-  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify, muStart, muSave
+  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify, muStart, muSave, parseFlags
 }
 
 // runs $ mu <param> in test environment
@@ -24,45 +24,65 @@ function parseFlags(flags = []){
   return {local, preserve}
 }
 
-function setupTest(){
-  purge(false) //whacks everything in temp dir associated mu repo
-  const tempPath = path.join(process.cwd(), 'test', 'temp')
-  fs.emptyDirSync(tempPath)
-  process.chdir(tempPath)
-}
-
 //runs mu start in the right place (local|dropbox)
-function muStart(flags, name=''){
-  const local = parseFlags(flags).local
-  console.info(`${ local ? chalk.inverse('MU START LOCAL') : chalk.inverse('MU START DROPBOX')}`)
-  local ? testMu(['start']) : testMu(['start', path.join('test', name)])
+function muStart(isLocal, name='', msg=''){
+  console.info(`${ isLocal ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
+  isLocal ? testMu(['start']) : testMu(['start', name])
 }
 
 function muSave(){
   testMu(['save','save message ' + makeWord()])
 }
 
-function purge(preserve){
-  const muOps = require('../src/modules/muOps')
-  const remote = muOps.path()
-  const output = { success: false, remote }
-  if(!preserve && /mu/i.test(remote)){
-    fs.emptyDirSync(remote)
-    output.success = true
+function emptyTestDir(remote, remove=false){
+  if(/\.mu|Mu Repositories/.test(remote)){ // last rmrf failsafe
+    if(remove){
+      fs.removeSync(remote)
+    }else{
+      fs.emptyDirSync(remote)
+    }
   }
-  return output
 }
 
-function cleanupTest(flags){
+function getRemote(isLocal, name){
+  const muOps = require('../src/modules/muOps')
+  return muOps.findRemotePath(isLocal ? false : name)
+}
+
+function setupTest(flags, name){
+  const local = parseFlags(flags).local
+
+  const tempPath = path.join(process.cwd(), 'test', 'temp')
+  fs.emptyDirSync(tempPath)
+  process.chdir(tempPath)
+
+  name = path.join('test', name)
+  const remote = getRemote(local, name)
+  emptyTestDir(remote)
+
+  muStart(local, name)
+}
+
+function cleanupTest(flags, name){
+  name = path.join('test', name)
+  const local = parseFlags(flags).local
   const preserve = parseFlags(flags).preserve
-  const p = purge(preserve)
-  if(p.success){
-    console.info(chalk.cyan('cleaning up...'))
-    console.info(chalk.yellow(p.remote), chalk.inverse('deleted'))
+
+  const remote = getRemote(local, name)
+  if(!preserve){
+    emptyTestDir(remote, remove=true)
+  }
+
+  if(preserve){
+    console.info(chalk.yellow(remote), chalk.inverse('preserved'))
   }else{
-    console.info(chalk.yellow(p.remote), chalk.inverse('preserved'))
+    console.info(chalk.cyan('cleaning up...'))
+    console.info(chalk.yellow(remote), chalk.inverse('deleted'))
   }
 }
+
+
+/*********** THE FOLLOWING FUNCTIONS ARE FOR FILE TESTING ***********/
 
 function randomAscii(validIndices, numOfChars){
   const getValidIndex = () => validIndices[~~(validIndices.length * Math.random())]
