@@ -2,12 +2,11 @@ const chalk = require('chalk')
 const testOps = require('../testOps')
 
 module.exports = flags => {
-
-  testOps.setupTest()
-  testOps.muStart(flags,'start')
+  const name = 'start'
+  testOps.setupTest(flags, name)
 
   testOps.newline()
   testOps.muStart(flags)
 
-  testOps.cleanupTest(flags)
+  testOps.cleanupTest(flags, name)
 }

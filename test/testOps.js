@@ -24,43 +24,63 @@ function parseFlags(flags = []){
   return {local, preserve}
 }
 
-function setupTest(){
-  purge(false) //whacks everything in temp dir associated mu repo
+function setupTest(flags, name){
+  name = path.join('test', name)
+  const local = parseFlags(flags).local
+
+  const remote = getRemote(local ? null : name)
+  emptyTestDir(remote)
+
   const tempPath = path.join(process.cwd(), 'test', 'temp')
   fs.emptyDirSync(tempPath)
   process.chdir(tempPath)
+  muStart(local, name)
 }
 
 //runs mu start in the right place (local|dropbox)
-function muStart(flags, name=''){
-  const local = parseFlags(flags).local
-  console.info(`${ local ? chalk.inverse('MU START LOCAL') : chalk.inverse('MU START DROPBOX')}`)
-  local ? testMu(['start']) : testMu(['start', path.join('test', name)])
+function muStart(isLocal, name){
+  if(name){
+    console.info(`${ isLocal ? chalk.inverse('MU START LOCAL') : chalk.inverse('MU START DROPBOX')}`)
+    isLocal ? testMu(['start']) : testMu(['start', name])
+  }else{
+    throw 'muStart param <name> not found'
+  }
 }
 
 function muSave(){
   testMu(['save','save message ' + makeWord()])
 }
 
-function purge(preserve){
-  const muOps = require('../src/modules/muOps')
-  const remote = muOps.path()
-  const output = { success: false, remote }
-  if(!preserve && /mu/i.test(remote)){
-    fs.emptyDirSync(remote)
-    output.success = true
+function emptyTestDir(remote, remove=false){
+  if(/\.mu|Mu Repositories/.test(remote)){ // last rmrf failsafe
+    if(remove){
+      fs.removeSync(remote)
+    }else{
+      fs.emptyDirSync(remote)
+    }
   }
-  return output
 }
 
-function cleanupTest(flags){
-  const preserve = parseFlags(flags).preserve
-  const p = purge(preserve)
-  if(p.success){
-    console.info(chalk.cyan('cleaning up...'))
-    console.info(chalk.yellow(p.remote), chalk.inverse('deleted'))
+function getRemote(name){
+  const muOps = require('../src/modules/muOps')
+  muOps.setupRemote(name)
+  return muOps.path()
+}
+
+function cleanupTest(flags, name){
+  name = path.join('test', name)
+  const pf = parseFlags(flags)
+
+  const remote = getRemote(pf.local ? null : name)
+  if(!pf.preserve){
+    emptyTestDir(remote, remove=true)
+  }
+
+  if(pf.preserve){
+    console.info(chalk.yellow(remote), chalk.inverse('preserved'))
   }else{
-    console.info(chalk.yellow(p.remote), chalk.inverse('preserved'))
+    console.info(chalk.cyan('cleaning up...'))
+    console.info(chalk.yellow(remote), chalk.inverse('deleted'))
   }
 }
 
