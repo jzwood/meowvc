@@ -75,9 +75,9 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
 
   function promptUser(data){
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-    let file = data[0], pf = path.parse(file), fname = pf.name, fext = pf.ext
+    let parfp = path.parse(data.fp), fname = parfp.name, fext = parfp.ext
     const prompt =
-`conflict for file ${chalk.yellow(file)}
+`conflict for file ${chalk.yellow(data.fp)}
 Select: (o) keep original file
         (n) replace with new file
         (b) keep both `
@@ -93,7 +93,7 @@ Select: (o) keep original file
       }else if (answer === 'b'){
         let extension = -1, inner = '.copy.'
         while(fs.existsSync(`${fname}${inner}${++extension}${fext}`)){ /*intentionally empty*/ }
-        data[0] = `${fname}${inner}${extension}${fext}`
+        data.fp = `${fname}${inner}${extension}${fext}`
         mod.fileOps.overwrite(data)
       }else if(answer !== 'o'){
         return handle(data)
