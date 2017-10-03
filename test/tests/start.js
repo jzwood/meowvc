@@ -6,7 +6,7 @@ module.exports = flags => {
   testOps.setupTest(flags, name)
 
   testOps.newline()
-  testOps.muStart(flags)
+  testOps.muStart(testOps.parseFlags(flags).local, '', '(when mu repo exists already)')
 
   testOps.cleanupTest(flags, name)
 }

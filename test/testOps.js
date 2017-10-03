@@ -3,7 +3,7 @@ const path = require('path')
 const chalk = require('chalk')
 
 module.exports = {
-  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify, muStart, muSave
+  testMu, setupTest, cleanupTest, removeFile, addFiles, newline, modFile, rename, verify, muStart, muSave, parseFlags
 }
 
 // runs $ mu <param> in test environment
@@ -24,27 +24,10 @@ function parseFlags(flags = []){
   return {local, preserve}
 }
 
-function setupTest(flags, name){
-  name = path.join('test', name)
-  const local = parseFlags(flags).local
-
-  const remote = getRemote(local ? null : name)
-  emptyTestDir(remote)
-
-  const tempPath = path.join(process.cwd(), 'test', 'temp')
-  fs.emptyDirSync(tempPath)
-  process.chdir(tempPath)
-  muStart(local, name)
-}
-
 //runs mu start in the right place (local|dropbox)
-function muStart(isLocal, name){
-  if(name){
-    console.info(`${ isLocal ? chalk.inverse('MU START LOCAL') : chalk.inverse('MU START DROPBOX')}`)
-    isLocal ? testMu(['start']) : testMu(['start', name])
-  }else{
-    throw 'muStart param <name> not found'
-  }
+function muStart(isLocal, name='', msg=''){
+  console.info(`${ isLocal ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
+  isLocal ? testMu(['start']) : testMu(['start', name])
 }
 
 function muSave(){
@@ -61,28 +44,45 @@ function emptyTestDir(remote, remove=false){
   }
 }
 
-function getRemote(name){
+function getRemote(isLocal, name){
   const muOps = require('../src/modules/muOps')
-  muOps.setupRemote(name)
-  return muOps.path()
+  return muOps.findRemotePath(isLocal ? false : name)
+}
+
+function setupTest(flags, name){
+  const local = parseFlags(flags).local
+
+  const tempPath = path.join(process.cwd(), 'test', 'temp')
+  fs.emptyDirSync(tempPath)
+  process.chdir(tempPath)
+
+  name = path.join('test', name)
+  const remote = getRemote(local, name)
+  emptyTestDir(remote)
+
+  muStart(local, name)
 }
 
 function cleanupTest(flags, name){
   name = path.join('test', name)
-  const pf = parseFlags(flags)
+  const local = parseFlags(flags).local
+  const preserve = parseFlags(flags).preserve
 
-  const remote = getRemote(pf.local ? null : name)
-  if(!pf.preserve){
+  const remote = getRemote(local, name)
+  if(!preserve){
     emptyTestDir(remote, remove=true)
   }
 
-  if(pf.preserve){
+  if(preserve){
     console.info(chalk.yellow(remote), chalk.inverse('preserved'))
   }else{
     console.info(chalk.cyan('cleaning up...'))
     console.info(chalk.yellow(remote), chalk.inverse('deleted'))
   }
 }
+
+
+/*********** THE FOLLOWING FUNCTIONS ARE FOR FILE TESTING ***********/
 
 function randomAscii(validIndices, numOfChars){
   const getValidIndex = () => validIndices[~~(validIndices.length * Math.random())]
