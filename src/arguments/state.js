@@ -15,13 +15,13 @@ module.exports = function state(){
   const handle = diff => {
     let data
     while(data = diff.modified.pop()) {
-      console.info(chalk.cyan('%\t' + data[0]))
+      console.info(chalk.cyan('%\t' + data.fp))
     }
     while(data = diff.added.pop()) {
-      console.info(chalk.yellow('+\t' + data[0]))
+      console.info(chalk.yellow('+\t' + data.fp))
     }
     while(data = diff.deleted.pop()) {
-      console.info(chalk.red('x\t' + data[0]))
+      console.info(chalk.red('x\t' + data.fp))
     }
   }
   core.difference(null, null, handle)

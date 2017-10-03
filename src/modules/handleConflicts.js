@@ -17,6 +17,8 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
     return false
   }
 
+  // const currentTreeData = mod.treeOps(currentHead, CurrentVersion)
+
   const ancestor = findCommonAncestor(mergeHead, mergeVersion, currentHead, CurrentVersion)
   const ancestorTree = mod.treeOps.getSavedData(ancestor.head, 'v' + ancestor.version)
 
@@ -48,6 +50,7 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
   }
 
   function handle(data){
+    const isMergeDataTheSame = get(ancestorTree, 'dat', data[1], 2, data[0])
     const isCurrentDataTheSame = get(ancestorTree, 'dat', data[1], 2, data[0])
     if(isCurrentDataTheSame){
       mod.fileOps.overwrite(data)

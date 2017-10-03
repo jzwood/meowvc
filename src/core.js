@@ -15,7 +15,7 @@ module.exports = () => {
     lineQueue: [],
     binQueue: []
   }
-  let tree, lastSave
+  let currentTree, targetTree
 
   return {
     save,
@@ -41,7 +41,7 @@ module.exports = () => {
         _writeToDisk()
         const [head, version] = [po.head, po.version]
         mod.metaOps(head).update(version, mdata)
-        fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.tree)
+        fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
         po.update()
         console.info(chalk.green(`${head} v${version} successfully saved!`))
       }
@@ -70,45 +70,51 @@ module.exports = () => {
   * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
   function difference(head, version, handle, filterPattern, hash=mod.hashOps.hashIt) {
-    lastSave = mod.treeOps.getSavedData(head, version)
-    // tree implicity populates GlMem.fileHashLog
-    tree = tree || mod.treeOps.treeify(_forEachFile(hash))
+    targetTree = mod.treeOps.getSavedData(head, version)
+    // currentTree implicity populates GlMem.fileHashLog
+    currentTree = currentTree || mod.treeOps.treeify(_forEachFile(hash))
     const fileHashLog = new Map(GlMem.fileHashLog) //shallow clone
-    // previousFileHashes = previous recorded Hashes
-    const previousFileHashes = Object.keys(lastSave.dat)
+    const targetFileHashes = Object.keys(targetTree.dat)
 
     const modified = [], deleted = []
 
-    let hashsum; while (hashsum = previousFileHashes.pop()) {
-      const data = lastSave.dat[hashsum]
+    let targetHashsum; while (targetHashsum = targetFileHashes.pop()) {
+      const data = targetTree.dat[targetHashsum]
       const [isutf8, size, files] = data
       const filepaths = Object.keys(files)
       let fp; while (fp = filepaths.pop()) {
-        const equivFiles = hash = fileHashLog.get(fp)
-        const equivHashes = (hash === hashsum)
+        const equivFiles = currentHashsum = fileHashLog.get(fp)
+        const equivHashes = (currentHashsum === targetHashsum)
 
         fileHashLog.delete(fp)
 
         if (!filterPattern || filterPattern.test(fp)) {
           const mtime = files[fp]
+          const fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
           if (equivFiles && !equivHashes) {
-            modified.push([fp, hashsum, isutf8, mtime])
+            modified.push(fileDiff)
           } else if (!equivFiles){
-            deleted.push([fp, hashsum, isutf8, mtime])
+            deleted.push(fileDiff)
           }
         }
       }
     }
-    let added = Array.from(fileHashLog)
-    if(filterPattern){
-      added = added.filter(hash0fp1 => filterPattern.test(hash0fp1[1]))
-    }
+
+    // let added = Array.from(fileHashLog).reduce((accum, hash0fp1) =>
+    //   filterPattern.test(hash0fp1[1]) ? accum.concat({'fp': hash0fp1[0]}) : accum, [])
+
+    let added = []
+    fileHashLog.forEach((fp, hash) => {
+      if(!filterPattern || filterPattern.test(fp)){
+        added.push({'fp': fp})
+      }
+    })
 
     const nothingChanged = !added.length && !deleted.length && !modified.length
 
     // added, modified, & deleted collected
     return handle({
-      tree,
+      currentTree,
       nothingChanged,
       added,
       deleted,
@@ -121,16 +127,16 @@ module.exports = () => {
   * @description saves each file to disk and updates fs tree
   */
   function _forEachFile(cacheFxn) {
-    return (tree, childpath, relpath, status) => {
+    return (currentTree, childpath, relpath, status) => {
       const inode = status.ino
-      const onfile = mod.treeOps.getOnFileData(lastSave, inode, relpath)
+      const onfile = mod.treeOps.getOnFileData(targetTree, inode, relpath)
       const data = {
         size: status.size,
         mtime: fs._toUnixTimestamp(status.mtime),
         isutf8: onfile.isutf8
       }
 
-      let hashsum = mod.treeOps.getHashByInode(lastSave, inode)
+      let hashsum = mod.treeOps.getHashByInode(targetTree, inode)
       if(!onfile.exists ||
         onfile.size !== data.size ||
         onfile.mtime !== data.mtime) {
@@ -140,8 +146,8 @@ module.exports = () => {
       }
 
       GlMem.fileHashLog.set(relpath, hashsum)
-      mod.treeOps.setHashByInode(tree, inode, hashsum)
-      mod.treeOps.setTreeData(tree, hashsum, relpath, data)
+      mod.treeOps.setHashByInode(currentTree, inode, hashsum)
+      mod.treeOps.setTreeData(currentTree, hashsum, relpath, data)
     }
   }
 
