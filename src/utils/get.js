@@ -4,7 +4,7 @@ module.exports = (root, keyArr) => {
   if(root){
     for(let i=0; i<keyArr.length; i++){
       root = root[keyArr[i]]
-      if(!root){
+      if(typeof(root) === 'undefined'){
         return false
       }
     }

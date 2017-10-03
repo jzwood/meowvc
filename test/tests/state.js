@@ -15,7 +15,7 @@ module.exports = flags => {
 
   testOps.newline()
 
-  console.info(chalk.inverse('DEL FILES'))
+  console.info(chalk.inverse('DEL 2 FILES'))
   for(let i=0, n=Math.floor(newFiles.length/2); i<n; i++){
     testOps.removeFile(newFiles[i])
   }

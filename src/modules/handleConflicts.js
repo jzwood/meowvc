@@ -44,15 +44,14 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
 
     const head = mergeHead
     const version = Math.min(currentSaves[mergeHead], mergeVersion)
-    console.info(head, currentSaves[mergeHead], mergeVersion)
 
     return {head, version}
   }
 
   // data = {fp, currentHashsum, targetHashsum, isutf8, mtime}
   function handle(data){
-    const isMergeDataNew = !(get(ancestorTree, 'dat', data.targetHashsum, 2, data.fp))
-    const isCurrentDataNew = !(get(ancestorTree, 'dat', data.currentHashsum, 2, data.fp))
+    const isMergeDataNew = (get(ancestorTree, ['dat', data.targetHashsum, 2, data.fp]))
+    const isCurrentDataNew = (get(ancestorTree, ['dat', data.currentHashsum, 2, data.fp]))
 
     if(isCurrentDataNew && !isMergeDataNew){
       return next()
