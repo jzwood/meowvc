@@ -17,8 +17,6 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
     return false
   }
 
-  // const currentTreeData = mod.treeOps(currentHead, CurrentVersion)
-
   const ancestor = findCommonAncestor(mergeHead, mergeVersion, currentHead, CurrentVersion)
   const ancestorTree = mod.treeOps.getSavedData(ancestor.head, 'v' + ancestor.version)
 
@@ -48,7 +46,9 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
     return {head, version}
   }
 
-  // data = {fp, currentHashsum, targetHashsum, isutf8, mtime}
+  /**
+   * @param {object} data - {[str]fp, [str]currentHashsum, [str]targetHashsum, [0|1]isutf8, [ℤ,≥0]mtime}
+   */
   function handle(data){
     const isMergeDataNew = (get(ancestorTree, ['dat', data.targetHashsum, 2, data.fp]))
     const isCurrentDataNew = (get(ancestorTree, ['dat', data.currentHashsum, 2, data.fp]))
@@ -58,7 +58,7 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
     }else if(!isCurrentDataNew && isMergeDataNew){
       mod.fileOps.overwrite(data)
       return next()
-    }else{ // isCurrentDataNew = isMergeDataNew = true
+    }else{ // implicity: isCurrentDataNew = isMergeDataNew = true
       return promptUser(data)
     }
   }
