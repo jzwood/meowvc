@@ -2,6 +2,7 @@ FOCUS:
 - add diff (ugh)
 
 TODO:
+- add automerge messages (ie don't fix silently)(?)
 - compress (gzip/shoco?) everything that can be compressed
 - add tab autocomplete (?)
 

@@ -4,49 +4,48 @@ const eol = require('os').EOL
 
 const pointerOps = require('../modules/pointerOps')
 const muOps = require('../modules/muOps')
-
-const minimumEditDistance = require('minimum-edit-distance')
+const treeOps = require('../modules/treeOps')
+const fileOps = require('../modules/fileOps')
+const isUtf8 = require('is-utf8')
+const get = require('../utils/get')
 
 /*********
 *  DIFF  *
 *********/
 
-module.exports = function diff(i, args){
-  const [p1, p2=10] = args.slice(i + 1)
+module.exports = function diff(i, args) {
+  const file = args[i + 1]
 
-  console.info(p1,p2)
-  // return 0
-
-  const smaller = Math.min(p1.length, p2.length)
-  const diffSize = 1000
-
-  let index
-  for(index=0; index<smaller; index+=diffSize){
-    let difference = minimumEditDistance.diff(p1, p2)
-    let backtrace = difference.backtrace
-    displayDiff(p1, backtrace)
-  }
-  if(p1.length > p2.length){
-    displayRemoved(p1.slice(i, p1.length-1))
-  }else{
-    displayAdded(p2.slice(i, p2.length-1))
-  }
-
-  let ancestor
-  if (muOps.repoPath){
-    console.warn(chalk.yellow('Warning: repo already setup'))
-  } else if(ancestor = muOps.findMuidAncestor()) {
-    console.warn(chalk.yellow('Warning: mu subdirectory. Please invoke mu from root:', ancestor))
-  } else {
-    muOps.setupRemote(remoteName)
-    //init history folder
-    fs.ensureDirSync(muOps.path('history'))
-    //init pointer
-    pointerOps()
-    //init ignore
-    if (!fs.existsSync(muOps.path('_ignore'))) {
-      fs.outputFileSync(muOps.path('_ignore'), `node_modules${eol}^\\.`, 'utf8')
+  if (fs.existsSync(file)) {
+    const f1 = fs.readFileSync(file)
+    if(isUtf8(f1)){
+      const f2 = fileOps.getFileMostRecentSave(file) || ''
+      return fileOps.fdiff(f1.toString('utf8'), f2.toString('utf8'))
     }
-    console.info(chalk.green('setup done'))
+    console.warn(chalk.yellow('Halting: It\'s a bad idea to diff binary files'))
+    return 1
   }
+
+
+  // let pattern = args[i + 1]
+  // if (pattern) {
+  //   pattern = new RegExp(pattern.trim())
+  //
+  //   const handle = diff => {
+  //     let data
+  //     while(data = diff.modified.pop()) {
+  //       console.info(chalk.cyan('%\t' + data.fp))
+  //     }
+  //     while(data = diff.added.pop()) {
+  //       console.info(chalk.yellow('+\t' + data.fp))
+  //     }
+  //     while(data = diff.deleted.pop()) {
+  //       console.info(chalk.red('x\t' + data.fp))
+  //     }
+  //   }
+  //
+  //   core.difference(null, null, handle, pattern)
+  // } else {
+  //   console.warn(chalk.red('diff expects a filename or pattern, e.g.') + chalk.inverse('$ mu diff path/to/file.txt'))
+  // }
 }

@@ -16,8 +16,7 @@ mu <command> [<args>]
   undo      <file|pattern>        - reverts file (or pattern) to last save
   get       <name> [<version>]    - switches to a different named repo
   mash      <name> [<version>]    - mashes (ie merges) named repo into current repo
-  diff      <file1> <file2>       - shows the char-wise difference between the two files
-  diff      <branch> [<version>]  - shows which files are different between current and selected repo
+  diff      <file|pattern>        - shows the char-wise difference between file and its predecessor 
 `
 
 module.exports = {
