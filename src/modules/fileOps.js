@@ -2,11 +2,14 @@
  *  FILE OPERATION: WRITING / REMOVING
  */
 
+const minimumEditDistance = require('minimum-edit-distance')
+const eol = require('os').EOL
 const fs = require('fs-extra')
 const chalk = require('chalk')
 const gl = require('../constant')
 const muOps = require('./muOps')
-const minimumEditDistance = require('minimum-edit-distance')
+const pointerOps = require('./pointerOps')
+const treeOps = require('./treeOps')
 
 module.exports = {
   overwrite: writeFile,
@@ -14,14 +17,20 @@ module.exports = {
   unmodify: writeFile,
   unadd: remove,
   getFileMostRecentSave,
+  retrieveData,
   fdiff
 }
 
 
 function fdiff(str1, str2, fast=false) {
 
-  const p1 = str1.split(/(?= |\n)/)
-  const p2 = str2.split(/(?= |\n)/)
+  const splitIt = str => {
+    return str.split(eol).reduce((acc, substr) => {
+      return acc.concat(eol, ...substr.split(/(?=\s)/))
+    },[])
+  }
+
+  const [p1, p2] = [str1, str2].map(splitIt)
 
   const max = Math.max(p1.length, p2.length)
 
@@ -32,8 +41,7 @@ function fdiff(str1, str2, fast=false) {
     Array.prototype.push.apply(diff, getDiff(p1.slice(i, i + diffSize), p2.slice(i, i + diffSize)))
   }
   const diffString = diff.join('')
-  console.log(diffString)
-  return getDiff
+  return diffString
 
   function getDiff(p1, p2) {
     const backtrace = minimumEditDistance.diff(p1, p2, Infinity).backtrace
@@ -65,9 +73,10 @@ function getFileMostRecentSave(fp){
 
   const hashes = Object.keys(currentTree.dat)
   let hash; while (hash = hashes.pop()){
-    const fileDiff = currentTree[hash]
-    if(Object.keys(fileDiff[2])[0] === fp && fileDiff[0]){
-      return retrieveData(fileDiff)
+    const data = currentTree.dat[hash]
+    const isutf8 = data[0]
+    if(Object.keys(data[2]).some(k => (k === fp)) && isutf8){
+      return retrieveData({'targetHashsum': hash, isutf8})
     }
   }
   return false
@@ -82,6 +91,7 @@ function remove(fileDiff) {
   }
 }
 
+// fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
 function retrieveData(fileDiff){
   const getUtf8Data = () => {
     const fileArray = fs.readJsonSync(muOps.path('disk_mem', 'files', gl.insert(fileDiff.targetHashsum, 2, '/')), 'utf8')
