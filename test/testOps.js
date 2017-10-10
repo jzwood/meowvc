@@ -81,7 +81,6 @@ function cleanupTest(flags, name){
   }
 }
 
-
 /*********** THE FOLLOWING FUNCTIONS ARE FOR FILE TESTING ***********/
 
 function randomAscii(validIndices, numOfChars){

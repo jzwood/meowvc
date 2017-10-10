@@ -87,3 +87,5 @@ Commands and arguments:
 **get \<name> [\<version>]:** switches to a different named repo
 
 **mash \<name> [\<version>]:** mashes (ie merges) named repo into current repo
+
+**diff \<file|pattern>:** shows the word differences between current and saved version of file
