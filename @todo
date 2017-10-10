@@ -1,14 +1,17 @@
 FOCUS:
-- smarter mashing (ie some conflicts can be automerged)
+- fix history bugs
+- add tests for diff
 
 TODO:
+- add automerge messages (ie don't fix silently)(?)
+- compress (gzip/shoco?) everything that can be compressed
 - add tab autocomplete (?)
 
-- diff (ugh)
-
 DONE:
+- smarter mashing (ie some conflicts can be automerged)
 - add flag for dropbox vs local for $ mu start
 - add test flags: -p (preserve), -l (local)
 - add save msg
 - add $ mu history
 - add timer (?)
+- smarter mashing (ie some conflicts can be automerged)

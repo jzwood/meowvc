@@ -23,7 +23,7 @@ module.exports = () => {
 
   function setPointer(head, version){
     pointer.head = head
-    pointer.branch[head] = parseInt(version.match(/([0-9])+/)[1], 10)
+    pointer.branch[head] = parseInt(version.match(/([0-9]+)/)[1], 10)
   }
 
   function update(){
@@ -53,7 +53,7 @@ module.exports = () => {
     let latest = 0
     if(fs.existsSync(historyPath)){
       let lastFile = fs.readdirSync(historyPath).pop() || ''
-      lastFile = lastFile.match(/^v([0-9])+/)
+      lastFile = lastFile.match(/^v([0-9]+)/)
       latest = lastFile ? parseInt(lastFile[1], 10) : latest
     }
     return latest

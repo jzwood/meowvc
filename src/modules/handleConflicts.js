@@ -8,6 +8,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const chalk = require('chalk')
 const loader = require('../utils/loader')
+const get = require('../utils/get')
 const mod = loader.require('modules')
 
 module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersion) => {
@@ -16,62 +17,88 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
     return false
   }
 
-  const parent = mod.metaOps(currentHead).meta.parent || { 'head': 'master', 'version': 0 } //only master doesn't have a parent
-  const parentDat = mod.treeOps.getSavedData(parent.head, 'v' + parent.version).dat
+  const ancestor = findCommonAncestor(mergeHead, mergeVersion, currentHead, CurrentVersion)
+  const ancestorTree = mod.treeOps.getSavedData(ancestor.head, 'v' + ancestor.version)
 
   return handle(conflicts.pop())
 
   /*********** FUNCTION DEFS BELOW ***********/
 
-  function handle(data){
-    // console.info(parentDat, data)
+  function findCommonAncestor(mergeHead, mergeVersion, currentHead, CurrentVersion){
+    const getParent = head => mod.metaOps(head).meta.parent
 
-    if(parentDat[data[1]]){ //parent hash is identical ∴ it can be automatically merged
+    const currentSaves = { [mergeHead] : mergeVersion }
+    let currentParent; while(currentParent = getParent(currentHead)){
+      currentHead = currentParent.head
+      Object.assign(currentSaves, { [currentParent.head] : currentParent.version})
+    }
+
+    mergeVersion = parseInt(mergeVersion.match(/([0-9])+/)[1], 10)
+    while(typeof(currentSaves[mergeHead]) === 'undefined'){
+      const merge = getParent(mergeHead)
+      mergeHead = merge.head
+      mergeVersion = merge.version
+    }
+
+    const head = mergeHead
+    const version = Math.min(currentSaves[mergeHead], mergeVersion)
+
+    return {head, version}
+  }
+
+  /**
+   * @param {object} data - {[str]fp, [str]currentHashsum, [str]targetHashsum, [0|1]isutf8, [ℤ,≥0]mtime}
+   */
+  function handle(data){
+    const isMergeDataNew = (get(ancestorTree, ['dat', data.targetHashsum, 2, data.fp]))
+    const isCurrentDataNew = (get(ancestorTree, ['dat', data.currentHashsum, 2, data.fp]))
+
+    if(isCurrentDataNew && !isMergeDataNew){
+      return next()
+    }else if(!isCurrentDataNew && isMergeDataNew){
       mod.fileOps.overwrite(data)
       return next()
+    }else{ // implicity: isCurrentDataNew = isMergeDataNew = true
+      return promptUser(data)
     }
+  }
 
-    return promptUser()
+  function next(){
+    if(conflicts.length){
+      return handle(conflicts.pop())
+    }else{
+      console.info(chalk.green(`Repo ${mergeHead} ${mergeVersion} mashed into ${currentHead} ${CurrentVersion}`), chalk.yellow('Note: Mash unsaved!'))
+      return false
+    }
+  }
 
-    /*********** FUNCTION DEFS BELOW ***********/
+  function promptUser(data){
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+    let parfp = path.parse(data.fp), fname = parfp.name, fext = parfp.ext
+    const prompt =
+`conflict for file ${chalk.yellow(data.fp)}
+Select: (o) keep original file
+        (n) replace with new file
+        (b) keep both `
 
-    function next(){
-      if(conflicts.length){
-        return handle(conflicts.pop())
-      }else{
-        console.info(chalk.green(`Repo ${mergeHead} ${mergeVersion} mashed into ${currentHead} ${CurrentVersion}`), chalk.yellow('Note: Mash unsaved!'))
-        return false
+    global.muReplOpen = true
+    rl.question(prompt, answer => {
+      rl.close()
+      global.muReplOpen = false
+
+      answer = answer.toLowerCase().trim()
+      if(answer === 'n'){
+        mod.fileOps.overwrite(data)
+      }else if (answer === 'b'){
+        let extension = -1, inner = '.copy.'
+        while(fs.existsSync(`${fname}${inner}${++extension}${fext}`)){ /*intentionally empty*/ }
+        data.fp = `${fname}${inner}${extension}${fext}`
+        mod.fileOps.overwrite(data)
+      }else if(answer !== 'o'){
+        return handle(data)
       }
-    }
 
-    function promptUser(){
-      const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-      let file = data[0], pf = path.parse(file), fname = pf.name, fext = pf.ext
-      const prompt =
-  `conflict for file ${chalk.yellow(file)}
-  Select: (o) keep original file
-          (n) replace with new file
-          (b) keep both `
-
-      global.muReplOpen = true
-      rl.question(prompt, answer => {
-        rl.close()
-        global.muReplOpen = false
-
-        answer = answer.toLowerCase().trim()
-        if(answer === 'n'){
-          mod.fileOps.overwrite(data)
-        }else if (answer === 'b'){
-          let extension = -1, inner = '.copy.'
-          while(fs.existsSync(`${fname}${inner}${++extension}${fext}`)){ /*intentionally empty*/ }
-          data[0] = `${fname}${inner}${extension}${fext}`
-          mod.fileOps.overwrite(data)
-        }else if(answer !== 'o'){
-          return handle(data)
-        }
-
-        return next()
-      })
-    }
+      return next()
+    })
   }
 }
