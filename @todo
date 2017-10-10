@@ -1,5 +1,6 @@
 FOCUS:
-- add diff (ugh)
+- fix history bugs
+- add tests for diff
 
 TODO:
 - add automerge messages (ie don't fix silently)(?)
