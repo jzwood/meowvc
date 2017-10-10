@@ -24,8 +24,10 @@ module.exports = head => {
 
   function list(limit) {
     console.info(chalk.green('history of'), head)
-    meta.messages.slice(-limit).map((msg, v) => {
-      console.info(chalk.yellow('v' + v), msg)
+    meta.messages.map((msg, v, arr) => {
+      if(parseInt(v,10) >= arr.length - parseInt(limit,10)){
+        console.info(chalk.yellow('v' + v), msg)
+      }
     })
   }
 
