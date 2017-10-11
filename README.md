@@ -40,7 +40,7 @@ Thanks to _[TheDataLeek](https://github.com/TheDataLeek/gitgud)_ for the brillia
 
 The big takeaway from the above example is that version control lets you work with the version of the files you want (e.g. finalpaper.docx) and keeps archived files accessible but out of sight.
 
-Another big win of version control is disaster prevention! If you ever loose work or screw up, it's easy to recover with version control. For instance, to save a snapshot of everything in a directory with mu is:
+Another big win of version control is disaster prevention! If you ever loose work or screw up, it’s easy to recover with version control. For instance, to save a snapshot of everything in a directory with mµ is:
 
 `$ mu save "short explanation"`
 
@@ -56,12 +56,22 @@ Most version control systems are complex and scary, e.g. **git**.
 > "Git has 145 commands, but there’s no git undo."
 \~ [Peter Lundgren](http://www.peterlundgren.com/blog/on-gits-shortcomings/)
 
-mµ, on the other hand, is simple and approachable. Let's get started!
+mµ, on the other hand, is simple and approachable. Let’s get started!
 
 ### get mµ
 
+**from npm**
+
+`$ npm install -g meowvc`
+
+**or from GitHub**
+
 `$ git clone https://github.com/jzwood/meowvc.git && cd meowvc`<br>
 `$ npm install && npm link`
+
+**and you're ready to go!**
+
+`$ mu help`
 
 ### use mµ
 `$ mu <command> [<args>]`
