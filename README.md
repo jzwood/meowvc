@@ -36,7 +36,7 @@ Version control systems (VCS) are file databases that track file changes over ti
    ├── .mu
    └── finalpaper.docx
 ```
-Thanks to _[willzfarmer](https://github.com/willzfarmer/gitgud)_ for the brilliant "Managed by hand"  example.
+Thanks to _[TheDataLeek](https://github.com/TheDataLeek/gitgud)_ for the brilliant "Managed by hand"  example.
 
 The big takeaway from the above example is that version control lets you work with the version of the files you want (e.g. finalpaper.docx) and keeps archived files accessible but out of sight.
 
