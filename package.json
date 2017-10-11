@@ -1,6 +1,6 @@
 {
-  "name": "MU",
-  "version": "1.0.0",
+  "name": "meowvc",
+  "version": "0.1.0",
   "description": "a version control system for dummies",
   "dependencies": {
     "chalk": "^1.1.3",
@@ -16,10 +16,25 @@
     "test": "node test/index.js"
   },
   "preferGlobal": true,
+  "engines": {
+    "node": ">=6.10"
+  },
   "license": "MIT",
   "bin": {
     "mu": "./index.js"
   },
+  "keywords": [
+    "version control",
+    "source control",
+    "versioning",
+    "vcs",
+    "cli",
+    "command line tool",
+    "file database",
+    "mu",
+    "mµ",
+    "meowvc"
+  ],
   "author": "Jake Wood",
   "repository": {
     "type": "git",
