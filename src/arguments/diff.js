@@ -38,12 +38,12 @@ module.exports = function diff(i, args) {
       }
 
       const newline = () => {
-        console.log('━'.repeat(30))
+        console.log(chalk.bold('-'.repeat(30)))
       }
 
       let data, diffString
       while(data = diff.modified.pop()) {
-        console.info(chalk.cyan(chalk.inverse(data.fp, '▶ ')))
+        console.info(chalk.cyan(chalk.inverse(data.fp, chalk.bold('% '))))
         if(data.isutf8){
           const f1 = fs.readFileSync(data.fp)
           const f2 = fileOps.retrieveData(data)
@@ -54,7 +54,7 @@ module.exports = function diff(i, args) {
         newline()
       }
       while(data = diff.added.pop()) {
-        console.info(chalk.yellow(chalk.inverse(data.fp, '▶ ')))
+        console.info(chalk.yellow(chalk.inverse(data.fp, chalk.bold('+ '))))
         const f1 = fs.readFileSync(data.fp)
         if(isUtf8(f1)){
           const f2 = ''
@@ -65,7 +65,7 @@ module.exports = function diff(i, args) {
         newline()
       }
       while(data = diff.deleted.pop()) {
-        console.info(chalk.red(chalk.inverse(data.fp, '▶ ')))
+        console.info(chalk.red(chalk.inverse(data.fp, chalk.bold('x '))))
         if(data.isutf8){
           const f1 = '', f2 = fileOps.retrieveData(data)
           diffIt(f1, f2)
