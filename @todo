@@ -1,5 +1,4 @@
 FOCUS:
-- fix history bugs
 - add tests for diff
 
 TODO:
@@ -8,6 +7,7 @@ TODO:
 - add tab autocomplete (?)
 
 DONE:
+- fix history bugs
 - smarter mashing (ie some conflicts can be automerged)
 - add flag for dropbox vs local for $ mu start
 - add test flags: -p (preserve), -l (local)
