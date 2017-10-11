@@ -15,8 +15,9 @@ module.exports = flags => {
   fs.outputFileSync(files[1], 'echo "the quick brown fox jumped over the lazy dog"')
   fs.outputFileSync(files[2], ']W^��Jɩ���������+^2��)\u001c�V�^pvӳ��4���K>�\u000e�C�����\nL�\b�AC��5-~�$\u0005z��\r�̾ob��mjكB�������+�T�C\u001bh\u0004�u/���v�0�\u001e�\f�ܳ�5rV||X��[��J��^��ƞH�&Ki\r4�\u0019�')
 
-  console.info(chalk.inverse('MU DIFF, MU SAVE'))
+  console.info(chalk.inverse('MU DIFF'))
   testOps.testMu(['diff','.'])
+  console.info(chalk.inverse('MU SAVE'))
   testOps.muSave()
 
   /* without a timeout the files change so quickly that their modified time stamps
@@ -31,6 +32,8 @@ module.exports = flags => {
 
     console.info(chalk.inverse('MU DIFF'))
     testOps.testMu(['diff','.'])
+
+    console.info(chalk.inverse('DEL FILES'))
 
     fs.removeSync(files[0])
     fs.removeSync(files[1])
