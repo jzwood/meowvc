@@ -1,12 +1,8 @@
 <p align="center">
-  <h1>
-    <a href="https://github.com/jzwood/meowvc"><img src="sticker.png" alt="" width="100" height="100"></a>
-    <br>
-    mμ
-    <br>
-    <br>
-  </h1>
+  <a href="https://github.com/jzwood/meowvc"><img src="sticker.png" alt="" width="100" height="100"></a>
 </p>
+
+<p align="center"><h1 align="center">mμ</h1></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/node-%E2%89%A5%20v6.10-orange.svg" alt="node ≥ v6.10"/>
