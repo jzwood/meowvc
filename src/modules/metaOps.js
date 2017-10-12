@@ -22,10 +22,10 @@ module.exports = head => {
     fs.outputJsonSync(metafp, meta)
   }
 
-  function list(limit) {
+  function list(limit=Infinity) {
     console.info(chalk.green('history of'), head)
     meta.messages.map((msg, v, arr) => {
-      if(parseInt(v,10) >= arr.length - parseInt(limit,10)){
+      if(parseInt(v,10) >= arr.length - limit){
         console.info(chalk.yellow('v' + v), msg)
       }
     })
