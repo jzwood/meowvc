@@ -1,14 +1,16 @@
-<h1 align="center">
-  <a href="https://github.com/jzwood/meowvc"><img src="sticker.png" alt="" width="100" height="100"></a>
-  <br>
-  mμ
-  <br>
-  <br>
-</h1>
+<center>
+  <h1>
+    <a href="https://github.com/jzwood/meowvc"><img src="sticker.png" alt="" width="100" height="100"></a>
+    <br>
+    mμ
+    <br>
+    <br>
+  </h1>
+</center>
 
-<p align="center">
+<center>
   <img src="https://img.shields.io/badge/node-%E2%89%A5%20v6.10-orange.svg" alt="node ≥ v6.10"/>
-</p>
+<center>
 
 <h4 align="center">Casual version control</h4>
 
@@ -42,11 +44,11 @@ The big takeaway from the above example is that version control lets you work wi
 
 Another big win of version control is disaster prevention! If you ever loose work or screw up, it’s easy to recover with version control. For instance, to save a snapshot of everything in a directory with mµ is:
 
-`$ mu save "short explanation"`
+`$ mu save "short explanation" `
 
 No matter what you change within this directory, recovering the previous snapshot is simple:
 
-`$ mu undo .`
+`$ mu undo . `
 
 For more information on version control check out the <u>[visual guide to version control](https://betterexplained.com/articles/a-visual-guide-to-version-control/)</u>.
 
@@ -62,19 +64,19 @@ mµ, on the other hand, is simple and approachable. Let’s get started!
 
 **from npm**
 
-`$ npm install -g meowvc`
+`$ npm install -g meowvc `
 
 **or from GitHub**
 
-`$ git clone https://github.com/jzwood/meowvc.git && cd meowvc`<br>
-`$ npm install && npm link`
+`$ git clone https://github.com/jzwood/meowvc.git && cd meowvc `<br>
+`$ npm install && npm link `
 
 **and you're ready to go!**
 
 `$ mu help`
 
 ### use mµ
-`$ mu <command> [<args>]`
+`$ mu <command> [<args>] `
 
 Commands and arguments:
 
