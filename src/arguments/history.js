@@ -1,4 +1,4 @@
-const chalk = require('chalk')
+const pointerOps = require('../modules/pointerOps')
 const metaOps = require('../modules/metaOps')
 
 /************
@@ -6,11 +6,7 @@ const metaOps = require('../modules/metaOps')
 ************/
 
 module.exports = function history(i, args) {
-  const head = args[i + 1]
-  if (head) {
-    let limit = args[i + 2]
-    metaOps(head).list(limit)
-  }else{
-    console.log(chalk.red('history expects a saved repo name, e.g. ') + chalk.inverse('$ mu history master'))
-  }
+  const head = args[i + 1] || pointerOps().head
+  const limit = args[i + 2] || Infinity
+  metaOps(head).list(limit)
 }
