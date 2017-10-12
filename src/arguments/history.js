@@ -6,7 +6,7 @@ const metaOps = require('../modules/metaOps')
 ************/
 
 module.exports = function history(i, args) {
-  const head = args[i + 1] || pointerOps().head
-  const limit = args[i + 2] || Infinity
+  const limit = args[i + 1] || Infinity
+  const head = pointerOps().head
   metaOps(head).list(limit)
 }
