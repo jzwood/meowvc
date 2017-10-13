@@ -161,14 +161,20 @@ module.exports = () => {
     fs.ensureDirSync(fp)
 
     fs.readdirSync(lp).forEach(d => {
-      fs.readdirSync(path.join(lp, d)).forEach(f => {
-        GlMem.memory.add('' + d + f)
-      })
+      const linesDirPath = path.join(lp, d)
+      if(fs.statSync(linesDirPath).isDirectory()){
+        fs.readdirSync(linesDirPath).forEach(f => {
+          GlMem.memory.add('' + d + f)
+        })
+      }
     })
     fs.readdirSync(fp).forEach(d => {
-      fs.readdirSync(path.join(fp, d)).forEach(f => {
-        GlMem.memory.add('' + d + f)
-      })
+      const filesDirPath = path.join(fp, d)
+      if(fs.statSync(filesDirPath).isDirectory()){
+        fs.readdirSync(filesDirPath).forEach(f => {
+          GlMem.memory.add('' + d + f)
+        })
+      }
     })
   }
 

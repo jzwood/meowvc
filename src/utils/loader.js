@@ -7,7 +7,10 @@ module.exports = {
     directory = path.join(__dirname,'../', directory)
     if(fs.existsSync(directory)) {
       fs.readdirSync(directory).forEach(script => {
-        files[path.parse(script).name] = require(path.join(directory, script))
+        const scriptPath = path.join(directory, script)
+        if(/\.js$/.test(scriptPath)){
+          files[path.parse(script).name] = require(scriptPath)
+        }
       })
     }
     return files
