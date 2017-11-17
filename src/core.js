@@ -32,7 +32,7 @@ module.exports = () => {
   /**
   * @description stores every hash on disk into RAM
   */
-  function save(head, mdata){
+  function save({head, mdata}){
     const hash = mod.hashOps.diskCache.bind(null, GlMem)
     const handle = diff => {
       const po = mod.pointerOps()
@@ -51,7 +51,7 @@ module.exports = () => {
     difference({head, handle, hash})
   }
 
-  function checkout(head, version, filterPattern=null){
+  function checkout({head, version, filterPattern}){
     const handle = diff => {
       let data
       while(data = diff.modified.pop()) {

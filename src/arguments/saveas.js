@@ -15,7 +15,8 @@ module.exports = function saveas(i, args) {
     const parent = { head, version }
     if (po.pointToNewHead(name).success) {
       stopwatch.start()
-      core.save(head, {parent})
+      const mdata = {parent}
+      core.save({head, mdata})
       stopwatch.stop()
     } else {
       console.warn(chalk.red(`ERROR: Save named "${name}" already exists. Save cancelled.`))

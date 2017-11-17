@@ -15,7 +15,7 @@ module.exports = function get(i, args){
     version = version || 'v' + po.latest(head)
     if(po.exists(head, version)){
       if(core.isUnchanged()){
-        core.checkout(head, version)
+        core.checkout({head, version})
         po.setPointer(head, version)
         po.update()
         console.info(chalk.green(`Repo switched to ${head} ${version}`))
