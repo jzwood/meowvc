@@ -25,7 +25,8 @@ module.exports = () => {
   }
 
   function isUnchanged() {
-    return difference(null, null, diff => diff.nothingChanged)
+    const handle = diff => diff.nothingChanged
+    return difference({handle})
   }
 
   /**
@@ -47,7 +48,7 @@ module.exports = () => {
       }
     }
     _preCache()
-    difference(head, null, handle, null, hash)
+    difference({head, handle, hash})
   }
 
   function checkout(head, version, filterPattern=null){
@@ -63,13 +64,13 @@ module.exports = () => {
         mod.fileOps.undelete(data)
       }
     }
-    difference(head, version, handle, filterPattern)
+    difference({head, version, handle, filterPattern})
   }
 
   /**
   * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
-  function difference(head, version, handle, filterPattern, hash=mod.hashOps.hashIt) {
+  function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
     targetTree = mod.treeOps.getSavedData(head, version)
     // currentTree implicity populates GlMem.fileHashLog
     currentTree = currentTree || mod.treeOps.treeify(_forEachFile(hash))

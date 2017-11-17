@@ -76,7 +76,7 @@ module.exports = function diff(i, args) {
       }
     }
 
-    core.difference(null, null, handle, pattern)
+    core.difference({handle, pattern})
   } else {
     console.warn(chalk.red('diff expects a filename or pattern, e.g. ') + chalk.inverse('$ mu diff path/to/file.txt'))
   }
