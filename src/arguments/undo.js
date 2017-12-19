@@ -8,8 +8,8 @@ const core = require('../core')()
 module.exports = function undo(i, args) {
   let pattern = args[i + 1]
   if (pattern) {
-    pattern = new RegExp(pattern.trim())
-    core.checkout({pattern})
+    const filterPattern = new RegExp(pattern.trim())
+    core.checkout({filterPattern})
   } else {
     console.warn(chalk.yellow('undo expects a filename or pattern, e.g.'), chalk.inverse('$ mu undo path/to/file.txt'))
   }

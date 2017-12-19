@@ -101,9 +101,6 @@ module.exports = () => {
       }
     }
 
-    // let added = Array.from(fileHashLog).reduce((accum, hash0fp1) =>
-    //   filterPattern.test(hash0fp1[1]) ? accum.concat({'fp': hash0fp1[0]}) : accum, [])
-
     let added = []
     fileHashLog.forEach((hash, fp) => {
       if(!filterPattern || filterPattern.test(fp)){

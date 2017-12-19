@@ -27,7 +27,7 @@ module.exports = function diff(i, args) {
       console.warn(binaryWarning[0])
     }
   }else if (regex) {
-    const pattern = new RegExp(regex.trim())
+    const filterPattern = new RegExp(regex.trim())
 
     const handle = diff => {
 
@@ -76,7 +76,7 @@ module.exports = function diff(i, args) {
       }
     }
 
-    core.difference({handle, pattern})
+    core.difference({handle, filterPattern})
   } else {
     console.warn(chalk.red('diff expects a filename or pattern, e.g. ') + chalk.inverse('$ mu diff path/to/file.txt'))
   }
