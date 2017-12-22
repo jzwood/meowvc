@@ -26,7 +26,7 @@ module.exports = function mash(i, args) {
     const exists = po.exists(head, version)
     const isUnchanged = core.isUnchanged()
     if (exists && isUnchanged) {
-      core.difference(head, version, handle)
+      core.difference({head, version, handle})
     } else if (exists && !isUnchanged) {
       console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
     } else {

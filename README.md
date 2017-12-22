@@ -13,11 +13,11 @@
 </p>
 
 If you tap on computers regularly it is likely that at one time or another you have lost work.
-If this is true then it is possible you are also someone who obsessively saves and makes copies to placate your anxiety about loosing work.
+If this is true then it is possible you are also someone who obsessively saves and makes copies to placate your anxiety about losing work.
 
-> I would cmd-s all the time: web pages, email, listening to music. I knew I had a problem when my ⌘ key broke.
+> I would cmd-s all the time: web pages, email, listening to music. I knew I had a problem when my ⌘ key broke. ¬ me
 
-mμ is a version control system geared towards chilling out the stress endemenic to digital creation.
+mμ is a version control system geared towards chilling out the stress endemic to digital creation.
 
 ## version control
 Version control systems (VCS) are file databases that track file changes over time. VCS replace manual file versioning with software management. This simplification facilitates complex workflows unachievable by hand.
