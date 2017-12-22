@@ -24,5 +24,5 @@ module.exports = function state(){
       console.info(chalk.red('x\t' + data.fp))
     }
   }
-  core.difference(null, null, handle)
+  core.difference({handle})
 }

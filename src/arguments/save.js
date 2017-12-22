@@ -10,7 +10,8 @@ module.exports = function save(i, args){
   const msg = args[i + 1]
   if(typeof msg === 'string' && msg.length > 0){
     stopwatch.start()
-    core.save(null, {msg})
+    const mdata = {msg}
+    core.save({mdata})
     stopwatch.stop()
   }else{
     console.log(chalk.red('save expects a message, e.g. ') + chalk.inverse('$ mu save "fixes punctuation errors"'))

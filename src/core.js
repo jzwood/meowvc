@@ -25,13 +25,14 @@ module.exports = () => {
   }
 
   function isUnchanged() {
-    return difference(null, null, diff => diff.nothingChanged)
+    const handle = diff => diff.nothingChanged
+    return difference({handle})
   }
 
   /**
   * @description stores every hash on disk into RAM
   */
-  function save(head, mdata){
+  function save({head, mdata}){
     const hash = mod.hashOps.diskCache.bind(null, GlMem)
     const handle = diff => {
       const po = mod.pointerOps()
@@ -47,10 +48,10 @@ module.exports = () => {
       }
     }
     _preCache()
-    difference(head, null, handle, null, hash)
+    difference({head, handle, hash})
   }
 
-  function checkout(head, version, filterPattern=null){
+  function checkout({head, version, filterPattern}){
     const handle = diff => {
       let data
       while(data = diff.modified.pop()) {
@@ -63,13 +64,13 @@ module.exports = () => {
         mod.fileOps.undelete(data)
       }
     }
-    difference(head, version, handle, filterPattern)
+    difference({head, version, handle, filterPattern})
   }
 
   /**
   * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
-  function difference(head, version, handle, filterPattern, hash=mod.hashOps.hashIt) {
+  function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
     targetTree = mod.treeOps.getSavedData(head, version)
     // currentTree implicity populates GlMem.fileHashLog
     currentTree = currentTree || mod.treeOps.treeify(_forEachFile(hash))
@@ -99,9 +100,6 @@ module.exports = () => {
         }
       }
     }
-
-    // let added = Array.from(fileHashLog).reduce((accum, hash0fp1) =>
-    //   filterPattern.test(hash0fp1[1]) ? accum.concat({'fp': hash0fp1[0]}) : accum, [])
 
     let added = []
     fileHashLog.forEach((hash, fp) => {
