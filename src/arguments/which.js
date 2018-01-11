@@ -1,5 +1,6 @@
 const chalk = require('chalk')
 const fs = require('fs-extra')
+const path = require('path')
 
 const pointerOps = require('../modules/pointerOps')
 const muOps = require('../modules/muOps')
@@ -15,7 +16,10 @@ module.exports = function which() {
   if(fs.existsSync(historyPath)){
     const po = pointerOps()
 
-    let branches = fs.readdirSync(historyPath)
+    let branches = fs.readdirSync(historyPath).filter(dirName => {
+      return fs.statSync(path.join(historyPath, dirName)).isDirectory()
+    })
+
     branches.forEach(head => {
       if(head === po.head){
         console.info('* ' + chalk.green(head, `(v${gl.vnorm(po.branch[head])}/${po.latest()})`))
