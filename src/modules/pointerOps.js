@@ -49,20 +49,24 @@ module.exports = () => {
   }
 
   function latest(name = pointer.head) {
-    const historyPath = muOps.path('history', name)
-    const historyRepo = fs.readdirSync(historyPath)
-
     let latest = 0
-    historyRepo.forEach(version => {
-      const hasNum = version.match(/^v(\d+)/)
-      if (hasNum) {
-        const fileNum = parseInt(hasNum[1], 10)
-        if (fileNum > latest) {
-          latest = fileNum
-        }
-      }
-    })
 
+    const historyPath = muOps.path('history', name)
+    if(fs.existsSync(historyPath)){
+
+      const historyRepo = fs.readdirSync(historyPath)
+
+      historyRepo.forEach(version => {
+        const hasNum = version.match(/^v(\d+)/)
+        if (hasNum) {
+          const fileNum = parseInt(hasNum[1], 10)
+          if (fileNum > latest) {
+            latest = fileNum
+          }
+        }
+      })
+
+    }
     return latest
   }
 
