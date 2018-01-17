@@ -51,8 +51,8 @@ function fdiff(str1, str2, fast=false) {
     const deleted = str => chalk.dim(chalk.red(str))
     backtrace.forEach(instr => {
       const getNum = i => {
-        let num = i.match(/[0-9]+/)
-        return num ? parseInt(num[0]) : 1
+        let num = i.match(/\d+/)
+        return num ? parseInt(num[0], 10) : 1
       }
       if (instr[0] === 'i') {
         diff.unshift(added(instr.slice(1)))

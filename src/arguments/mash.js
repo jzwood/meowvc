@@ -5,28 +5,34 @@ const gl = require('../constant')
 const core = require('../core')()
 
 /*********
-*  MASH  *
-*********/
+ *  MASH  *
+ *********/
 
 module.exports = function mash(i, args) {
   const head = args[i + 1] || ''
-  let version = args[i + 2] || ''
-
-  const po = mod.pointerOps()
-
-  const handle = diff => {
-    let data; while (data = diff.deleted.pop()) {
-      mod.fileOps.undelete(data)
-    }
-    return mod.handleConflicts(diff.modified, head, version, po.head, 'v' + gl.vnorm(po.version))
-  }
 
   if (head) {
-    version = version || 'v' + po.latest(head)
+    const po = mod.pointerOps()
+    let version = args[i + 2] || 'v' + po.latest(head)
+
+    const handle = diff => {
+      let data; while (data = diff.deleted.pop()) {
+        mod.fileOps.undelete(data)
+      }
+
+      const conflicts = diff.modified
+      const mergeHead = head
+      const mergeVersion = version
+      const currentHead = po.head
+      const currentVersion = 'v' + gl.vnorm(po.version)
+
+      return mod.handleConflicts({conflicts, mergeHead, mergeVersion, currentHead, currentVersion})
+    }
+
     const exists = po.exists(head, version)
     const isUnchanged = core.isUnchanged()
     if (exists && isUnchanged) {
-      core.difference({head, version, handle})
+      core.difference({ head, version, handle })
     } else if (exists && !isUnchanged) {
       console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
     } else {
