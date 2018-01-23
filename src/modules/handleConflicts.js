@@ -11,29 +11,29 @@ const loader = require('../utils/loader')
 const get = require('../utils/get')
 const mod = loader.require('modules')
 
-module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersion) => {
+module.exports = ({conflicts, mergeHead, mergeVersion, currentHead, currentVersion}) => {
 
   if(!conflicts.length){
     return false
   }
 
-  const ancestor = findCommonAncestor(mergeHead, mergeVersion, currentHead, CurrentVersion)
+  const ancestor = findCommonAncestor({mergeHead, mergeVersion, currentHead, currentVersion})
   const ancestorTree = mod.treeOps.getSavedData(ancestor.head, 'v' + ancestor.version)
 
   return handle(conflicts.pop())
 
   /*********** FUNCTION DEFS BELOW ***********/
 
-  function findCommonAncestor(mergeHead, mergeVersion, currentHead, CurrentVersion){
+  function findCommonAncestor({mergeHead, mergeVersion, currentHead, currentVersion}){
+
     const getParent = head => mod.metaOps(head).meta.parent
 
-    const currentSaves = { [mergeHead] : mergeVersion }
+    const currentSaves = { [currentHead]: currentVersion }
     let currentParent; while(currentParent = getParent(currentHead)){
       currentHead = currentParent.head
       Object.assign(currentSaves, { [currentParent.head] : currentParent.version})
     }
 
-    mergeVersion = parseInt(mergeVersion.match(/([0-9])+/)[1], 10)
     while(typeof(currentSaves[mergeHead]) === 'undefined'){
       const merge = getParent(mergeHead)
       mergeHead = merge.head
@@ -41,7 +41,9 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
     }
 
     const head = mergeHead
-    const version = Math.min(currentSaves[mergeHead], mergeVersion)
+
+    const toNumber = v => parseInt(v.toString().match(/(\d+)/)[1], 10)
+    const version = Math.min(toNumber(currentSaves[mergeHead]), toNumber(mergeVersion))
 
     return {head, version}
   }
@@ -50,16 +52,18 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
    * @param {object} data - {[str]fp, [str]currentHashsum, [str]targetHashsum, [0|1]isutf8, [ℤ,≥0]mtime}
    */
   function handle(data){
-    const isMergeDataNew = (get(ancestorTree, ['dat', data.targetHashsum, 2, data.fp]))
-    const isCurrentDataNew = (get(ancestorTree, ['dat', data.currentHashsum, 2, data.fp]))
+    // does the conflicting current file exists identically in common ancestor
+    const wasCurrentEdited = !(get(ancestorTree, ['dat', data.currentHashsum, 2, data.fp]))
+    // does the conflicting merge file exists identically in common ancestor
+    const wasMergeEdited = !(get(ancestorTree, ['dat', data.targetHashsum, 2, data.fp]))
 
-    if(isCurrentDataNew && !isMergeDataNew){
+    if(wasCurrentEdited && wasMergeEdited){
+      return promptUser(data)
+    } else if(wasCurrentEdited && !wasMergeEdited){
       return next()
-    }else if(!isCurrentDataNew && isMergeDataNew){
+    } else if(!wasCurrentEdited && wasMergeEdited){
       mod.fileOps.overwrite(data)
       return next()
-    }else{ // implicity: isCurrentDataNew = isMergeDataNew = true
-      return promptUser(data)
     }
   }
 
@@ -67,7 +71,7 @@ module.exports = (conflicts, mergeHead, mergeVersion, currentHead, CurrentVersio
     if(conflicts.length){
       return handle(conflicts.pop())
     }else{
-      console.info(chalk.green(`Repo ${mergeHead} ${mergeVersion} mashed into ${currentHead} ${CurrentVersion}`), chalk.yellow('Note: Mash unsaved!'))
+      console.info(chalk.green(`Repo ${mergeHead} ${mergeVersion} mashed into ${currentHead} ${currentVersion}`), chalk.yellow('Note: Mash unsaved!'))
       return false
     }
   }
