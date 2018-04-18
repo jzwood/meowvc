@@ -53,7 +53,7 @@ async function renameFiles(fpaths) {
 
   await Promise.all(transformations.map(([fpath, fpNew]) => fs.rename(fpath, fpNew)))
 
-  transformations.forEach(([fpath, fpNew])=> {
+  transformations.forEach(([fpath, fpNew]) => {
     print(chalk.white(`=\t${fpath} > ${fpNew}`))
   })
 }

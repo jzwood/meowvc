@@ -1,12 +1,19 @@
+const test = require('ava')
 const chalk = require('chalk')
-const testOps = require('../testOps')
+const tester = require('../modules/tester')
+const helper = require('../modules/helper')
 
-module.exports = flags => {
-  const name = 'start'
-  testOps.setupTest(flags, name)
+const name = 'start'
+const flags = []
 
-  testOps.newline()
-  testOps.muStart(testOps.parseFlags(flags).local, '', '(when mu repo exists already)')
+test(name, async t => {
+  let exitcode = await tester.setupTest(flags, name)
+  t.is(exitcode, 0) // success
 
-  testOps.cleanupTest(flags, name)
-}
+  helper.newline()
+
+  exitcode = tester.muStart(tester.parseFlags(flags).local, '', '(when mu repo exists already)')
+  t.is(exitcode, 126) //cannot execute
+
+  await tester.cleanupTest(flags, name)
+})

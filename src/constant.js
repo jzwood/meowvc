@@ -27,6 +27,14 @@ module.exports = {
   linesPath: muOps.path('disk_mem', 'lines'),
   filesPath: muOps.path('disk_mem', 'files'),
   binPath: muOps.path('disk_mem', 'bin'),
+  exit: {
+    success: 0,
+    error: 1, //generic
+    cannotExe: 126, //command invoked cannon execute
+    notFound: 127, //command not found
+    invalid: 128, //invalid argument
+    terminated: 130 //ctrl-c
+  },
   get baseCase() {
     return {
       'ino': {},

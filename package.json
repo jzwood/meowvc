@@ -19,8 +19,7 @@
   },
   "ava": {
     "files": [
-      "test/tests/get.js",
-      "test/tests/undo.js"
+      "test/tests/start.js"
     ],
     "verbose": true
   },

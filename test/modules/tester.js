@@ -38,7 +38,7 @@ function parseFlags(flags = []) {
 //runs mu start in the right place (local|dropbox)
 function muStart(isLocal, name = '', msg = '') {
   helper.print(`${ isLocal ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
-  isLocal ? testMu(['start']) : testMu(['start', name])
+  return isLocal ? testMu(['start']) : testMu(['start', name])
 }
 
 function muSave() {
@@ -67,7 +67,7 @@ async function setupTest(flags, name) {
   const remote = getRemote(local, name)
   await emptyTestDir(remote)
 
-  muStart(local, name)
+  return muStart(local, name)
 }
 
 async function cleanupTest(flags, name) {
