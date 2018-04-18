@@ -1,49 +1,50 @@
+const test = require('ava')
+
 const chalk = require('chalk')
-const testOps = require('../testOps')
+const tester = require('../modules/tester')
+const helper = require('../modules/helper')
 
-module.exports = flags => {
-  const name = 'undo'
-  testOps.setupTest(flags, name)
+const name = 'undo'
+const flags = []
 
-  testOps.newline()
-  console.info(chalk.inverse('ADD FILES & SAVE'))
-  const fileDataMap = testOps.addFiles(4)
-  let newFiles = Object.keys(fileDataMap)
-  console.info(chalk.inverse('MU'))
-  testOps.muSave()
+test(name, async t => {
+  await tester.setupTest(flags, name)
 
-  testOps.newline()
+  helper.newline()
+  helper.print(chalk.inverse('ADD FILES & SAVE'))
+  const save1 = await helper.addFiles(4)
+  const files1 = Object.keys(save1)
+  helper.print(chalk.inverse('MU'))
+  tester.muSave()
 
-  console.info(chalk.inverse('DEL FILES'))
-  newFiles.forEach(fp => {
-    testOps.removeFile(fp)
-  })
+  helper.newline()
 
-  console.info(chalk.inverse('MU UNDO'))
-  testOps.testMu(['undo','.'])
-  testOps.verify(fileDataMap)
+  helper.print(chalk.inverse('DEL FILES'))
+  await helper.removeFiles(files1)
 
-  testOps.newline()
+  helper.print(chalk.inverse('MU UNDO'))
+  tester.testMu(['undo', '.'])
+  await helper.verify(t, save1)
 
-  console.info(chalk.inverse('MOD FILES'))
-  newFiles.forEach(fp => {
-    testOps.modFile(fp)
-  })
+  helper.newline()
 
-  console.info(chalk.inverse('MU UNDO'))
-  testOps.testMu(['undo','.'])
-  testOps.verify(fileDataMap)
+  helper.print(chalk.inverse('MOD FILES'))
 
-  testOps.newline()
+  await helper.modFiles(files1)
 
-  console.info(chalk.inverse('RENAME FILES'))
-  newFiles.forEach(fp => {
-    testOps.rename(fp)
-  })
+  helper.print(chalk.inverse('MU UNDO'))
+  tester.testMu(['undo', '.'])
+  await helper.verify(t, save1)
 
-  console.info(chalk.inverse('MU UNDO'))
-  testOps.testMu(['undo','.'])
-  testOps.verify(fileDataMap)
+  helper.newline()
 
-  testOps.cleanupTest(flags, name)
-}
+  helper.print(chalk.inverse('RENAME FILES'))
+  helper.renameFiles(files1)
+
+  helper.print(chalk.inverse('MU UNDO'))
+  tester.testMu(['undo', '.'])
+  await helper.verify(t, save1)
+
+  await tester.cleanupTest(flags, name)
+})
+

@@ -14,7 +14,7 @@ test(name, async t => {
   helper.newline()
   helper.print(chalk.inverse('ADD FILES & SAVE'))
   const save1 = await helper.addFiles(4)
-  let files1 = Object.keys(save1)
+  const files1 = Object.keys(save1)
 
   helper.print(chalk.inverse('MU'))
   tester.muSave()
@@ -25,7 +25,7 @@ test(name, async t => {
 
   helper.print(chalk.inverse('ADD FILES'))
   const save2 = await helper.addFiles(4)
-  let files2 = Object.keys(save2)
+  const files2 = Object.keys(save2)
 
   helper.print(chalk.inverse('MU'))
   tester.testMu(['saveas', 'develop'])

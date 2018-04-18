@@ -59,7 +59,7 @@ function getRemote(isLocal, name) {
 async function setupTest(flags, name) {
   const local = parseFlags(flags).local
 
-  const tempPath = path.join(process.cwd(), 'test', 'temp')
+  const tempPath = path.join(process.cwd(), 'test', 'temp', name)
   await fs.emptyDir(tempPath)
   process.chdir(tempPath)
 

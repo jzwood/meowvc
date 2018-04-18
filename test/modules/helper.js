@@ -9,21 +9,21 @@ let QUIET = true
 module.exports = {
   addFiles,
   makeWord,
-  modFile,
+  modFiles,
   newline,
   verboseLogging,
   print,
   removeFiles,
-  rename,
+  renameFiles,
   verify
 }
 
-function verboseLogging(verbose=true){
+function verboseLogging(verbose = true) {
   QUIET = !verbose
 }
 
-function print(msg){
-  if(!QUIET){
+function print(msg) {
+  if (!QUIET) {
     console.log(msg)
   }
 }
@@ -44,15 +44,22 @@ async function verify(t, fpathMap) {
   t.deepEqual(fpathBuffers, newfpathBuffers)
 }
 
-function rename(fpath) {
-  let fp = path.parse(fpath)
-  const fpNew = path.join(fp.dir, makeWord(5) + fp.ext)
-  fs.renameSync(fpath, fpNew)
-  print(chalk.white(`=\t${fpath} > ${fpNew}`))
+async function renameFiles(fpaths) {
+  const transformations = fpaths.map(fpath => {
+    const fp = path.parse(fpath)
+    const fpNew = path.join(fp.dir, makeWord(5) + fp.ext)
+    return [fpath, fpNew]
+  })
+
+  await Promise.all(transformations.map(([fpath, fpNew]) => fs.rename(fpath, fpNew)))
+
+  transformations.forEach(([fpath, fpNew])=> {
+    print(chalk.white(`=\t${fpath} > ${fpNew}`))
+  })
 }
 
 function makeWord(len) {
-  len = len || ~~(3+Math.random() * 3)
+  len = len || ~~(3 + Math.random() * 3)
   return _randomAscii(_range(97, 122), len)
 }
 
@@ -60,12 +67,12 @@ function _range(lo, hi) {
   return Array(hi - lo).fill(0).map((_, i) => i + lo)
 }
 
-function safeInds(newLineFreq = 0.1) {
+function _safeInds(newLineFreq = 0.1) {
   const nls = Array(~~(newLineFreq * (127 - 32))).fill(10)
   return _range(32, 127).concat(nls)
 }
 
-function allInds() {
+function _allInds() {
   return _range(0, 256)
 }
 
@@ -76,7 +83,7 @@ function _coinFlip() {
 //depth is positive integer
 function _getRandomFileData(depth = 1) {
   const fpath = path.join(...Array(Math.max(1, depth)).fill('').map(makeWord)) + '.txt'
-  const inds = _coinFlip() ? allInds() : safeInds()
+  const inds = _coinFlip() ? _allInds() : _safeInds()
   const data = _randomAscii(inds, ~~(Math.random() * 1000))
   const buffer = Buffer.from(data)
   //await fs.outputFile(fpath, data)
@@ -84,11 +91,17 @@ function _getRandomFileData(depth = 1) {
   return [fpath, buffer]
 }
 
-function modFile(fpath) {
-  const inds = _coinFlip ? allInds() : safeInds()
-  const data = _randomAscii(inds, ~~(Math.random() * 1000))
-  fs.outputFileSync(fpath, data)
-  print(chalk.cyan(`%\t${fpath}`))
+async function modFiles(fpaths) {
+  await Promise.all(fpaths.map(fp => {
+    const inds = _coinFlip ? _allInds() : _safeInds()
+    const data = _randomAscii(inds, ~~(Math.random() * 1000))
+    const buffer = Buffer.from(data)
+    return fs.outputFile(fp, buffer)
+  }))
+
+  fpaths.forEach(fp => {
+    print(chalk.cyan(`%\t${fp}`))
+  })
 }
 
 // fpath = file name
@@ -102,7 +115,7 @@ async function removeFiles(fpaths) {
 async function addFiles(num) {
   const fpaths = {}
   const newFiles = []
-  while(num--){
+  while (num--) {
     const [fpath, buffer] = data = _getRandomFileData(~~(Math.random() * 5))
     fpaths[fpath] = buffer
     newFiles.push(data)
