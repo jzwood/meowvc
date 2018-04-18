@@ -1,8 +1,11 @@
+import test from 'ava'
+
 const chalk = require('chalk')
 const testOps = require('../testOps')
 const fs = require('fs-extra')
 
-module.exports = flags => {
+test('get', t => {
+  const flag = []
   const name = 'state'
   testOps.setupTest(flags, name)
 
@@ -43,7 +46,8 @@ module.exports = flags => {
     testOps.testMu(['diff','.'])
 
     testOps.cleanupTest(flags, name)
+    t.pass()
 
   }, 1000)
 
-}
+})

@@ -1,41 +1,47 @@
+const test = require('ava')
+
 const chalk = require('chalk')
-const testOps = require('../testOps')
+const tester = require('../modules/tester')
+const helper = require('../modules/helper')
 
-module.exports = flags => {
-  const name = 'get'
-  testOps.setupTest(flags, name)
+const name = 'get'
+const flags = []
 
-  testOps.newline()
+test(name, async t => {
+  tester.setupTest(flags, name)
+
+  helper.newline()
   console.info(chalk.inverse('ADD FILES & SAVE'))
-  const save1 = testOps.addFiles(4)
+  const save1 = helper.addFiles(4)
   let files1 = Object.keys(save1)
 
   console.info(chalk.inverse('MU'))
-  testOps.muSave()
-  testOps.testMu(['which'])
+  tester.muSave()
+  tester.testMu(['which'])
 
   console.info(chalk.inverse('DEL FILES'))
   files1.forEach(fp => {
-    testOps.removeFile(fp)
+    helper.removeFile(fp)
   })
 
   console.info(chalk.inverse('ADD FILES'))
-  const save2 = testOps.addFiles(4)
+  const save2 = helper.addFiles(4)
   let files2 = Object.keys(save2)
 
   console.info(chalk.inverse('MU'))
-  testOps.testMu(['saveas', 'develop'])
-  testOps.testMu(['which'])
-  testOps.testMu(['get','master'])
+  tester.testMu(['saveas', 'develop'])
+  tester.testMu(['which'])
+  tester.testMu(['get','master'])
 
   console.info(chalk.inverse('VERIFYING'))
-  testOps.verify(save1)
+  await helper.verify(t, save1)
 
   console.info(chalk.inverse('MU'))
-  testOps.testMu(['get','develop'])
+  tester.testMu(['get','develop'])
 
   console.info(chalk.inverse('VERIFYING'))
-  testOps.verify(save2)
+  await helper.verify(t, save2)
 
-  testOps.cleanupTest(flags, name)
-}
+  tester.cleanupTest(flags, name)
+  t.pass()
+})
