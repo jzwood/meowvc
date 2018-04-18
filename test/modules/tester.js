@@ -37,7 +37,7 @@ function parseFlags(flags = []) {
 
 //runs mu start in the right place (local|dropbox)
 function muStart(isLocal, name = '', msg = '') {
-  console.info(`${ isLocal ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
+  helper.print(`${ isLocal ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
   isLocal ? testMu(['start']) : testMu(['start', name])
 }
 
@@ -45,13 +45,9 @@ function muSave() {
   testMu(['save', 'save message ' + helper.makeWord()])
 }
 
-function emptyTestDir(remote, remove = false) {
-  if (/\.mu|Mu Repositories/.test(remote)) { // last rmrf failsafe
-    if (remove) {
-      fs.removeSync(remote)
-    } else {
-      fs.emptyDirSync(remote)
-    }
+async function emptyTestDir(remote, remove = false) {
+  if (/\.mu\\|Mu Repositories/.test(remote)) { // last rmrf failsafe
+    await (remove ? fs.remove(remote) : fs.emptyDir(remote))
   }
 }
 
@@ -60,35 +56,31 @@ function getRemote(isLocal, name) {
   return muOps.findRemotePath(isLocal ? false : name)
 }
 
-function setupTest(flags, name) {
+async function setupTest(flags, name) {
   const local = parseFlags(flags).local
 
   const tempPath = path.join(process.cwd(), 'test', 'temp')
-  fs.emptyDirSync(tempPath)
+  await fs.emptyDir(tempPath)
   process.chdir(tempPath)
 
   name = path.join('test', name)
   const remote = getRemote(local, name)
-  emptyTestDir(remote)
+  await emptyTestDir(remote)
 
   muStart(local, name)
 }
 
-function cleanupTest(flags, name) {
+async function cleanupTest(flags, name) {
   name = path.join('test', name)
-  const local = parseFlags(flags).local
-  const preserve = parseFlags(flags).preserve
+  const {local, preserve} = parseFlags(flags)
 
   const remote = getRemote(local, name)
-  if (!preserve) {
-    emptyTestDir(remote, remove = true)
-  }
 
   if (preserve) {
-    console.info(chalk.yellow(remote), chalk.inverse('preserved'))
+    helper.print(chalk.yellow(remote), chalk.inverse('preserved'))
   } else {
-    console.info(chalk.cyan('cleaning up...'))
-    console.info(chalk.yellow(remote), chalk.inverse('deleted'))
+    await emptyTestDir(remote, remove = true)
+    helper.print(chalk.cyan('cleaning up...'))
+    helper.print(chalk.yellow(remote), chalk.inverse('deleted'))
   }
 }
-

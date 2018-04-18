@@ -4,14 +4,28 @@ const chalk = require('chalk')
 
 /*********** THE FOLLOWING FUNCTIONS ARE FOR FILE TESTING ***********/
 
+let QUIET = true
+
 module.exports = {
   addFiles,
   makeWord,
   modFile,
   newline,
-  removeFile,
+  verboseLogging,
+  print,
+  removeFiles,
   rename,
   verify
+}
+
+function verboseLogging(verbose=true){
+  QUIET = !verbose
+}
+
+function print(msg){
+  if(!QUIET){
+    console.log(msg)
+  }
 }
 
 function _randomAscii(validIndices, numOfChars) {
@@ -20,22 +34,21 @@ function _randomAscii(validIndices, numOfChars) {
 }
 
 function newline() {
-  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+  print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 }
 
+//verifies name:buffer map matches initial
 async function verify(t, fpathMap) {
-  const fpathArray = Object.entries(fpathMap)
-  for(const [name, oldBuffer] of fpathArray){
-    const newBuffer = await fs.readFile(name)
-    t.deepEqual(oldBuffer, newBuffer)
-  }
+  const fpathBuffers = Object.values(fpathMap)
+  const newfpathBuffers = await Promise.all(Object.keys(fpathMap).map(name => fs.readFile(name)))
+  t.deepEqual(fpathBuffers, newfpathBuffers)
 }
 
 function rename(fpath) {
   let fp = path.parse(fpath)
   const fpNew = path.join(fp.dir, makeWord(5) + fp.ext)
   fs.renameSync(fpath, fpNew)
-  console.info(chalk.white(`=\t${fpath} > ${fpNew}`))
+  print(chalk.white(`=\t${fpath} > ${fpNew}`))
 }
 
 function makeWord(len) {
@@ -56,38 +69,45 @@ function allInds() {
   return _range(0, 256)
 }
 
-function coinFlip() {
+function _coinFlip() {
   return (+new Date()) % 2
 }
 
-function addRandomFile(depth = 1) {
+//depth is positive integer
+function _getRandomFileData(depth = 1) {
   const fpath = path.join(...Array(Math.max(1, depth)).fill('').map(makeWord)) + '.txt'
-  const inds = coinFlip() ? allInds() : safeInds()
-  let data = _randomAscii(inds, ~~(Math.random() * 1000))
-  fs.outputFileSync(fpath, data)
-  data = fs.readFileSync(fpath)
-  console.info(chalk.yellow(`+\t${fpath}`))
-  return [fpath, data]
+  const inds = _coinFlip() ? allInds() : safeInds()
+  const data = _randomAscii(inds, ~~(Math.random() * 1000))
+  const buffer = Buffer.from(data)
+  //await fs.outputFile(fpath, data)
+  print(chalk.yellow(`+\t${fpath}`))
+  return [fpath, buffer]
 }
 
 function modFile(fpath) {
-  const inds = coinFlip ? allInds() : safeInds()
+  const inds = _coinFlip ? allInds() : safeInds()
   const data = _randomAscii(inds, ~~(Math.random() * 1000))
   fs.outputFileSync(fpath, data)
-  console.info(chalk.cyan(`%\t${fpath}`))
+  print(chalk.cyan(`%\t${fpath}`))
 }
 
-function removeFile(fpath) {
-  fs.removeSync(fpath)
-  console.info(chalk.red(`x\t${fpath}`))
+// fpath = file name
+async function removeFiles(fpaths) {
+  await Promise.all(fpaths.map(f => fs.remove(f)))
+  fpaths.forEach(f => {
+    print(chalk.red(`x\t${f}`))
+  })
 }
 
-function addFiles(num) {
-  let fpaths = {}
-  for (let i = 0; i < num; i++) {
-    let [fpath, data] = addRandomFile(~~(Math.random() * 5))
-    fpaths[fpath] = data
+async function addFiles(num) {
+  const fpaths = {}
+  const newFiles = []
+  while(num--){
+    const [fpath, buffer] = data = _getRandomFileData(~~(Math.random() * 5))
+    fpaths[fpath] = buffer
+    newFiles.push(data)
   }
+  await Promise.all(newFiles.map(([fpath, buffer]) => fs.outputFile(fpath, buffer)))
   return fpaths
 }
 
