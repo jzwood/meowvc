@@ -1,38 +1,72 @@
+const test = require('ava')
 const chalk = require('chalk')
-const testOps = require('../testOps')
 
-module.exports = flags => {
-  const name = 'mash'
-  testOps.setupTest(flags, name)
+const tester = require('../modules/tester')
+const helper = require('../modules/helper')
 
-  testOps.newline()
-  console.info(chalk.inverse('ADD FILES & SAVE'))
-  const save1 = testOps.addFiles(4)
+const name = 'mash'
+const flags = []
+
+test(name, async t => {
+  //helper.verboseLogging(true)
+  await tester.setupTest(flags, name)
+
+  helper.newline()
+  helper.print(chalk.inverse('ADD FILES & SAVE'))
+  const egNum = 3 // arbitrary
+  const save1 = await helper.addFiles(egNum * 4)
   let files1 = Object.keys(save1)
 
-  console.info(chalk.inverse('STATE'))
-  testOps.muSave()
-  testOps.testMu(['which'])
+  helper.print(chalk.inverse('MU STATE'))
+  tester.muSave()
+  helper.print(chalk.inverse('MU WHICH'))
+  tester.testMu(['which'])
 
-  console.info(chalk.inverse('MOD 2 FILES & 2 RM FILES'))
-  files1.forEach((fp,i) => {
-    if(i%2){
-      testOps.modFile(fp)
-    }else{
-      testOps.removeFile(fp)
-    }
-  })
+  helper.print(chalk.inverse('MOD 2 FILES & 2 RM FILES'))
 
-  console.info(chalk.inverse('MU SAVEAS'))
-  testOps.testMu(['saveas', 'develop'])
+  const dontTouchThese = files1.slice(0 * egNum, 1 * egNum).sort()
+  const modifyThese = files1.slice(1 * egNum, 2 * egNum).sort()
+  const modifyTheseAfter = files1.slice(2 * egNum, 3 * egNum).sort()
+  const removeThese = files1.slice(3 * egNum, 4 * egNum).sort()
 
-  console.info(chalk.inverse('MU STATE'))
-  testOps.testMu(['state'])
+  await helper.modFiles(modifyThese)
+  await helper.removeFiles(removeThese)
 
-  console.info(chalk.inverse('MU MASH MASTER'))
-  testOps.testMu(['mash', 'master'])
-  console.info(chalk.inverse('MU STATUS'))
-  testOps.testMu(['state'])
+  helper.print(chalk.inverse('MU SAVEAS'))
+  tester.testMu(['saveas', 'develop'])
 
-  testOps.cleanupTest(flags, name)
-}
+  helper.print(chalk.inverse('MU STATE'))
+  tester.testMu(['state'])
+
+  helper.print(chalk.inverse('MU GET MASTER'))
+  tester.testMu(['get','master'])
+
+  helper.print(chalk.inverse('MODIFIES 1 FILE'))
+  await helper.modFiles(modifyTheseAfter)
+  helper.print(chalk.inverse('MU SAVE'))
+  tester.muSave()
+  helper.print(chalk.inverse('MU GET DEVELOP'))
+  tester.testMu(['get','develop'])
+
+  helper.print(chalk.inverse('MU MASH MASTER'))
+  tester.testMu(['mash', 'master'])
+  helper.print(chalk.inverse('MU STATUS'))
+
+  /* Here we have deleted and modified files saves as new branch.*/
+  const stateObj = tester.testMu(['state'])
+  const extractFiles = obj => obj.map(data => data.fp).sort()
+
+  const added = extractFiles(stateObj.added)
+  const deleted = extractFiles(stateObj.deleted)
+  const modified = extractFiles(stateObj.modified)
+
+  /* The 2nd modified files  are the only ones picked up b/c they are files that were changed after the new branching (develop) but were not modified in develop (ie no conflicts) */
+  t.deepEqual(modified, modifyTheseAfter)
+  /* deleted files are missing so mashing old branch into new restores them */
+  t.deepEqual(added, removeThese)
+  /* mashing should never result in deleted files */
+  t.deepEqual(stateObj.deleted, [])
+
+  await tester.cleanupTest(flags, name)
+})
+

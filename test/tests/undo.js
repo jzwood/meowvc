@@ -1,6 +1,6 @@
 const test = require('ava')
-
 const chalk = require('chalk')
+
 const tester = require('../modules/tester')
 const helper = require('../modules/helper')
 
@@ -47,4 +47,3 @@ test(name, async t => {
 
   await tester.cleanupTest(flags, name)
 })
-

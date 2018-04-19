@@ -20,8 +20,9 @@ module.exports = function mu(args) {
         return command(i, args)
       }
       console.info(chalk.yellow(`Warning: ${process.cwd()} is not a mu repo root`))
-      return 0
+      return gl.exit.cannotExe
     }
   }
   console.info(gl.help)
+  return gl.exit.notFound
 }

@@ -15,5 +15,8 @@ test(name, async t => {
   exitcode = tester.muStart(tester.parseFlags(flags).local, '', '(when mu repo exists already)')
   t.is(exitcode, 126) //cannot execute
 
+  exitcode = tester.testMu(['gibberish'])
+  t.is(exitcode, 127) //argument not found
+
   await tester.cleanupTest(flags, name)
 })
