@@ -22,9 +22,15 @@ test(name, async t => {
 
   helper.print(chalk.inverse('MU STATE'))
   let stateObj = tester.testMu(['state'])
+  let state = helper.parseStateObject(stateObj)
 
-  const added = helper.parseStateObject(stateObj).added.sort()
+  let added = state.added.sort()
   t.deepEqual(added, files1)
+
+  let modified = state.modified
+  let deleted = state.deleted
+  t.deepEqual(modified, [])
+  t.deepEqual(deleted, [])
 
   helper.print(chalk.inverse('MU SAVE'))
   tester.muSave()
@@ -36,9 +42,15 @@ test(name, async t => {
 
   helper.print(chalk.inverse('MU STATE'))
   stateObj = tester.testMu(['state'])
+  state = helper.parseStateObject(stateObj)
 
-  const deleted = helper.parseStateObject(stateObj).deleted.sort()
+  deleted = state.deleted.sort()
   t.deepEqual(deleted, removeThese)
+
+  added = state.added
+  modified = state.modified
+  t.deepEqual(added, [])
+  t.deepEqual(modified, [])
 
   helper.print(chalk.inverse('MU SAVE'))
   tester.muSave()
@@ -49,17 +61,38 @@ test(name, async t => {
   await helper.modFiles(modifyThese)
 
   helper.print(chalk.inverse('MU STATE'))
-  tester.testMu(['state'])
+  stateObj = tester.testMu(['state'])
+  state = helper.parseStateObject(stateObj)
+
+  modified = state.modified.sort()
+  t.deepEqual(modified, modifyThese)
+
+  added = state.added
+  deleted = state.added
+  t.deepEqual(added, [])
+  t.deepEqual(deleted, [])
+
   helper.print(chalk.inverse('MU SAVE'))
   tester.muSave()
 
   helper.newline()
 
   helper.print(chalk.inverse('RENAME 2 FILES'))
-  await helper.renameFiles(renameThese)
+  const files2 = (await helper.renameFiles(renameThese)).sort()
 
   helper.print(chalk.inverse('MU STATE'))
-  tester.testMu(['state'])
+  stateObj = tester.testMu(['state'])
+  state = helper.parseStateObject(stateObj)
+
+  deleted = state.deleted.sort()
+  t.deepEqual(deleted, renameThese)
+
+  added = state.added.sort()
+  t.deepEqual(added, files2)
+
+  modified = state.modified
+  t.deepEqual(modified, [])
+
   helper.print(chalk.inverse('MU SAVE'))
   tester.muSave()
 
