@@ -48,7 +48,7 @@ function fdiff(str1, str2, fast=false) {
     let pointer = p2.length
     let diff = []
     const added = str => chalk.bold(chalk.green(str))
-    const deleted = str => chalk.dim(chalk.red(str))
+    const deleted = str => chalk.underline(chalk.red(str))
     backtrace.forEach(instr => {
       const getNum = i => {
         let num = i.match(/\d+/)
