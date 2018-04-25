@@ -97,10 +97,12 @@ test(name, async t => {
   tester.muSave()
 
   helper.print(chalk.inverse('MU HISTORY'))
-  tester.testMu(['history'])
+  let history = tester.testMu(['history'])
+  t.is(history.length, 4)
 
   helper.print(chalk.inverse('MU HISTORY 2'))
-  tester.testMu(['history','2'])
+  history = tester.testMu(['history','2'])
+  t.is(history.length, 2)
 
   await tester.cleanupTest(flags, name)
 })

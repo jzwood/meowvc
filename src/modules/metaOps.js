@@ -1,6 +1,6 @@
 /**
-*  META OPERATIONS
-*/
+ *  META OPERATIONS
+ */
 
 const fs = require('fs-extra')
 const chalk = require('chalk')
@@ -22,13 +22,15 @@ module.exports = head => {
     fs.outputJsonSync(metafp, meta)
   }
 
-  function list(limit=Infinity) {
+  function list(limit = Infinity) {
     console.info(chalk.green('history of'), head)
-    meta.messages.map((msg, v, arr) => {
-      if(parseInt(v,10) >= arr.length - limit){
+    return meta.messages.reduce((acc, msg, v, arr) => {
+      if (parseInt(v, 10) >= arr.length - limit) {
         console.info(chalk.yellow('v' + v), msg)
+        return acc.concat(msg)
       }
-    })
+      return acc
+    }, [])
   }
 
   return {
@@ -37,3 +39,4 @@ module.exports = head => {
     meta
   }
 }
+
