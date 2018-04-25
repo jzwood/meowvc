@@ -15,7 +15,7 @@ test(name, async t => {
   helper.print(chalk.inverse('ADD FILES & SAVE'))
   const egNum = 3 // arbitrary
   const save1 = await helper.addFiles(egNum * 4)
-  let files1 = Object.keys(save1)
+  const files1 = Object.keys(save1)
 
   helper.print(chalk.inverse('MU STATE'))
   tester.muSave()
@@ -54,11 +54,7 @@ test(name, async t => {
 
   /* Here we have deleted and modified files saves as new branch.*/
   const stateObj = tester.testMu(['state'])
-  const extractFiles = obj => obj.map(data => data.fp).sort()
-
-  const added = extractFiles(stateObj.added)
-  const deleted = extractFiles(stateObj.deleted)
-  const modified = extractFiles(stateObj.modified)
+  const {added, deleted, modified} = helper.parseStateObject(stateObj)
 
   /* The 2nd modified files  are the only ones picked up b/c they are files that were changed after the new branching (develop) but were not modified in develop (ie no conflicts) */
   t.deepEqual(modified, modifyTheseAfter)

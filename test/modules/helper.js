@@ -15,11 +15,22 @@ module.exports = {
   print,
   removeFiles,
   renameFiles,
-  verify
+  verify,
+  parseStateObject
 }
 
 function verboseLogging(verbose = true) {
   QUIET = !verbose
+}
+
+function parseStateObject(stateObj){
+  const extractFiles = obj => obj.map(data => data.fp).sort()
+
+  const added = extractFiles(stateObj.added)
+  const deleted = extractFiles(stateObj.deleted)
+  const modified = extractFiles(stateObj.modified)
+
+  return {added, deleted, modified}
 }
 
 function print(msg) {

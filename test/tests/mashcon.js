@@ -1,45 +1,49 @@
+const test = require('ava')
 const chalk = require('chalk')
-const testOps = require('../testOps')
 
-module.exports = flags => {
-  const name = 'conflicts'
-  testOps.setupTest(flags, name)
+const tester = require('../modules/tester')
+const helper = require('../modules/helper')
 
-  testOps.newline()
-  console.info(chalk.inverse('ADD FILES & SAVE'))
-  const save1 = testOps.addFiles(4)
-  let files1 = Object.keys(save1)
+const name = 'conflicts'
+const flags = []
 
-  console.info(chalk.inverse('MU'))
-  testOps.muSave()
+test(name, async t => {
+  await tester.setupTest(flags, name)
 
-  console.info(chalk.inverse('MOD FILES'))
+  helper.newline()
+  helper.print(chalk.inverse('ADD FILES & SAVE'))
+  const save1 = await tester.addFiles(4)
+  const files1 = Object.keys(save1)
+
+  helper.print(chalk.inverse('MU'))
+  await tester.muSave()
+
+  helper.print(chalk.inverse('MOD FILES'))
+
+  await helper.modFiles(files1)
+
+  helper.print(chalk.inverse('MU SAVE'))
+  tester.muSave()
+
+  helper.print(chalk.inverse('MU GET MASTER V0 && SAVEAS DEVELOP'))
+  tester.testMu(['get', 'master', 'v0'])
+  tester.testMu(['saveas', 'develop'])
+
+  helper.print(chalk.inverse('MOD FILES'))
   files1.forEach(fp => {
-    testOps.modFile(fp)
+    tester.modFile(fp)
   })
-  console.info(chalk.inverse('MU SAVE'))
-  testOps.muSave()
+  helper.print(chalk.inverse('MU SAVE'))
+  tester.muSave()
 
-  console.info(chalk.inverse('MU GET MASTER V0 && SAVEAS DEVELOP'))
-  testOps.testMu(['get', 'master', 'v0'])
-  testOps.testMu(['saveas', 'develop'])
-
-  console.info(chalk.inverse('MOD FILES'))
-  files1.forEach(fp => {
-    testOps.modFile(fp)
-  })
-  console.info(chalk.inverse('MU SAVE'))
-  testOps.muSave()
-
-  console.info(chalk.inverse('MU MASH'))
-  testOps.testMu(['mash', 'master'])
+  helper.print(chalk.inverse('MU MASH'))
+  tester.testMu(['mash', 'master'])
 
   const cleanup = setInterval(() => {
     if(!global.muReplOpen){
       clearInterval(cleanup)
-      testOps.testMu(['state'])
-      testOps.cleanupTest(flags, name)
+      tester.testMu(['state'])
+      tester.cleanupTest(flags, name)
     }
   }, 2000)
-
-}
+})

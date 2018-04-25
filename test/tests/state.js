@@ -1,56 +1,73 @@
+const test = require('ava')
+
 const chalk = require('chalk')
-const testOps = require('../testOps')
+const tester = require('../modules/tester')
+const helper = require('../modules/helper')
 
-module.exports = flags => {
-  const name = 'state'
-  testOps.setupTest(flags, name)
+const name = 'state'
+const flags = []
+helper.verboseLogging(false)
 
-  testOps.newline()
-  console.info(chalk.inverse('ADD FILES'))
-  let newFiles = Object.keys(testOps.addFiles(4))
+test(name, async t => {
+  await tester.setupTest(flags, name)
 
-  console.info(chalk.inverse('MU STATE, MU SAVE'))
-  testOps.testMu(['state'])
-  testOps.muSave()
+  helper.newline()
+  helper.print(chalk.inverse('ADD FILES'))
+  const save1 = await helper.addFiles(4)
+  const files1 = Object.keys(save1).sort()
 
-  testOps.newline()
+  const removeThese = files1.slice(0,2).sort() // first 2
+  const modifyThese = files1.slice(2).sort() // last 2
+  const renameThese = modifyThese.slice()
 
-  console.info(chalk.inverse('DEL 2 FILES'))
-  for(let i=0, n=Math.floor(newFiles.length/2); i<n; i++){
-    testOps.removeFile(newFiles[i])
-  }
+  helper.print(chalk.inverse('MU STATE'))
+  let stateObj = tester.testMu(['state'])
 
-  console.info(chalk.inverse('MU STATE, MU SAVE'))
-  testOps.testMu(['state'])
-  testOps.muSave()
+  const added = helper.parseStateObject(stateObj).added.sort()
+  t.deepEqual(added, files1)
 
-  testOps.newline()
+  helper.print(chalk.inverse('MU SAVE'))
+  tester.muSave()
 
-  console.info(chalk.inverse('MOD FILES'))
-  for(let i=Math.floor(newFiles.length/2), n=newFiles.length; i<n; i++){
-    testOps.modFile(newFiles[i])
-  }
+  helper.newline()
 
-  console.info(chalk.inverse('MU STATE, MU SAVE'))
-  testOps.testMu(['state'])
-  testOps.muSave()
+  helper.print(chalk.inverse('DEL 2 FILES'))
+  await helper.removeFiles(removeThese)
 
-  testOps.newline()
+  helper.print(chalk.inverse('MU STATE'))
+  stateObj = tester.testMu(['state'])
 
-  console.info(chalk.inverse('RENAME FILES'))
-  for(let i=Math.floor(newFiles.length/2), n=newFiles.length; i<n; i++){
-    testOps.rename(newFiles[i])
-  }
+  const deleted = helper.parseStateObject(stateObj).deleted.sort()
+  t.deepEqual(deleted, removeThese)
 
-  console.info(chalk.inverse('MU STATE, MU SAVE'))
-  testOps.testMu(['state'])
-  testOps.muSave()
+  helper.print(chalk.inverse('MU SAVE'))
+  tester.muSave()
 
-  console.info(chalk.inverse('MU HISTORY'))
-  testOps.testMu(['history'])
+  helper.newline()
 
-  console.info(chalk.inverse('MU HISTORY 2'))
-  testOps.testMu(['history','2'])
+  helper.print(chalk.inverse('MOD 2 FILES'))
+  await helper.modFiles(modifyThese)
 
-  testOps.cleanupTest(flags, name)
-}
+  helper.print(chalk.inverse('MU STATE'))
+  tester.testMu(['state'])
+  helper.print(chalk.inverse('MU SAVE'))
+  tester.muSave()
+
+  helper.newline()
+
+  helper.print(chalk.inverse('RENAME 2 FILES'))
+  await helper.renameFiles(renameThese)
+
+  helper.print(chalk.inverse('MU STATE'))
+  tester.testMu(['state'])
+  helper.print(chalk.inverse('MU SAVE'))
+  tester.muSave()
+
+  helper.print(chalk.inverse('MU HISTORY'))
+  tester.testMu(['history'])
+
+  helper.print(chalk.inverse('MU HISTORY 2'))
+  tester.testMu(['history','2'])
+
+  await tester.cleanupTest(flags, name)
+})
