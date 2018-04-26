@@ -6,9 +6,9 @@ const helper = require('../modules/helper')
 
 const name = 'mash'
 const flags = []
+helper.verboseLogging(true)
 
 test(name, async t => {
-  //helper.verboseLogging(true)
   await tester.setupTest(flags, name)
 
   helper.newline()
@@ -18,9 +18,9 @@ test(name, async t => {
   const files1 = Object.keys(save1)
 
   helper.print(chalk.inverse('MU STATE'))
-  tester.muSave()
+  await tester.muSave()
   helper.print(chalk.inverse('MU WHICH'))
-  tester.testMu(['which'])
+  await tester.mu(['which'])
 
   helper.print(chalk.inverse('MOD 2 FILES & 2 RM FILES'))
 
@@ -33,28 +33,32 @@ test(name, async t => {
   await helper.removeFiles(removeThese)
 
   helper.print(chalk.inverse('MU SAVEAS'))
-  tester.testMu(['saveas', 'develop'])
+  await tester.mu(['saveas', 'develop'])
 
   helper.print(chalk.inverse('MU STATE'))
-  tester.testMu(['state'])
+  await tester.mu(['state'])
 
   helper.print(chalk.inverse('MU GET MASTER'))
-  tester.testMu(['get','master'])
+  await tester.mu(['get', 'master'])
 
   helper.print(chalk.inverse('MODIFIES 1 FILE'))
   await helper.modFiles(modifyTheseAfter)
   helper.print(chalk.inverse('MU SAVE'))
-  tester.muSave()
+  await tester.muSave()
   helper.print(chalk.inverse('MU GET DEVELOP'))
-  tester.testMu(['get','develop'])
+  await tester.mu(['get', 'develop'])
 
   helper.print(chalk.inverse('MU MASH MASTER'))
-  tester.testMu(['mash', 'master'])
+  await tester.mu(['mash', 'master'])
   helper.print(chalk.inverse('MU STATUS'))
 
   /* Here we have deleted and modified files saves as new branch.*/
-  const stateObj = tester.testMu(['state'])
-  const {added, deleted, modified} = helper.parseStateObject(stateObj)
+  const stateObj = await tester.mu(['state'])
+  const {
+    added,
+    deleted,
+    modified
+  } = helper.parseStateObject(stateObj)
 
   /* The 2nd modified files  are the only ones picked up b/c they are files that were changed after the new branching (develop) but were not modified in develop (ie no conflicts) */
   t.deepEqual(modified, modifyTheseAfter)

@@ -21,7 +21,7 @@ test(name, async t => {
   const renameThese = modifyThese.slice()
 
   helper.print(chalk.inverse('MU STATE'))
-  let stateObj = tester.testMu(['state'])
+  let stateObj = await tester.mu(['state'])
   let state = helper.parseStateObject(stateObj)
 
   let added = state.added.sort()
@@ -33,7 +33,7 @@ test(name, async t => {
   t.deepEqual(deleted, [])
 
   helper.print(chalk.inverse('MU SAVE'))
-  tester.muSave()
+  await tester.muSave()
 
   helper.newline()
 
@@ -41,7 +41,7 @@ test(name, async t => {
   await helper.removeFiles(removeThese)
 
   helper.print(chalk.inverse('MU STATE'))
-  stateObj = tester.testMu(['state'])
+  stateObj = await tester.mu(['state'])
   state = helper.parseStateObject(stateObj)
 
   deleted = state.deleted.sort()
@@ -53,7 +53,7 @@ test(name, async t => {
   t.deepEqual(modified, [])
 
   helper.print(chalk.inverse('MU SAVE'))
-  tester.muSave()
+  await tester.muSave()
 
   helper.newline()
 
@@ -61,7 +61,7 @@ test(name, async t => {
   await helper.modFiles(modifyThese)
 
   helper.print(chalk.inverse('MU STATE'))
-  stateObj = tester.testMu(['state'])
+  stateObj = await tester.mu(['state'])
   state = helper.parseStateObject(stateObj)
 
   modified = state.modified.sort()
@@ -73,7 +73,7 @@ test(name, async t => {
   t.deepEqual(deleted, [])
 
   helper.print(chalk.inverse('MU SAVE'))
-  tester.muSave()
+  await tester.muSave()
 
   helper.newline()
 
@@ -81,7 +81,7 @@ test(name, async t => {
   const files2 = (await helper.renameFiles(renameThese)).sort()
 
   helper.print(chalk.inverse('MU STATE'))
-  stateObj = tester.testMu(['state'])
+  stateObj = await tester.mu(['state'])
   state = helper.parseStateObject(stateObj)
 
   deleted = state.deleted.sort()
@@ -94,14 +94,14 @@ test(name, async t => {
   t.deepEqual(modified, [])
 
   helper.print(chalk.inverse('MU SAVE'))
-  tester.muSave()
+  await tester.muSave()
 
   helper.print(chalk.inverse('MU HISTORY'))
-  let history = tester.testMu(['history'])
+  let history = await tester.mu(['history'])
   t.is(history.length, 4)
 
   helper.print(chalk.inverse('MU HISTORY 2'))
-  history = tester.testMu(['history','2'])
+  history = await tester.mu(['history','2'])
   t.is(history.length, 2)
 
   await tester.cleanupTest(flags, name)

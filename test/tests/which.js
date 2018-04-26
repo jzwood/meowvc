@@ -18,7 +18,7 @@ test(name, async t => {
   await tester.muSave()
 
   helper.print(chalk.inverse('MU WHICH'))
-  let which = tester.testMu(['which'])
+  let which = await tester.mu(['which'])
   t.deepEqual(which, {
     current: {
       head: 'master',
@@ -30,10 +30,10 @@ test(name, async t => {
 
   const save2 = await helper.addFiles(1)
   helper.print(chalk.inverse('MU SAVEAS DEVELOP'))
-  tester.testMu(['saveas', 'develop'])
+  await tester.mu(['saveas', 'develop'])
 
   helper.print(chalk.inverse('MU WHICH'))
-  which = tester.testMu(['which'])
+  which = await tester.mu(['which'])
   t.deepEqual(which, {
     current: {
       head: 'develop',
@@ -55,7 +55,7 @@ test(name, async t => {
   await tester.muSave()
 
   helper.print(chalk.inverse('MU WHICH'))
-  which = tester.testMu(['which'])
+  which = await tester.mu(['which'])
   t.deepEqual(which, {
     current: {
       head: 'develop',
@@ -69,8 +69,8 @@ test(name, async t => {
   })
 
   helper.print(chalk.inverse('MU GET DEVELOP V1'))
-  tester.testMu(['get', 'develop', 'v1'])
-  which = tester.testMu(['which'])
+  await tester.mu(['get', 'develop', 'v1'])
+  which = await tester.mu(['which'])
   t.deepEqual(which, {
     current: {
       head: 'develop',
@@ -84,13 +84,13 @@ test(name, async t => {
   })
 
   helper.print(chalk.inverse('MU GET DEVELOP'))
-  tester.testMu(['get', 'develop'])
+  await tester.mu(['get', 'develop'])
 
   helper.print(chalk.inverse('MU GET MASTER'))
-  tester.testMu(['get', 'master'])
+  await tester.mu(['get', 'master'])
 
   helper.print(chalk.inverse('MU WHICH'))
-  which = tester.testMu(['which'])
+  which = await tester.mu(['which'])
   t.deepEqual(which, {
     current: {
       head: 'master',

@@ -23,27 +23,28 @@ test(name, async t => {
   await helper.modFiles(files1)
 
   helper.print(chalk.inverse('MU SAVE'))
-  tester.muSave()
+  await tester.muSave()
 
   helper.print(chalk.inverse('MU GET MASTER V0 && SAVEAS DEVELOP'))
-  tester.testMu(['get', 'master', 'v0'])
-  tester.testMu(['saveas', 'develop'])
+  await tester.mu(['get', 'master', 'v0'])
+  await tester.mu(['saveas', 'develop'])
 
   helper.print(chalk.inverse('MOD FILES'))
   files1.forEach(fp => {
     tester.modFile(fp)
   })
   helper.print(chalk.inverse('MU SAVE'))
-  tester.muSave()
+  await tester.muSave()
 
   helper.print(chalk.inverse('MU MASH'))
-  tester.testMu(['mash', 'master'])
+  await tester.mu(['mash', 'master'])
 
   const cleanup = setInterval(() => {
-    if(!global.muReplOpen){
+    if (!global.muReplOpen) {
       clearInterval(cleanup)
-      tester.testMu(['state'])
+      tester.mu(['state'])
       tester.cleanupTest(flags, name)
     }
   }, 2000)
 })
+

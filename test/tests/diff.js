@@ -24,9 +24,9 @@ test(name, async t => {
   await Promise.all([p1, p2, p3])
 
   helper.print(chalk.inverse('MU DIFF'))
-  tester.testMu(['diff', '.'])
+  await tester.mu(['diff', '.'])
   helper.print(chalk.inverse('MU SAVE'))
-  tester.muSave()
+  await tester.muSave()
 
   /* without a timeout the files change so quickly that their last-modified time stamps are identical. If the time stamp is the same and the size doesn't change then mu can't tell that it has been edited. */
   await new Promise((resolve, reject) => {
@@ -41,7 +41,7 @@ test(name, async t => {
         helper.newline()
 
         helper.print(chalk.inverse('MU DIFF'))
-        tester.testMu(['diff', '.'])
+        await tester.mu(['diff', '.'])
 
         helper.print(chalk.inverse('DEL FILES'))
 
@@ -52,7 +52,7 @@ test(name, async t => {
         ])
 
         helper.print(chalk.inverse('MU DIFF'))
-        tester.testMu(['diff', '.'])
+        await tester.mu(['diff', '.'])
 
         await tester.cleanupTest(flags, name)
 

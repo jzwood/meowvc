@@ -6,7 +6,7 @@
 
 const chalk = require('chalk')
 
-module.exports = function mu(args) {
+module.exports = async function mu(args) {
 
   const gl = require('./src/constant')
   const loader = require('./src/utils/loader')

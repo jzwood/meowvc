@@ -11,7 +11,7 @@ module.exports = {
   muStart,
   parseFlags,
   setupTest,
-  testMu
+  mu: testMu
 }
 
 // runs $ mu <param> in test environment
@@ -42,7 +42,7 @@ function muStart(isLocal, name = '', msg = '') {
 }
 
 function muSave() {
-  testMu(['save', 'save message ' + helper.makeWord()])
+  return testMu(['save', 'save message ' + helper.makeWord()])
 }
 
 async function emptyTestDir(remote, remove = false) {

@@ -19,7 +19,9 @@
   },
   "ava": {
     "files": [
-      "test/tests/state.js"
+      "test/tests/*.js",
+      "!**/mashcon.js",
+      "!**/diff.js"
     ],
     "verbose": true
   },
@@ -29,8 +31,7 @@
   },
   "license": "MIT",
   "bin": {
-    "mu": "./index.js",
-    "meowvc": "./mu.js"
+    "mu": "./index.js"
   },
   "keywords": [
     "version control",

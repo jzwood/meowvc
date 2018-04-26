@@ -17,8 +17,8 @@ test(name, async t => {
   const files1 = Object.keys(save1)
 
   helper.print(chalk.inverse('MU'))
-  tester.muSave()
-  tester.testMu(['which'])
+  await tester.muSave()
+  await tester.mu(['which'])
 
   helper.print(chalk.inverse('DEL FILES'))
   await helper.removeFiles(files1)
@@ -28,14 +28,14 @@ test(name, async t => {
   const files2 = Object.keys(save2)
 
   helper.print(chalk.inverse('MU'))
-  tester.testMu(['saveas', 'develop'])
-  tester.testMu(['which'])
-  tester.testMu(['get','master'])
+  await tester.mu(['saveas', 'develop'])
+  await tester.mu(['which'])
+  await tester.mu(['get','master'])
 
   await helper.verify(t, save1)
 
   helper.print(chalk.inverse('MU'))
-  tester.testMu(['get','develop'])
+  await tester.mu(['get','develop'])
 
   await helper.verify(t, save2)
 
