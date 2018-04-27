@@ -7,29 +7,32 @@ const muOps = require('../modules/muOps')
 const gl = require('../constant')
 
 /**********
-*  START  *
-**********/
+ *  START  *
+ **********/
 
-module.exports = function start(i, args){
+module.exports = async function start(i, args) {
   const remoteName = args[i + 1]
-  let ancestor
-  if (muOps.repoPath){
+  if (muOps.path()) {
     console.warn(chalk.yellow('Warning: repo already setup'))
     return gl.exit.cannotExe
-  } else if(ancestor = muOps.findMuidAncestor()) {
-    console.warn(chalk.yellow('Warning: mu subdirectory. Please invoke mu from root:', ancestor))
-    return gl.exit.cannotExe
   } else {
-    muOps.setupRemote(remoteName)
-    //init history folder
-    fs.ensureDirSync(muOps.path('history'))
-    //init pointer
-    pointerOps()
-    //init ignore
-    if (!fs.existsSync(muOps.path('_ignore'))) {
-      fs.outputFileSync(muOps.path('_ignore'), `node_modules${eol}^\\.`, 'utf8')
+    let ancestor = await muOps.findMuidAncestor()
+    if (ancestor) {
+      console.warn(chalk.yellow('Warning: mu subdirectory. Please invoke mu from root:', ancestor))
+      return gl.exit.cannotExe
+    } else {
+      await muOps.setupRemote(remoteName)
+      //init history folder
+      await fs.ensureDir(muOps.path('history'))
+      //init pointer
+      pointerOps()
+      //init ignore
+      if (!(await fs.pathExists(muOps.path('_ignore')))) {
+        await fs.outputFile(muOps.path('_ignore'), `node_modules${eol}^\\.`, 'utf8')
+      }
+      console.info(chalk.green('setup done'))
+      return gl.exit.success
     }
-    console.info(chalk.green('setup done'))
-    return gl.exit.success
   }
 }
+

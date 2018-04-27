@@ -7,17 +7,18 @@
 const chalk = require('chalk')
 
 module.exports = async function mu(args) {
-
   const gl = require('./src/constant')
   const loader = require('./src/utils/loader')
   const commands = loader.require('arguments')
   const muOps = require('./src/modules/muOps')
 
-  for (let i = 0, n = args.length; i < n; i++) {
-    const command = commands[args[i]]
+  for (let [index, param] of args.entries()) {
+    const command = commands[param]
     if (typeof command === 'function') {
-      if (muOps.repoPath || args[i] === 'start') {
-        return command(i, args)
+      const muPaths = await muOps.getPaths()
+      Object.assign(gl, muPaths)
+      if (gl.isPath || (param === 'start')) {
+        return command({gl, index, args})
       }
       console.info(chalk.yellow(`Warning: ${process.cwd()} is not a mu repo root`))
       return gl.exit.cannotExe
@@ -26,3 +27,4 @@ module.exports = async function mu(args) {
   console.info(gl.help)
   return gl.exit.notFound
 }
+

@@ -24,9 +24,6 @@ module.exports = {
   eol: new RegExp(`(?=${eol})`),
   insert: (string, index, substr) => string.slice(0, index) + substr + string.slice(index),
   vnorm: v => Math.max(0, parseInt(v,10) - 1),
-  linesPath: muOps.path('disk_mem', 'lines'),
-  filesPath: muOps.path('disk_mem', 'files'),
-  binPath: muOps.path('disk_mem', 'bin'),
   exit: {
     success: 0,
     error: 1, //generic
