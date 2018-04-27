@@ -1,7 +1,7 @@
 const chalk = require('chalk')
 const pointerOps = require('../modules/pointerOps')
-const gl = require('../constant')
 const core = require('../core')()
+const gl = require('../constant')
 
 /**********
 *  STATUS  *

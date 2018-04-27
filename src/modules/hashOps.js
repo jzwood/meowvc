@@ -4,6 +4,7 @@
 
 const path = require('path')
 const crc = require('crc')
+const muOps = require('./muOps')
 const gl = require('../constant')
 
 module.exports = {
@@ -35,7 +36,7 @@ function diskCache(GlMem, buffer, isutf8) {
 
   const fileHash = hashIt(buffer)
   if(!isutf8){
-    GlMem.binQueue.push([path.join(gl.binPath, gl.insert(fileHash, 2, '/')), buffer])
+    GlMem.binQueue.push([path.join(muOps.to.bin, gl.insert(fileHash, 2, '/')), buffer])
   }else{
     const file = buffer.toString('utf8')
     if (isUncached(fileHash)) {
@@ -44,11 +45,11 @@ function diskCache(GlMem, buffer, isutf8) {
         const lineHash = hashIt(line)
         if (isUncached(lineHash) || arrayOfLines.length === 1) {
           cacheIt(lineHash)
-          GlMem.lineQueue.push([path.join(gl.linesPath, gl.insert(lineHash, 2, '/')), line])
+          GlMem.lineQueue.push([path.join(muOps.to.lines, gl.insert(lineHash, 2, '/')), line])
         }
         return lineHash
       })
-      GlMem.fileQueue.push([path.join(gl.filesPath, gl.insert(fileHash, 2, '/')), hashes])
+      GlMem.fileQueue.push([path.join(muOps.to.files, gl.insert(fileHash, 2, '/')), hashes])
     }
   }
   return fileHash

@@ -18,40 +18,47 @@ const MU = {
 }
 
 const muOps = {
-  _cachedRepoPath: null,
-  findMuidAncestor,
-  findRemotePath,
-  setupRemote,
-  async getPaths() {
-    await setPathCache()
-    return {
-      isPath: this._cachedRepoPath,
-      path(){
-        return path.join(this._cachedRepoPath, ...arguments)
-      },
-      to: {
-        lines: this.path('disk_mem', 'lines'),
-        files: this.path('disk_mem', 'files'),
-        bin: this.path('disk_mem', 'bin')
-      }
+  _test: {
+    findRemotePath
+  },
+  isPath: false,
+  start: {
+    findMuidAncestor,
+    setupRemote
+  },
+  update
+}
+
+module.exports = muOps
+
+function getPath() {
+  return path.join(muOps._cachedRepoPath, ...arguments)
+}
+
+async function update() {
+  muPath = await getRepoPath()
+  const isPath = Boolean(muPath)
+  muOps._cachedRepoPath = muPath
+  if (isPath) {
+    muOps.isPath = isPath
+    muOps.path = getPath
+    muOps.to = {
+      lines: getPath('disk_mem', 'lines'),
+      files: getPath('disk_mem', 'files'),
+      bin: getPath('disk_mem', 'bin')
     }
   }
 }
 
+//call updateMuOps() after
+async function setupRemote(name) {
+  const muPath = await findRemotePath(name)
+  await fs.outputFile(MU.muidPath, muPath)
+}
+
+
 function findRemotePath(name) {
   return name ? getDropboxPath(name) : Promise.resolve(MU.local)
-}
-
-async function setPathCache() {
-  if(!muOps._cachedRepoPath){
-    muOps._cachedRepoPath = await getRepoPath()
-  }
-}
-
-async function setupRemote(name) {
-  const repoPath = await findRemotePath(name)
-  await fs.outputFile(MU.muidPath, repoPath)
-  await setPathCache()
 }
 
 async function findMuidAncestor() {
@@ -104,9 +111,6 @@ async function getRepoPath() {
     }
     return repoPath
   }
-  console.log(muOps._cachedRepoPath)
   return null
 }
-
-module.exports = muOps
 

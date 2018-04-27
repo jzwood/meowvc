@@ -12,16 +12,17 @@ const gl = require('../constant')
 
 module.exports = async function start(i, args) {
   const remoteName = args[i + 1]
-  if (muOps.path()) {
+  if (muOps.isPath) {
     console.warn(chalk.yellow('Warning: repo already setup'))
     return gl.exit.cannotExe
   } else {
-    let ancestor = await muOps.findMuidAncestor()
+    let ancestor = await muOps.start.findMuidAncestor()
     if (ancestor) {
       console.warn(chalk.yellow('Warning: mu subdirectory. Please invoke mu from root:', ancestor))
       return gl.exit.cannotExe
     } else {
-      await muOps.setupRemote(remoteName)
+      await muOps.start.setupRemote(remoteName)
+      await muOps.update()
       //init history folder
       await fs.ensureDir(muOps.path('history'))
       //init pointer

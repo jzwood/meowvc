@@ -51,9 +51,10 @@ async function emptyTestDir(remote, remove = false) {
   }
 }
 
-function getRemote(isLocal, name) {
-  const muOps = require('../../src/modules/muOps')
-  return muOps.findRemotePath(isLocal ? false : name)
+async function getRemote(isLocal, name) {
+  muOps = require('../../src/modules/muOps')
+  await muOps.update()
+  return muOps._test.findRemotePath(isLocal ? false : name)
 }
 
 async function setupTest(flags, name) {
@@ -64,7 +65,7 @@ async function setupTest(flags, name) {
   process.chdir(tempPath)
 
   name = path.join('test', name)
-  const remote = getRemote(local, name)
+  const remote = await getRemote(local, name)
   await emptyTestDir(remote)
 
   return muStart(local, name)
@@ -74,7 +75,7 @@ async function cleanupTest(flags, name) {
   name = path.join('test', name)
   const {local, preserve} = parseFlags(flags)
 
-  const remote = getRemote(local, name)
+  const remote = await getRemote(local, name)
 
   if (preserve) {
     helper.print(chalk.yellow(remote), chalk.inverse('preserved'))

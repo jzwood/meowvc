@@ -15,10 +15,9 @@ module.exports = async function mu(args) {
   for (let [index, param] of args.entries()) {
     const command = commands[param]
     if (typeof command === 'function') {
-      const muPaths = await muOps.getPaths()
-      Object.assign(gl, muPaths)
-      if (gl.isPath || (param === 'start')) {
-        return command({gl, index, args})
+      await muOps.update()
+      if (muOps.isPath || (param === 'start')) {
+        return command(index, args)
       }
       console.info(chalk.yellow(`Warning: ${process.cwd()} is not a mu repo root`))
       return gl.exit.cannotExe

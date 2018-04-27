@@ -4,7 +4,6 @@ const chalk = require('chalk')
 const isUtf8 = require('is-utf8')
 const loader = require('./utils/loader')
 const mod = loader.require('modules')
-const gl = require('./constant')
 
 module.exports = () => {
 
@@ -68,7 +67,7 @@ module.exports = () => {
   }
 
   /**
-  * @description collects all added, modfied, and deleted files and passes them to handle fxn
+  * @description collects all added, odfied, and deleted files and passes them to handle fxn
   */
   function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
     targetTree = mod.treeOps.getSavedData(head, version)
@@ -153,8 +152,8 @@ module.exports = () => {
   * @description stores every hash on disk into RAM
   */
   function _preCache() {
-    const lp = gl.linesPath,
-      fp = gl.filesPath
+    const lp = mod.muOps.to.lines
+    const fp = mod.muOps.to.files
     fs.ensureDirSync(lp)
     fs.ensureDirSync(fp)
 
