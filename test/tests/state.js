@@ -11,6 +11,20 @@ helper.verboseLogging(false)
 test(name, async t => {
   await tester.setupTest(flags, name)
 
+  helper.print(chalk.inverse('MU STATE'))
+  let stateObj = await tester.mu(['state'])
+  let state = helper.parseStateObject(stateObj)
+
+  let added = state.added.sort()
+  t.deepEqual(added, ['_muignore'])
+
+  let modified = state.modified
+  let deleted = state.deleted
+  t.deepEqual(modified, [])
+  t.deepEqual(deleted, [])
+
+  await tester.muSave()
+
   helper.newline()
   helper.print(chalk.inverse('ADD FILES'))
   const save1 = await helper.addFiles(4)
@@ -21,14 +35,14 @@ test(name, async t => {
   const renameThese = modifyThese.slice()
 
   helper.print(chalk.inverse('MU STATE'))
-  let stateObj = await tester.mu(['state'])
-  let state = helper.parseStateObject(stateObj)
+  stateObj = await tester.mu(['state'])
+  state = helper.parseStateObject(stateObj)
 
-  let added = state.added.sort()
+  added = state.added.sort()
   t.deepEqual(added, files1)
 
-  let modified = state.modified
-  let deleted = state.deleted
+  modified = state.modified
+  deleted = state.deleted
   t.deepEqual(modified, [])
   t.deepEqual(deleted, [])
 
@@ -98,7 +112,7 @@ test(name, async t => {
 
   helper.print(chalk.inverse('MU HISTORY'))
   let history = await tester.mu(['history'])
-  t.is(history.length, 4)
+  t.is(history.length, 1 + 4)
 
   helper.print(chalk.inverse('MU HISTORY 2'))
   history = await tester.mu(['history','2'])

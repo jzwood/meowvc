@@ -26,6 +26,7 @@ const muOps = {
     findMuidAncestor,
     setupRemote
   },
+  ignorePath: path.join(cwd, '_muignore'),
   update
 }
 

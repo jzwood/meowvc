@@ -10,15 +10,14 @@ const gl = require('../constant')
  *  WHICH  *
  **********/
 
-module.exports = function which() {
+module.exports = async function which() {
 
   const historyPath = muOps.path('history')
-  if (fs.existsSync(historyPath)) {
+  if (await fs.pathExists(historyPath)) {
     const po = pointerOps()
 
-    let branches = fs.readdirSync(historyPath).filter(dirName => {
-      return fs.statSync(path.join(historyPath, dirName)).isDirectory()
-    })
+    let branches = (await fs.readdir(historyPath))
+      .filter(async dirName => (await fs.stat(path.join(historyPath, dirName))).isDirectory())
 
     const whichObj = {
       current: {},
@@ -37,7 +36,10 @@ module.exports = function which() {
         }
       } else {
         console.info(chalk.gray(`  ${head} v${vHead}`))
-        whichObj.saves.push({head,vHead})
+        whichObj.saves.push({
+          head,
+          vHead
+        })
       }
     })
 
