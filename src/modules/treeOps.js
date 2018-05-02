@@ -4,6 +4,7 @@
 
 const fs = require('fs-extra')
 const path = require('path')
+const chalk = require('chalk')
 const eol = require('os').EOL
 
 const pointerOps = require('./pointerOps')
@@ -19,10 +20,22 @@ module.exports = {
   getSavedData
 }
 
-function _ignore(){
-  const ignore_file = fs.readFileSync(muOps.path('_ignore'), 'utf8').trim().split(eol).join('|')
-  const ignore = ignore_file ? new RegExp(ignore_file) : void(0)
-  return ignore
+function _ignore() {
+  const defaultPattern = '^\\.mu$|^\\.muid$' //we absolutely do not want to track the .mu repo is it's local
+  if (fs.pathExistsSync(muOps.ignorePath)) {
+    const ignorePatternList = fs.readFileSync(muOps.ignorePath, 'utf8')
+      .trim()
+      .split(eol)
+      .concat(defaultPattern)
+    try {
+      const verifiedpatterns = ignorePatternList.map(p => new RegExp(p))
+      const ignorePattern = ignorePatternList.join('|')
+      return new RegExp(ignorePattern)
+    } catch (err) {
+      console.warn(chalk.red('Error: file _muignore has incorrect syntax.'), chalk.yellow('Each line must contain valid 1st parameter for:'), 'new RegExp')
+    }
+  }
+  return new RegExp(defaultPattern)
 }
 
 // iterates through every file in root directory
@@ -31,7 +44,7 @@ function treeify(forEachFile) {
   const ignorePattern = _ignore()
   const dirDive = (tree, parent) => {
     fs.readdirSync(parent).forEach((child, index, ls) => {
-      if (!ignorePattern || !ignorePattern.test(child)) {
+      if (!ignorePattern.test(child)) {
         const childpath = path.join(parent, child)
         const status = fs.statSync(childpath)
         const isDir = status.isDirectory()
@@ -53,7 +66,7 @@ function treeify(forEachFile) {
 
 function getSavedData(head, version) {
   let lastSavePath
-  if (head && version){
+  if (head && version) {
     lastSavePath = muOps.path('history', head, version + '.json')
   } else {
     const po = pointerOps()
@@ -64,8 +77,8 @@ function getSavedData(head, version) {
 }
 
 /*
-* TREE HELPERS
-*/
+ * TREE HELPERS
+ */
 
 function getHashByInode(tree, inode) {
   return tree.ino[inode]
@@ -76,7 +89,7 @@ function setHashByInode(tree, inode, hash) {
 }
 
 function setTreeData(tree, hash, path, data) {
-  tree.dat[hash] = tree.dat[hash] || [ -1, -1, {}]
+  tree.dat[hash] = tree.dat[hash] || [-1, -1, {}]
   tree.dat[hash][0] = data.isutf8
   tree.dat[hash][1] = data.size
   tree.dat[hash][2][path] = data.mtime
@@ -101,3 +114,4 @@ function getOnFileData(tree, inode, filepath) {
     }
   }
 }
+

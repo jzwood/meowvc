@@ -28,8 +28,9 @@ module.exports = async function start(i, args) {
       //init pointer
       pointerOps()
       //init ignore
-      if (!(await fs.pathExists(muOps.path('_ignore')))) {
-        await fs.outputFile(muOps.path('_ignore'), `node_modules${eol}^\\.`, 'utf8')
+      if (!(await fs.pathExists(muOps.ignorePath))) {
+        const recommendedIgnore = `node_modules${eol}^\\.`
+        await fs.outputFile(muOps.ignorePath, recommendedIgnore, 'utf8')
       }
       console.info(chalk.green('setup done'))
       return gl.exit.success
