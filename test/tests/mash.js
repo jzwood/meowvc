@@ -6,7 +6,7 @@ const helper = require('../modules/helper')
 
 const name = 'mash'
 const flags = []
-helper.verboseLogging(true)
+helper.verboseLogging(false)
 
 test(name, async t => {
   await tester.setupTest(flags, name)
@@ -22,7 +22,7 @@ test(name, async t => {
   helper.print(chalk.inverse('MU WHICH'))
   await tester.mu(['which'])
 
-  helper.print(chalk.inverse('MOD 2 FILES & 2 RM FILES'))
+  helper.print(chalk.inverse('MOD FILES & RM FILES'))
 
   const dontTouchThese = files1.slice(0 * egNum, 1 * egNum).sort()
   const modifyThese = files1.slice(1 * egNum, 2 * egNum).sort()

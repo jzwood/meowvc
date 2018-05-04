@@ -26,19 +26,25 @@ module.exports = function mash(i, args) {
       const currentHead = po.head
       const currentVersion = 'v' + gl.vnorm(po.version)
 
-      return mod.handleConflicts({conflicts, mergeHead, mergeVersion, currentHead, currentVersion})
+      return mod.handleConflicts({ conflicts, mergeHead, mergeVersion, currentHead, currentVersion })
     }
 
     const exists = po.exists(head, version)
     const isUnchanged = core.isUnchanged()
     if (exists && isUnchanged) {
-      core.difference({ head, version, handle })
-    } else if (exists && !isUnchanged) {
-      console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
-    } else {
-      console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))
+      return core.difference({ head, version, handle })
     }
-  } else {
-    console.log(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
+
+    if (exists && !isUnchanged) {
+      console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
+      return gl.exit.cannotExe
+    }
+
+    console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))
+    return gl.exit.invalid
   }
+
+  console.log(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
+  return gl.exit.invalid
 }
+
