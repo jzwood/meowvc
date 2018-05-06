@@ -1,5 +1,6 @@
 const chalk = require('chalk')
-const pointerOps = require('../modules/pointerOps')
+const po = require('../modules/pointerOps')
+const gl = require('../constant')
 const core = require('../core')()
 const stopwatch = require('../utils/timer')()
 
@@ -7,21 +8,23 @@ const stopwatch = require('../utils/timer')()
 *  SAVEAS  *
 ***********/
 
-module.exports = function saveas(i, args) {
+module.exports = async function saveas(i, args) {
   const name = args[i + 1]
   if (name) {
-    const po = pointerOps()
     const [head, version] = [po.head, po.version - 1]
     const parent = { head, version }
     if (po.pointToNewHead(name).success) {
       stopwatch.start()
       const mdata = {parent}
-      core.save({head, mdata})
+      const result = await core.save({head, mdata})
       stopwatch.stop()
-    } else {
-      console.warn(chalk.red(`ERROR: Save named "${name}" already exists. Save cancelled.`))
+      return result
     }
-  } else {
-    console.warn(chalk.yellow('saveas expects a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
+
+    console.warn(chalk.red(`ERROR: Save named "${name}" already exists. Save cancelled.`))
+    return gl.exit.cannotExe
   }
+
+  console.warn(chalk.yellow('saveas expects a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
+  return gl.exit.invalid
 }

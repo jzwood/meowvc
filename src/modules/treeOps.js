@@ -7,7 +7,7 @@ const path = require('path')
 const chalk = require('chalk')
 const eol = require('os').EOL
 
-const pointerOps = require('./pointerOps')
+const po = require('./pointerOps')
 const muOps = require('./muOps')
 const gl = require('../constant')
 
@@ -21,7 +21,7 @@ module.exports = {
 }
 
 function _ignore() {
-  const defaultPattern = '^\\.mu$|^\\.muid$' //we absolutely do not want to track the .mu repo is it's local
+  const defaultPattern = '^\\.mu$|^\\.muid$' //we absolutely do not want to track the .mu repo if it's local
   if (fs.pathExistsSync(muOps.ignorePath)) {
     const ignorePatternList = fs.readFileSync(muOps.ignorePath, 'utf8')
       .trim()
@@ -69,7 +69,6 @@ function getSavedData(head, version) {
   if (head && version) {
     lastSavePath = muOps.path('history', head, version + '.json')
   } else {
-    const po = pointerOps()
     lastSavePath = muOps.path('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
   }
   const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : gl.baseCase

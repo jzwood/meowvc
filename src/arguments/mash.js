@@ -8,11 +8,11 @@ const core = require('../core')()
  *  MASH  *
  *********/
 
-module.exports = function mash(i, args) {
+module.exports = async function mash(i, args) {
   const head = args[i + 1] || ''
 
   if (head) {
-    const po = mod.pointerOps()
+    const po = mod.pointerOps
     let version = args[i + 2] || 'v' + po.latest(head)
 
     const handle = diff => {

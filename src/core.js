@@ -34,7 +34,7 @@ module.exports = () => {
   function save({head, mdata}){
     const hash = mod.hashOps.diskCache.bind(null, GlMem)
     const handle = diff => {
-      const po = mod.pointerOps()
+      const po = mod.pointerOps
       if(diff.nothingChanged && !head){
         console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
       }else{
@@ -42,12 +42,12 @@ module.exports = () => {
         const [head, version] = [po.head, po.version]
         mod.metaOps(head).update(version, mdata)
         fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
-        po.update()
+        po.incrementVersion()
         console.info(chalk.green(`${head} v${version} successfully saved!`))
       }
     }
     _preCache()
-    difference({head, handle, hash})
+    return difference({head, handle, hash})
   }
 
   function checkout({head, version, filterPattern}){
@@ -63,7 +63,7 @@ module.exports = () => {
         mod.fileOps.undelete(data)
       }
     }
-    difference({head, version, handle, filterPattern})
+    return difference({head, version, handle, filterPattern})
   }
 
   /**

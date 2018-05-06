@@ -1,5 +1,5 @@
 const chalk = require('chalk')
-const pointerOps = require('../modules/pointerOps')
+const po = require('../modules/pointerOps')
 const core = require('../core')()
 const gl = require('../constant')
 
@@ -8,7 +8,6 @@ const gl = require('../constant')
 **********/
 
 module.exports = function state(){
-  const po = pointerOps()
   const latest = po.latest()
   console.info(chalk.green(po.head, `(v${gl.vnorm(po.version)}/${latest})`))
 

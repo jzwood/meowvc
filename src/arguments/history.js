@@ -1,4 +1,4 @@
-const pointerOps = require('../modules/pointerOps')
+const po = require('../modules/pointerOps')
 const metaOps = require('../modules/metaOps')
 
 /************
@@ -7,6 +7,5 @@ const metaOps = require('../modules/metaOps')
 
 module.exports = function history(i, args) {
   const limit = args[i + 1] || Infinity
-  const head = pointerOps().head
-  return metaOps(head).list(limit)
+  return metaOps(po.head).list(limit)
 }
