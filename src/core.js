@@ -33,14 +33,14 @@ module.exports = () => {
   */
   function save({head, mdata}){
     const hash = mod.hashOps.diskCache.bind(null, GlMem)
-    const handle = diff => {
+    const handle = async diff => {
       const po = mod.pointerOps
       if(diff.nothingChanged && !head){
         console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
-      }else{
+      } else {
         _writeToDisk()
         const [head, version] = [po.head, po.version]
-        mod.metaOps.update(head, version, mdata)
+        await mod.metaOps.update(head, version, mdata)
         fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
         po.incrementVersion()
         console.info(chalk.green(`${head} v${version} successfully saved!`))

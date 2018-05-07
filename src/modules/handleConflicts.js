@@ -24,7 +24,7 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
     return false
   }
 
-  const ancestor = findCommonAncestor({ mergeHead, mergeVersion, currentHead, currentVersion })
+  const ancestor = await findCommonAncestor({ mergeHead, mergeVersion, currentHead, currentVersion })
   const ancestorTree = mod.treeOps.getSavedData(ancestor.head, 'v' + ancestor.version)
 
   const report = auditConflicts(conflicts)
@@ -33,18 +33,18 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
 
   /*********** FUNCTION DEFS BELOW ***********/
 
-  function findCommonAncestor({
+  async function findCommonAncestor({
     mergeHead,
     mergeVersion,
     currentHead,
     currentVersion
   }) {
 
-    const getParent = head => mod.metaOps.getMetadata(head).parent
+    const getParent = head => mod.metaOps.getMetadata(head).then(metadata => metadata.parent)
 
     const currentSaves = { [currentHead]: currentVersion }
     let currentParent
-    while (currentParent = getParent(currentHead)) {
+    while (currentParent = await getParent(currentHead)) {
       currentHead = currentParent.head
       Object.assign(currentSaves, {
         [currentParent.head]: currentParent.version
@@ -52,7 +52,7 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
     }
 
     while (typeof(currentSaves[mergeHead]) === 'undefined') {
-      const merge = getParent(mergeHead)
+      const merge = await getParent(mergeHead)
       mergeHead = merge.head
       mergeVersion = merge.version
     }

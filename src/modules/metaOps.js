@@ -16,16 +16,16 @@ function getPath(head) {
   return muOps.path('history', head, 'meta.json')
 }
 
-function getMetadata(head) {
+async function getMetadata(head) {
   const mpath = getPath(head)
-  return fs.existsSync(mpath) ? fs.readJsonSync(mpath) : {
+  return (await fs.pathExists(mpath)) ? fs.readJson(mpath) : {
     'messages': []
   }
 }
 
-function update(head, version, mdata) {
+async function update(head, version, mdata) {
   const mpath = getPath(head)
-  const metadata = getMetadata(head)
+  const metadata = await getMetadata(head)
   if (mdata.msg) {
     metadata.messages[version] = mdata.msg
   }
@@ -35,8 +35,8 @@ function update(head, version, mdata) {
   fs.outputJsonSync(mpath, metadata)
 }
 
-function list(head, limit = Infinity) {
-  const metadata = getMetadata(head)
+async function list(head, limit = Infinity) {
+  const metadata = await getMetadata(head)
   console.info(chalk.green('history of'), head)
   return metadata.messages.reduce((acc, msg, v, arr) => {
     if (parseInt(v, 10) >= arr.length - limit) {
