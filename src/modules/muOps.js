@@ -1,5 +1,5 @@
 /**
- *  LOCAL/DROPBOX MU OPERATIONS
+ * LOCAL/DROPBOX MU OPERATIONS
  */
 
 const fs = require('fs-extra')

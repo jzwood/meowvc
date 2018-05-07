@@ -40,7 +40,7 @@ module.exports = () => {
       }else{
         _writeToDisk()
         const [head, version] = [po.head, po.version]
-        mod.metaOps(head).update(version, mdata)
+        mod.metaOps.update(head, version, mdata)
         fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
         po.incrementVersion()
         console.info(chalk.green(`${head} v${version} successfully saved!`))
@@ -67,7 +67,7 @@ module.exports = () => {
   }
 
   /**
-  * @description collects all added, odfied, and deleted files and passes them to handle fxn
+  * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
   function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
     targetTree = mod.treeOps.getSavedData(head, version)

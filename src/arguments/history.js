@@ -7,5 +7,5 @@ const metaOps = require('../modules/metaOps')
 
 module.exports = function history(i, args) {
   const limit = args[i + 1] || Infinity
-  return metaOps(po.head).list(limit)
+  return metaOps.list(po.head, limit)
 }

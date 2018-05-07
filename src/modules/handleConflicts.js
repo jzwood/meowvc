@@ -40,7 +40,7 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
     currentVersion
   }) {
 
-    const getParent = head => mod.metaOps(head).meta.parent
+    const getParent = head => mod.metaOps.getMetadata(head).parent
 
     const currentSaves = { [currentHead]: currentVersion }
     let currentParent
