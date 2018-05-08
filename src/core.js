@@ -42,7 +42,7 @@ module.exports = () => {
         const [head, version] = [po.head, po.version]
         await mod.metaOps.update(head, version, mdata)
         fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
-        po.incrementVersion()
+        await po.incrementVersion()
         console.info(chalk.green(`${head} v${version} successfully saved!`))
       }
     }

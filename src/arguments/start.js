@@ -2,7 +2,7 @@ const fs = require('fs-extra')
 const chalk = require('chalk')
 const eol = require('os').EOL
 
-const po = require('../modules/pointerOps')
+const pointerOps = require('../modules/pointerOps')
 const muOps = require('../modules/muOps')
 const gl = require('../constant')
 
@@ -28,7 +28,7 @@ module.exports = async function start(i, args) {
   //init history folder
   await fs.ensureDir(muOps.path('history'))
   //init pointer
-  po.init()
+  await pointerOps.init()
   //init ignore
   if (!(await fs.pathExists(muOps.ignorePath))) {
     const recommendedIgnore = `node_modules${eol}^\\.`

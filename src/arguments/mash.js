@@ -13,7 +13,7 @@ module.exports = async function mash(i, args) {
 
   if (head) {
     const po = mod.pointerOps
-    let version = args[i + 2] || 'v' + po.latest(head)
+    let version = args[i + 2] || 'v' + await po.latest(head)
 
     const handle = diff => {
       let data; while (data = diff.deleted.pop()) {
@@ -29,7 +29,7 @@ module.exports = async function mash(i, args) {
       return mod.handleConflicts({ conflicts, mergeHead, mergeVersion, currentHead, currentVersion })
     }
 
-    const exists = po.exists(head, version)
+    const exists = await po.exists(head, version)
     const isUnchanged = core.isUnchanged()
     if (exists && isUnchanged) {
       return core.difference({ head, version, handle })

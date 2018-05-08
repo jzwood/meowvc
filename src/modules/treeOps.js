@@ -7,7 +7,7 @@ const path = require('path')
 const chalk = require('chalk')
 const eol = require('os').EOL
 
-const po = require('./pointerOps')
+const pointerOps = require('./pointerOps')
 const muOps = require('./muOps')
 const gl = require('../constant')
 
@@ -69,6 +69,7 @@ function getSavedData(head, version) {
   if (head && version) {
     lastSavePath = muOps.path('history', head, version + '.json')
   } else {
+    const po = pointerOps
     lastSavePath = muOps.path('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
   }
   const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : gl.baseCase

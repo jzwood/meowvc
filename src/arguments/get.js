@@ -7,20 +7,17 @@ const core = require('../core')()
  *  GET  *
  ********/
 
-module.exports = function get(i, args) {
+module.exports = async function get(i, args) {
   const head = args[i + 1]
   let version = args[i + 2] || ''
   const errorMsg = chalk.red('get expects the name of an existing save, e.g. ') + chalk.inverse('$ mu get master')
   if (head) {
-    version = version || 'v' + po.latest(head)
-    if (po.exists(head, version)) {
+    version = version || 'v' + await po.latest(head)
+    if (await po.exists(head, version)) {
       if (core.isUnchanged()) {
-        const result = core.checkout({
-          head,
-          version
-        })
+        const result = core.checkout({ head, version })
         po.setPointer(head, version)
-        po.incrementVersion()
+        await po.incrementVersion()
         console.info(chalk.green(`Repo switched to ${head} ${version}`))
         return result
       }

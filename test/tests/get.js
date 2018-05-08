@@ -6,7 +6,7 @@ const helper = require('../modules/helper')
 
 const name = 'get'
 const flags = []
-helper.verboseLogging(false)
+helper.verboseLogging(true)
 
 test(name, async t => {
   await tester.setupTest(flags, name)

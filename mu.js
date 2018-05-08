@@ -11,7 +11,7 @@ module.exports = async function mu(args) {
   const loader = require('./src/utils/loader')
   const commands = loader.require('arguments')
   const muOps = require('./src/modules/muOps')
-  const po = require('./src/modules/pointerOps')
+  const pointerOps = require('./src/modules/pointerOps')
 
   for (let [index, param] of args.entries()) {
     const command = commands[param]
@@ -21,7 +21,7 @@ module.exports = async function mu(args) {
         return command(index, args)
       }
       if(muOps.isPath){
-        po.init()
+        await pointerOps.init()
         return command(index, args)
       }
       console.info(chalk.yellow(`Warning: ${process.cwd()} is not a mu repo root`))
