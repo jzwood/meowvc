@@ -23,6 +23,9 @@ module.exports = () => {
     isUnchanged
   }
 
+  /**
+  * @returns promise
+  */
   function isUnchanged() {
     const handle = diff => diff.nothingChanged
     return difference({handle})
@@ -69,10 +72,10 @@ module.exports = () => {
   /**
   * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
-  function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
+  async function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
     targetTree = mod.treeOps.getSavedData(head, version)
     // currentTree implicity populates GlMem.fileHashLog
-    currentTree = currentTree || mod.treeOps.treeify(_forEachFile(hash))
+    currentTree = currentTree || await mod.treeOps.treeify(_forEachFile(hash))
     const fileHashLog = new Map(GlMem.fileHashLog) //shallow clone
     const targetFileHashes = Object.keys(targetTree.dat)
 

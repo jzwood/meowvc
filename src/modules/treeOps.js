@@ -20,10 +20,10 @@ module.exports = {
   getSavedData
 }
 
-function _ignore() {
+async function _ignore() {
   const defaultPattern = '^\\.mu$|^\\.muid$' //we absolutely do not want to track the .mu repo if it's local
-  if (fs.pathExistsSync(muOps.ignorePath)) {
-    const ignorePatternList = fs.readFileSync(muOps.ignorePath, 'utf8')
+  if (await fs.pathExists(muOps.ignorePath)) {
+    const ignorePatternList = (await fs.readFile(muOps.ignorePath, 'utf8'))
       .trim()
       .split(eol)
       .concat(defaultPattern)
@@ -39,9 +39,9 @@ function _ignore() {
 }
 
 // iterates through every file in root directory
-function treeify(forEachFile) {
+async function treeify(forEachFile) {
   const treeRoot = process.cwd()
-  const ignorePattern = _ignore()
+  const ignorePattern = await _ignore()
   const dirDive = (tree, parent) => {
     fs.readdirSync(parent).forEach((child, index, ls) => {
       if (!ignorePattern.test(child)) {
@@ -59,7 +59,9 @@ function treeify(forEachFile) {
     })
   }
   const tree = gl.baseCase
-  if (!fs.existsSync(treeRoot)) return tree
+  if (!(await fs.pathExists(treeRoot))) {
+    return tree
+  }
   dirDive(tree, treeRoot)
   return tree
 }

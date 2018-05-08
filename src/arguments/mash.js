@@ -30,7 +30,7 @@ module.exports = async function mash(i, args) {
     }
 
     const exists = await po.exists(head, version)
-    const isUnchanged = core.isUnchanged()
+    const isUnchanged = await core.isUnchanged()
     if (exists && isUnchanged) {
       return core.difference({ head, version, handle })
     }

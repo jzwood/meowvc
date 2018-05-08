@@ -14,8 +14,8 @@ module.exports = async function get(i, args) {
   if (head) {
     version = version || 'v' + await po.latest(head)
     if (await po.exists(head, version)) {
-      if (core.isUnchanged()) {
-        const result = core.checkout({ head, version })
+      if (await core.isUnchanged()) {
+        const result = await core.checkout({ head, version })
         po.setPointer(head, version)
         await po.incrementVersion()
         console.info(chalk.green(`Repo switched to ${head} ${version}`))
