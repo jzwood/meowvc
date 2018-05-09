@@ -5,6 +5,7 @@
 const fs = require('fs-extra')
 const chalk = require('chalk')
 const muOps = require('./muOps')
+const {print} = require('../utils/print')
 
 module.exports = {
   update,
@@ -37,10 +38,10 @@ async function update(head, version, mdata) {
 
 async function list(head, limit = Infinity) {
   const metadata = await getMetadata(head)
-  console.info(chalk.green('history of'), head)
+  print(chalk.green('history of'), head)
   return metadata.messages.reduce((acc, msg, v, arr) => {
     if (parseInt(v, 10) >= arr.length - limit) {
-      console.info(chalk.yellow('v' + v), msg)
+      print(chalk.yellow('v' + v), msg)
       return acc.concat(msg)
     }
     return acc

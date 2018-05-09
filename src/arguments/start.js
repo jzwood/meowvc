@@ -3,6 +3,7 @@ const chalk = require('chalk')
 const eol = require('os').EOL
 
 const pointerOps = require('../modules/pointerOps')
+const {print} = require('../utils/print')
 const muOps = require('../modules/muOps')
 const gl = require('../constant')
 
@@ -13,13 +14,13 @@ const gl = require('../constant')
 module.exports = async function start(i, args) {
   const remoteName = args[i + 1]
   if (muOps.isPath) {
-    console.warn(chalk.yellow('Warning: repo already setup'))
+    print(chalk.yellow('Warning: repo already setup'))
     return gl.exit.cannotExe
   }
 
   let ancestor = await muOps.start.findMuidAncestor()
   if (ancestor) {
-    console.warn(chalk.yellow('Warning: mu subdirectory. Please invoke mu from root:', ancestor))
+    print(chalk.yellow('Warning: mu subdirectory. Please invoke mu from root:', ancestor))
     return gl.exit.cannotExe
   }
 
@@ -34,6 +35,6 @@ module.exports = async function start(i, args) {
     const recommendedIgnore = `node_modules${eol}^\\.`
     await fs.outputFile(muOps.ignorePath, recommendedIgnore, 'utf8')
   }
-  console.info(chalk.green('setup done'))
+  print(chalk.green('setup done'))
   return gl.exit.success
 }

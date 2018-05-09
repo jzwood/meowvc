@@ -1,6 +1,7 @@
 const chalk = require('chalk')
 const pointerOps = require('../modules/pointerOps')
 const gl = require('../constant')
+const {print} = require('../utils/print')
 const core = require('../core')()
 const stopwatch = require('../utils/timer')()
 
@@ -26,12 +27,12 @@ module.exports = async function saveas(i, args) {
       stopwatch.stop()
       return result
     } else {
-      console.warn(chalk.red(`ERROR: Save named "${name}" already exists. Save cancelled.`))
+      print(chalk.red(`ERROR: Save named "${name}" already exists. Save cancelled.`))
       return gl.exit.cannotExe
     }
   }
 
-  console.warn(chalk.yellow('saveas expects a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
+  print(chalk.yellow('saveas expects a name, e.g.'), chalk.inverse('$ mu saveas muffins'))
   return gl.exit.invalid
 }
 

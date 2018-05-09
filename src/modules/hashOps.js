@@ -4,6 +4,7 @@
 
 const path = require('path')
 const crc = require('crc')
+const crc32 = require('crc/lib/crc32')
 const muOps = require('./muOps')
 const gl = require('../constant')
 
@@ -18,7 +19,7 @@ module.exports = {
 * @returns {String} hashsum
 */
 function hashIt(buffer) {
-  const h = crc.crc32(buffer).toString(16)
+  const h = crc32(buffer).toString(16)
   if (h === '0') return '00000000'
   return h
 }

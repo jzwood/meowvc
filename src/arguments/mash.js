@@ -2,6 +2,7 @@ const chalk = require('chalk')
 const loader = require('../utils/loader')
 const mod = loader.require('modules')
 const gl = require('../constant')
+const {print} = require('../utils/print')
 const core = require('../core')()
 
 /*********
@@ -36,15 +37,15 @@ module.exports = async function mash(i, args) {
     }
 
     if (exists && !isUnchanged) {
-      console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
+      print(chalk.yellow('Warning: Save or undo changes before calling mash'))
       return gl.exit.cannotExe
     }
 
-    console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))
+    print(chalk.red(`Error: ${head} ${version} does not exist.`))
     return gl.exit.invalid
   }
 
-  console.log(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
+  print(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
   return gl.exit.invalid
 }
 

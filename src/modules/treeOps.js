@@ -9,6 +9,7 @@ const eol = require('os').EOL
 
 const pointerOps = require('./pointerOps')
 const muOps = require('./muOps')
+const {print} = require('../utils/print')
 const gl = require('../constant')
 
 module.exports = {
@@ -32,7 +33,7 @@ async function _ignore() {
       const ignorePattern = ignorePatternList.join('|')
       return new RegExp(ignorePattern)
     } catch (err) {
-      console.warn(chalk.red('Error: file _muignore has incorrect syntax.'), chalk.yellow('Each line must contain valid 1st parameter for:'), 'new RegExp')
+      print(chalk.red('Error: file _muignore has incorrect syntax.'), chalk.yellow('Each line must contain valid 1st parameter for:'), 'new RegExp')
     }
   }
   return new RegExp(defaultPattern)

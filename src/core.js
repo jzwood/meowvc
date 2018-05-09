@@ -4,6 +4,7 @@ const chalk = require('chalk')
 const isUtf8 = require('is-utf8')
 const loader = require('./utils/loader')
 const mod = loader.require('modules')
+const {print} = require('./utils/print')
 
 module.exports = () => {
 
@@ -39,14 +40,14 @@ module.exports = () => {
     const handle = async diff => {
       const po = mod.pointerOps
       if(diff.nothingChanged && !head){
-        console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
+        print(chalk.yellow('Warning: no changes detected. Save cancelled.'))
       } else {
         _writeToDisk()
         const [head, version] = [po.head, po.version]
         await mod.metaOps.update(head, version, mdata)
         fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
         await po.incrementVersion()
-        console.info(chalk.green(`${head} v${version} successfully saved!`))
+        print(chalk.green(`${head} v${version} successfully saved!`))
       }
     }
     _preCache()

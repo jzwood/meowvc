@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const pointerOps = require('../modules/pointerOps')
+const {print} = require('../utils/print')
 const muOps = require('../modules/muOps')
 const gl = require('../constant')
 
@@ -27,14 +28,14 @@ module.exports = async function which() {
       const vHead = gl.vnorm(po.branch[head])
       if (head === po.head) {
         const vLatest = await po.latest()
-        console.info('* ' + chalk.green(head, `(v${vHead}/${vLatest})`))
+        print('* ' + chalk.green(head, `(v${vHead}/${vLatest})`))
         whichObj.current = {
           head,
           vHead,
           vLatest
         }
       } else {
-        console.info(chalk.gray(`  ${head} v${vHead}`))
+        print(chalk.gray(`  ${head} v${vHead}`))
         whichObj.saves.push({
           head,
           vHead

@@ -5,6 +5,7 @@ That’s great! Make a pull request and I’ll review it.
 **Todo**:
 - asyncify
   i. redo handleConflicts to not use callbacks
+- have silent log option so test output isn't so busy
 - add Ora/log-update to pretty cli interaction
 
 **Possible Features**

@@ -5,6 +5,7 @@ const helper = require('../modules/helper')
 
 const name = 'start'
 const flags = []
+helper.verboseLogging(false)
 
 test(name, async t => {
   let exitcode = await tester.setupTest(flags, name)

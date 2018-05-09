@@ -15,7 +15,7 @@ module.exports = {
 }
 
 // runs $ mu <param> in test environment
-function testMu() {
+function testMu(args) {
   // whack all references in require cache
   for (const req of Object.keys(require.cache)) {
     if (!(/node_modules/.test(req))) {
@@ -23,7 +23,7 @@ function testMu() {
     }
   }
   const mu = require('../../mu')
-  return mu.apply(null, arguments)
+  return mu.call(null, args)
 }
 
 function parseFlags(flags = []) {
@@ -41,8 +41,8 @@ function muStart(isLocal, name = '', msg = '') {
   return isLocal ? testMu(['start']) : testMu(['start', name])
 }
 
-function muSave() {
-  return testMu(['save', 'save message ' + helper.makeWord()])
+function muSave(quiet) {
+  return testMu([quiet, 'save', 'save message ' + helper.makeWord()])
 }
 
 async function emptyTestDir(remote, remove = false) {

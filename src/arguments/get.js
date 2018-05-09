@@ -1,6 +1,7 @@
 const chalk = require('chalk')
 const po = require('../modules/pointerOps')
 const gl = require('../constant')
+const {print} = require('../utils/print')
 const core = require('../core')()
 
 /********
@@ -18,15 +19,15 @@ module.exports = async function get(i, args) {
         const result = await core.checkout({ head, version })
         po.setPointer(head, version)
         await po.incrementVersion()
-        console.info(chalk.green(`Repo switched to ${head} ${version}`))
+        print(chalk.green(`Repo switched to ${head} ${version}`))
         return result
       }
-      console.info(chalk.yellow('Warning: Save or undo changes before calling get'))
+      print(chalk.yellow('Warning: Save or undo changes before calling get'))
       return gl.exit.invalid
     }
-    console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))
+    print(chalk.red(`Error: ${head} ${version} does not exist.`))
     return gl.exit.cannotExe
   }
-  console.log(errorMsg)
+  print(errorMsg)
   return gl.exit.invalid
 }
