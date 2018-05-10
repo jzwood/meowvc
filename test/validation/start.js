@@ -5,19 +5,28 @@ const helper = require('../modules/helper')
 
 const name = 'start'
 const flags = []
-helper.verboseLogging(false)
+const quiet = true ? '--quiet' : ''
 
 test(name, async t => {
-  let exitcode = await tester.setupTest(flags, name)
+  helper.verboseLogging(!quiet)
+  let exitcode = await tester.setupTest({
+    quiet,
+    flags
+  }, name)
   t.is(exitcode, 0) // success
 
   helper.newline()
 
-  exitcode = await tester.muStart(tester.parseFlags(flags).local, '', '(when mu repo exists already)')
+  const options = {
+    quiet,
+    local: tester.parseFlags(flags).local
+  }
+  exitcode = await tester.muStart(options, '', '(when mu repo exists already)')
   t.is(exitcode, 126) //cannot execute
 
-  exitcode = await tester.mu(['gibberish'])
+  exitcode = await tester.mu([quiet, 'gibberish'])
   t.is(exitcode, 127) //argument not found
 
   await tester.cleanupTest(flags, name)
 })
+

@@ -36,9 +36,9 @@ function parseFlags(flags = []) {
 }
 
 //runs mu start in the right place (local|dropbox)
-function muStart(isLocal, name = '', msg = '') {
-  helper.print(`${ isLocal ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
-  return isLocal ? testMu(['start']) : testMu(['start', name])
+function muStart(options, name = '', msg = '') {
+  helper.print(`${ options.local ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
+  return testMu([options.quiet, 'start', options.local ? name : false].filter(Boolean))
 }
 
 function muSave(quiet) {
@@ -57,8 +57,9 @@ async function getRemote(isLocal, name) {
   return muOps._test.findRemotePath(isLocal ? false : name)
 }
 
-async function setupTest(flags, name) {
-  const local = parseFlags(flags).local
+async function setupTest(options, name) {
+  const local = options.flags && parseFlags(options.flags).local
+  options.local = local
 
   const tempPath = path.join(process.cwd(), 'test', 'temp', name)
   await fs.emptyDir(tempPath)
@@ -68,7 +69,7 @@ async function setupTest(flags, name) {
   const remote = await getRemote(local, name)
   await emptyTestDir(remote)
 
-  return muStart(local, name)
+  return muStart(options, name)
 }
 
 async function cleanupTest(flags, name) {

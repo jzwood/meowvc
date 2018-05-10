@@ -10,7 +10,7 @@ const quiet = true ? '--quiet' : ''
 
 test(name, async t => {
   helper.verboseLogging(!quiet)
-  await tester.setupTest(flags, name)
+  await tester.setupTest({quiet,flags}, name)
 
   helper.newline()
   helper.print(chalk.inverse('ADD FILES & SAVE'))
