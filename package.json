@@ -20,7 +20,6 @@
   "ava": {
     "files": [
       "test/unit/*.js",
-      "test/validation/*.js",
       "!**/mashcon.js",
       "!**/diff.js"
     ],
