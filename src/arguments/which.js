@@ -2,7 +2,8 @@ const chalk = require('chalk')
 const fs = require('fs-extra')
 const path = require('path')
 
-const po = require('../modules/pointerOps')
+const pointerOps = require('../modules/pointerOps')
+const {print} = require('../utils/print')
 const muOps = require('../modules/muOps')
 const gl = require('../constant')
 
@@ -22,24 +23,25 @@ module.exports = async function which() {
       saves: []
     }
 
-    branches.forEach(head => {
+    const po = pointerOps
+    for(let head of branches){
       const vHead = gl.vnorm(po.branch[head])
       if (head === po.head) {
-        const vLatest = po.latest()
-        console.info('* ' + chalk.green(head, `(v${vHead}/${vLatest})`))
+        const vLatest = await po.latest()
+        print('* ' + chalk.green(head, `(v${vHead}/${vLatest})`))
         whichObj.current = {
           head,
           vHead,
           vLatest
         }
       } else {
-        console.info(chalk.gray(`  ${head} v${vHead}`))
+        print(chalk.gray(`  ${head} v${vHead}`))
         whichObj.saves.push({
           head,
           vHead
         })
       }
-    })
+    }
 
     return whichObj
   }

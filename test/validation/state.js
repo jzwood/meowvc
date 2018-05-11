@@ -6,13 +6,14 @@ const helper = require('../modules/helper')
 
 const name = 'state'
 const flags = []
-helper.verboseLogging(false)
+const quiet = true ? '--quiet' : ''
 
-test(name, async t => {
-  await tester.setupTest(flags, name)
+test('test', async t => {
+  helper.verboseLogging(!quiet)
+  await tester.setupTest({quiet,flags}, name)
 
   helper.print(chalk.inverse('MU STATE'))
-  let stateObj = await tester.mu(['state'])
+  let stateObj = await tester.mu([quiet, 'state'])
   let state = helper.parseStateObject(stateObj)
 
   let added = state.added.sort()
@@ -23,7 +24,7 @@ test(name, async t => {
   t.deepEqual(modified, [])
   t.deepEqual(deleted, [])
 
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.newline()
   helper.print(chalk.inverse('ADD FILES'))
@@ -35,7 +36,7 @@ test(name, async t => {
   const renameThese = modifyThese.slice()
 
   helper.print(chalk.inverse('MU STATE'))
-  stateObj = await tester.mu(['state'])
+  stateObj = await tester.mu([quiet, 'state'])
   state = helper.parseStateObject(stateObj)
 
   added = state.added.sort()
@@ -47,7 +48,7 @@ test(name, async t => {
   t.deepEqual(deleted, [])
 
   helper.print(chalk.inverse('MU SAVE'))
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.newline()
 
@@ -55,7 +56,7 @@ test(name, async t => {
   await helper.removeFiles(removeThese)
 
   helper.print(chalk.inverse('MU STATE'))
-  stateObj = await tester.mu(['state'])
+  stateObj = await tester.mu([quiet, 'state'])
   state = helper.parseStateObject(stateObj)
 
   deleted = state.deleted.sort()
@@ -67,7 +68,7 @@ test(name, async t => {
   t.deepEqual(modified, [])
 
   helper.print(chalk.inverse('MU SAVE'))
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.newline()
 
@@ -75,7 +76,7 @@ test(name, async t => {
   await helper.modFiles(modifyThese)
 
   helper.print(chalk.inverse('MU STATE'))
-  stateObj = await tester.mu(['state'])
+  stateObj = await tester.mu([quiet, 'state'])
   state = helper.parseStateObject(stateObj)
 
   modified = state.modified.sort()
@@ -87,7 +88,7 @@ test(name, async t => {
   t.deepEqual(deleted, [])
 
   helper.print(chalk.inverse('MU SAVE'))
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.newline()
 
@@ -95,7 +96,7 @@ test(name, async t => {
   const files2 = (await helper.renameFiles(renameThese)).sort()
 
   helper.print(chalk.inverse('MU STATE'))
-  stateObj = await tester.mu(['state'])
+  stateObj = await tester.mu([quiet, 'state'])
   state = helper.parseStateObject(stateObj)
 
   deleted = state.deleted.sort()
@@ -108,14 +109,14 @@ test(name, async t => {
   t.deepEqual(modified, [])
 
   helper.print(chalk.inverse('MU SAVE'))
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.print(chalk.inverse('MU HISTORY'))
-  let history = await tester.mu(['history'])
+  let history = await tester.mu([quiet, 'history'])
   t.is(history.length, 1 + 4)
 
   helper.print(chalk.inverse('MU HISTORY 2'))
-  history = await tester.mu(['history','2'])
+  history = await tester.mu([quiet, 'history','2'])
   t.is(history.length, 2)
 
   await tester.cleanupTest(flags, name)

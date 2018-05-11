@@ -2,6 +2,7 @@ const chalk = require('chalk')
 const loader = require('../utils/loader')
 const mod = loader.require('modules')
 const gl = require('../constant')
+const {print} = require('../utils/print')
 const core = require('../core')()
 
 /*********
@@ -13,7 +14,7 @@ module.exports = async function mash(i, args) {
 
   if (head) {
     const po = mod.pointerOps
-    let version = args[i + 2] || 'v' + po.latest(head)
+    let version = args[i + 2] || 'v' + await po.latest(head)
 
     const handle = diff => {
       let data; while (data = diff.deleted.pop()) {
@@ -29,22 +30,22 @@ module.exports = async function mash(i, args) {
       return mod.handleConflicts({ conflicts, mergeHead, mergeVersion, currentHead, currentVersion })
     }
 
-    const exists = po.exists(head, version)
-    const isUnchanged = core.isUnchanged()
+    const exists = await po.exists(head, version)
+    const isUnchanged = await core.isUnchanged()
     if (exists && isUnchanged) {
       return core.difference({ head, version, handle })
     }
 
     if (exists && !isUnchanged) {
-      console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
+      print(chalk.yellow('Warning: Save or undo changes before calling mash'))
       return gl.exit.cannotExe
     }
 
-    console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))
+    print(chalk.red(`Error: ${head} ${version} does not exist.`))
     return gl.exit.invalid
   }
 
-  console.log(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
+  print(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
   return gl.exit.invalid
 }
 

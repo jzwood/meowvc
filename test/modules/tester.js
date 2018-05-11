@@ -15,7 +15,7 @@ module.exports = {
 }
 
 // runs $ mu <param> in test environment
-function testMu() {
+function testMu(args) {
   // whack all references in require cache
   for (const req of Object.keys(require.cache)) {
     if (!(/node_modules/.test(req))) {
@@ -23,7 +23,7 @@ function testMu() {
     }
   }
   const mu = require('../../mu')
-  return mu.apply(null, arguments)
+  return mu.call(null, args)
 }
 
 function parseFlags(flags = []) {
@@ -36,13 +36,13 @@ function parseFlags(flags = []) {
 }
 
 //runs mu start in the right place (local|dropbox)
-function muStart(isLocal, name = '', msg = '') {
-  helper.print(`${ isLocal ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
-  return isLocal ? testMu(['start']) : testMu(['start', name])
+function muStart(options, name = '', msg = '') {
+  helper.print(`${ options.local ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
+  return testMu([options.quiet, 'start', options.local ? name : false].filter(Boolean))
 }
 
-function muSave() {
-  return testMu(['save', 'save message ' + helper.makeWord()])
+function muSave(quiet) {
+  return testMu([quiet, 'save', 'save message ' + helper.makeWord()])
 }
 
 async function emptyTestDir(remote, remove = false) {
@@ -57,8 +57,9 @@ async function getRemote(isLocal, name) {
   return muOps._test.findRemotePath(isLocal ? false : name)
 }
 
-async function setupTest(flags, name) {
-  const local = parseFlags(flags).local
+async function setupTest(options, name) {
+  const local = options.flags && parseFlags(options.flags).local
+  options.local = local
 
   const tempPath = path.join(process.cwd(), 'test', 'temp', name)
   await fs.emptyDir(tempPath)
@@ -68,7 +69,9 @@ async function setupTest(flags, name) {
   const remote = await getRemote(local, name)
   await emptyTestDir(remote)
 
-  return muStart(local, name)
+  if(!options.noMu){
+    return muStart(options, name)
+  }
 }
 
 async function cleanupTest(flags, name) {

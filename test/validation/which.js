@@ -6,19 +6,20 @@ const helper = require('../modules/helper')
 
 const name = 'which'
 const flags = []
-helper.verboseLogging(true)
+const quiet = true ? '--quiet' : ''
 
-test(name, async t => {
-  await tester.setupTest(flags, name)
+test('test', async t => {
+  helper.verboseLogging(!quiet)
+  await tester.setupTest({quiet,flags}, name)
 
   helper.newline()
 
   helper.print(chalk.inverse('ADD FILES & SAVE'))
   const save1 = await helper.addFiles(1)
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.print(chalk.inverse('MU WHICH'))
-  let which = await tester.mu(['which'])
+  let which = await tester.mu([quiet, 'which'])
   t.deepEqual(which, {
     current: {
       head: 'master',
@@ -30,10 +31,10 @@ test(name, async t => {
 
   const save2 = await helper.addFiles(1)
   helper.print(chalk.inverse('MU SAVEAS DEVELOP'))
-  await tester.mu(['saveas', 'develop'])
+  await tester.mu([quiet, 'saveas', 'develop'])
 
   helper.print(chalk.inverse('MU WHICH'))
-  which = await tester.mu(['which'])
+  which = await tester.mu([quiet, 'which'])
   t.deepEqual(which, {
     current: {
       head: 'develop',
@@ -48,14 +49,14 @@ test(name, async t => {
 
   helper.print(chalk.inverse('MU SAVE 3 times'))
   const save3 = await helper.addFiles(1)
-  await tester.muSave()
+  await tester.muSave(quiet)
   const save4 = await helper.addFiles(1)
-  await tester.muSave()
+  await tester.muSave(quiet)
   const save5 = await helper.addFiles(1)
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.print(chalk.inverse('MU WHICH'))
-  which = await tester.mu(['which'])
+  which = await tester.mu([quiet, 'which'])
   t.deepEqual(which, {
     current: {
       head: 'develop',
@@ -69,8 +70,8 @@ test(name, async t => {
   })
 
   helper.print(chalk.inverse('MU GET DEVELOP V1'))
-  await tester.mu(['get', 'develop', 'v1'])
-  which = await tester.mu(['which'])
+  await tester.mu([quiet, 'get', 'develop', 'v1'])
+  which = await tester.mu([quiet, 'which'])
   t.deepEqual(which, {
     current: {
       head: 'develop',
@@ -84,13 +85,13 @@ test(name, async t => {
   })
 
   helper.print(chalk.inverse('MU GET DEVELOP'))
-  await tester.mu(['get', 'develop'])
+  await tester.mu([quiet, 'get', 'develop'])
 
   helper.print(chalk.inverse('MU GET MASTER'))
-  await tester.mu(['get', 'master'])
+  await tester.mu([quiet, 'get', 'master'])
 
   helper.print(chalk.inverse('MU WHICH'))
-  which = await tester.mu(['which'])
+  which = await tester.mu([quiet, 'which'])
   t.deepEqual(which, {
     current: {
       head: 'master',

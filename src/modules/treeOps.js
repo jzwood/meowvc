@@ -7,8 +7,9 @@ const path = require('path')
 const chalk = require('chalk')
 const eol = require('os').EOL
 
-const po = require('./pointerOps')
+const pointerOps = require('./pointerOps')
 const muOps = require('./muOps')
+const {print} = require('../utils/print')
 const gl = require('../constant')
 
 module.exports = {
@@ -20,10 +21,10 @@ module.exports = {
   getSavedData
 }
 
-function _ignore() {
+async function _ignore() {
   const defaultPattern = '^\\.mu$|^\\.muid$' //we absolutely do not want to track the .mu repo if it's local
-  if (fs.pathExistsSync(muOps.ignorePath)) {
-    const ignorePatternList = fs.readFileSync(muOps.ignorePath, 'utf8')
+  if (await fs.pathExists(muOps.ignorePath)) {
+    const ignorePatternList = (await fs.readFile(muOps.ignorePath, 'utf8'))
       .trim()
       .split(eol)
       .concat(defaultPattern)
@@ -32,16 +33,16 @@ function _ignore() {
       const ignorePattern = ignorePatternList.join('|')
       return new RegExp(ignorePattern)
     } catch (err) {
-      console.warn(chalk.red('Error: file _muignore has incorrect syntax.'), chalk.yellow('Each line must contain valid 1st parameter for:'), 'new RegExp')
+      print(chalk.red('Error: file _muignore has incorrect syntax.'), chalk.yellow('Each line must contain valid 1st parameter for:'), 'new RegExp')
     }
   }
   return new RegExp(defaultPattern)
 }
 
 // iterates through every file in root directory
-function treeify(forEachFile) {
+async function treeify(forEachFile) {
   const treeRoot = process.cwd()
-  const ignorePattern = _ignore()
+  const ignorePattern = await _ignore()
   const dirDive = (tree, parent) => {
     fs.readdirSync(parent).forEach((child, index, ls) => {
       if (!ignorePattern.test(child)) {
@@ -59,7 +60,9 @@ function treeify(forEachFile) {
     })
   }
   const tree = gl.baseCase
-  if (!fs.existsSync(treeRoot)) return tree
+  if (!(await fs.pathExists(treeRoot))) {
+    return tree
+  }
   dirDive(tree, treeRoot)
   return tree
 }
@@ -69,6 +72,7 @@ function getSavedData(head, version) {
   if (head && version) {
     lastSavePath = muOps.path('history', head, version + '.json')
   } else {
+    const po = pointerOps
     lastSavePath = muOps.path('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
   }
   const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : gl.baseCase

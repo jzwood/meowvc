@@ -6,10 +6,11 @@ const helper = require('../modules/helper')
 
 const name = 'mash'
 const flags = []
-helper.verboseLogging(false)
+const quiet = true ? '--quiet' : ''
 
-test(name, async t => {
-  await tester.setupTest(flags, name)
+test('test', async t => {
+  helper.verboseLogging(!quiet)
+  await tester.setupTest({quiet,flags}, name)
 
   helper.newline()
   helper.print(chalk.inverse('ADD FILES & SAVE'))
@@ -18,9 +19,9 @@ test(name, async t => {
   const files1 = Object.keys(save1)
 
   helper.print(chalk.inverse('MU STATE'))
-  await tester.muSave()
+  await tester.muSave(quiet)
   helper.print(chalk.inverse('MU WHICH'))
-  await tester.mu(['which'])
+  await tester.mu([quiet, 'which'])
 
   helper.print(chalk.inverse('MOD FILES & RM FILES'))
 
@@ -33,27 +34,27 @@ test(name, async t => {
   await helper.removeFiles(removeThese)
 
   helper.print(chalk.inverse('MU SAVEAS'))
-  await tester.mu(['saveas', 'develop'])
+  await tester.mu([quiet, 'saveas', 'develop'])
 
   helper.print(chalk.inverse('MU STATE'))
-  await tester.mu(['state'])
+  await tester.mu([quiet, 'state'])
 
   helper.print(chalk.inverse('MU GET MASTER'))
-  await tester.mu(['get', 'master'])
+  await tester.mu([quiet, 'get', 'master'])
 
   helper.print(chalk.inverse('MODIFIES 1 FILE'))
   await helper.modFiles(modifyTheseAfter)
   helper.print(chalk.inverse('MU SAVE'))
-  await tester.muSave()
+  await tester.muSave(quiet)
   helper.print(chalk.inverse('MU GET DEVELOP'))
-  await tester.mu(['get', 'develop'])
+  await tester.mu([quiet, 'get', 'develop'])
 
   helper.print(chalk.inverse('MU MASH MASTER'))
-  await tester.mu(['mash', 'master'])
+  await tester.mu([quiet, 'mash', 'master'])
   helper.print(chalk.inverse('MU STATUS'))
 
   /* Here we have deleted and modified files saves as new branch.*/
-  const stateObj = await tester.mu(['state'])
+  const stateObj = await tester.mu([quiet, 'state'])
   const {
     added,
     deleted,

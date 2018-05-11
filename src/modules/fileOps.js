@@ -7,8 +7,9 @@ const eol = require('os').EOL
 const fs = require('fs-extra')
 const chalk = require('chalk')
 const gl = require('../constant')
+const {print} = require('../utils/print')
 const muOps = require('./muOps')
-const po = require('./pointerOps')
+const pointerOps = require('./pointerOps')
 const treeOps = require('./treeOps')
 
 module.exports = {
@@ -68,6 +69,7 @@ function fdiff(str1, str2, fast=false) {
 }
 
 function getFileMostRecentSave(fp){
+  const po = pointerOps
   const currentTree = treeOps.getSavedData(po.head)
 
   const hashes = Object.keys(currentTree.dat)
@@ -86,7 +88,7 @@ function remove(fileDiff) {
   const status = fs.statSync(fileDiff.fp)
   if (status && status.isFile()) {
     fs.removeSync(fileDiff.fp)
-    console.log(chalk.red('x\t' + fileDiff.fp))
+    print(chalk.red('x\t' + fileDiff.fp))
   }
 }
 
@@ -110,5 +112,5 @@ function writeFile(fileDiff) {
   fs.outputFileSync(fileDiff.fp, retrieveData(fileDiff))
   fs.utimesSync(fileDiff.fp, Date.now()/1000, fileDiff.mtime)
 
-  console.log(chalk.green('✓\t' + fileDiff.fp))
+  print(chalk.green('✓\t' + fileDiff.fp))
 }

@@ -12,14 +12,15 @@
   },
   "devDependencies": {
     "ava": "1.0.0-beta.4",
-    "eslint": "^4.8.0"
+    "eslint": "^4.19.1"
   },
   "scripts": {
     "test": "ava"
   },
   "ava": {
     "files": [
-      "test/tests/*.js",
+      "test/validation/*.js",
+      "test/unit/*.js",
       "!**/mashcon.js",
       "!**/diff.js"
     ],

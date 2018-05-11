@@ -1,6 +1,7 @@
 const chalk = require('chalk')
 const core = require('../core')()
 const gl = require('../constant')
+const {print} = require('../utils/print')
 const stopwatch = require('../utils/timer')()
 
 /*********
@@ -17,7 +18,7 @@ module.exports = async function save(i, args){
     return result
   }
 
-  console.log(chalk.red('save expects a message, e.g. ') + chalk.inverse('$ mu save "fixes punctuation errors"'))
+  print(chalk.red('save expects a message, e.g. ') + chalk.inverse('$ mu save "fixes punctuation errors"'))
   return gl.exit.invalid
 
 }

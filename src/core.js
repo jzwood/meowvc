@@ -4,6 +4,7 @@ const chalk = require('chalk')
 const isUtf8 = require('is-utf8')
 const loader = require('./utils/loader')
 const mod = loader.require('modules')
+const {print} = require('./utils/print')
 
 module.exports = () => {
 
@@ -23,6 +24,9 @@ module.exports = () => {
     isUnchanged
   }
 
+  /**
+  * @returns promise
+  */
   function isUnchanged() {
     const handle = diff => diff.nothingChanged
     return difference({handle})
@@ -36,14 +40,14 @@ module.exports = () => {
     const handle = async diff => {
       const po = mod.pointerOps
       if(diff.nothingChanged && !head){
-        console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
+        print(chalk.yellow('Warning: no changes detected. Save cancelled.'))
       } else {
         _writeToDisk()
         const [head, version] = [po.head, po.version]
         await mod.metaOps.update(head, version, mdata)
         fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
-        po.incrementVersion()
-        console.info(chalk.green(`${head} v${version} successfully saved!`))
+        await po.incrementVersion()
+        print(chalk.green(`${head} v${version} successfully saved!`))
       }
     }
     _preCache()
@@ -69,10 +73,10 @@ module.exports = () => {
   /**
   * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
-  function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
+  async function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
     targetTree = mod.treeOps.getSavedData(head, version)
     // currentTree implicity populates GlMem.fileHashLog
-    currentTree = currentTree || mod.treeOps.treeify(_forEachFile(hash))
+    currentTree = currentTree || await mod.treeOps.treeify(_forEachFile(hash))
     const fileHashLog = new Map(GlMem.fileHashLog) //shallow clone
     const targetFileHashes = Object.keys(targetTree.dat)
 

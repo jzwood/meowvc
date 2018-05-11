@@ -6,16 +6,18 @@ const helper = require('../modules/helper')
 
 const name = 'undo'
 const flags = []
+const quiet = true ? '--quiet' : ''
 
-test(name, async t => {
-  await tester.setupTest(flags, name)
+test('test', async t => {
+  helper.verboseLogging(!quiet)
+  await tester.setupTest({quiet,flags}, name)
 
   helper.newline()
   helper.print(chalk.inverse('ADD FILES & SAVE'))
   const save1 = await helper.addFiles(4)
   const files1 = Object.keys(save1)
   helper.print(chalk.inverse('MU'))
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.newline()
 
@@ -23,7 +25,7 @@ test(name, async t => {
   await helper.removeFiles(files1)
 
   helper.print(chalk.inverse('MU UNDO'))
-  await tester.mu(['undo', '.'])
+  await tester.mu([quiet, 'undo', '.'])
   await helper.verify(t, save1)
 
   helper.newline()
@@ -33,7 +35,7 @@ test(name, async t => {
   await helper.modFiles(files1)
 
   helper.print(chalk.inverse('MU UNDO'))
-  await tester.mu(['undo', '.'])
+  await tester.mu([quiet, 'undo', '.'])
   await helper.verify(t, save1)
 
   helper.newline()
@@ -42,7 +44,7 @@ test(name, async t => {
   helper.renameFiles(files1)
 
   helper.print(chalk.inverse('MU UNDO'))
-  await tester.mu(['undo', '.'])
+  await tester.mu([quiet, 'undo', '.'])
   await helper.verify(t, save1)
 
   await tester.cleanupTest(flags, name)

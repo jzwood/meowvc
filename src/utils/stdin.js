@@ -1,4 +1,5 @@
 const readline = require('readline')
+const {print} = require('./print')
 
 module.exports = choice => {
   const rl = readline.createInterface({
