@@ -69,7 +69,9 @@ async function setupTest(options, name) {
   const remote = await getRemote(local, name)
   await emptyTestDir(remote)
 
-  return muStart(options, name)
+  if(!options.noMu){
+    return muStart(options, name)
+  }
 }
 
 async function cleanupTest(flags, name) {

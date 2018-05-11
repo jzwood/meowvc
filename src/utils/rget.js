@@ -10,14 +10,14 @@ module.exports = (root, ignorePattern) => {
       .reduce(async (pfiles, child, index, ls) => {
         const files = await pfiles
         if (!ignorePattern.test(child)) {
-          const childpath = path.join(parent, child)
-          const status = await fs.stat(childpath)
+          const abspath = path.join(parent, child)
+          const status = await fs.stat(abspath)
           if (status.isDirectory()) {
-            return rget(childpath)
+            return files.concat(await rget(abspath))
           }
           if (status.isFile()) {
-            const relpath = path.relative(root, childpath)
-            return files.concat({ childpath, relpath, status })
+            const relpath = path.relative(root, abspath)
+            return files.concat({ abspath, relpath, status })
           }
         }
         return files

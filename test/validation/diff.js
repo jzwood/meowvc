@@ -9,7 +9,7 @@ const name = 'diff'
 const flags = []
 helper.verboseLogging(false)
 
-test(name, async t => {
+test('test', async t => {
   await tester.setupTest(flags, name)
 
   helper.newline()

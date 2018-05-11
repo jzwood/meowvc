@@ -8,7 +8,7 @@ const name = 'undo'
 const flags = []
 const quiet = true ? '--quiet' : ''
 
-test(name, async t => {
+test('test', async t => {
   helper.verboseLogging(!quiet)
   await tester.setupTest({quiet,flags}, name)
 

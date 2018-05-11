@@ -7,7 +7,7 @@ const name = 'start'
 const flags = []
 const quiet = true ? '--quiet' : ''
 
-test(name, async t => {
+test('test', async t => {
   helper.verboseLogging(!quiet)
   let exitcode = await tester.setupTest({
     quiet,
