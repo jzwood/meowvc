@@ -10,7 +10,7 @@ const core = require('../core')()
 *  DIFF  *
 *********/
 
-module.exports = function diff(i, args) {
+module.exports = async function diff(i, args) {
   const file = regex = args[i + 1]
   const binaryWarning = [
     chalk.yellow('Halting: It\'s a bad idea to diff binary files'),
@@ -20,14 +20,14 @@ module.exports = function diff(i, args) {
 
   if (fs.existsSync(file) && fs.statSync(file).isFile()) {
     const f1 = fs.readFileSync(file)
-    if(isUtf8(f1)){
-      const f2 = fileOps.getFileMostRecentSave(file) || ''
+    if (isUtf8(f1)) {
+      const f2 = await fileOps.getFileMostRecentSave(file) || ''
       const diffString = fileOps.fdiff(f1.toString('utf8'), f2.toString('utf8'))
       print(diffString)
-    }else{
+    } else {
       print(binaryWarning[0])
     }
-  }else if (regex) {
+  } else if (regex) {
     const filterPattern = new RegExp(regex.trim())
 
     const handle = diff => {

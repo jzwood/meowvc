@@ -25,7 +25,7 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
   }
 
   const ancestor = await findCommonAncestor({ mergeHead, mergeVersion, currentHead, currentVersion })
-  const ancestorTree = mod.treeOps.getSavedData(ancestor.head, 'v' + ancestor.version)
+  const ancestorTree = await mod.treeOps.getSavedData(ancestor.head, 'v' + ancestor.version)
 
   const report = auditConflicts(conflicts)
   await actOnReport(report)

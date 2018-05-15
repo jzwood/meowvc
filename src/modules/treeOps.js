@@ -7,7 +7,7 @@ const path = require('path')
 const chalk = require('chalk')
 const eol = require('os').EOL
 
-const pointerOps = require('./pointerOps')
+const po = require('./pointerOps')
 const muOps = require('./muOps')
 const rget = require('../utils/rget')
 const {print} = require('../utils/print')
@@ -52,19 +52,17 @@ async function treeify(forEachFile) {
         forEachFile(tree, file)
       })
   }
-
   return tree
 }
 
-function getSavedData(head, version) {
+async function getSavedData(head, version) {
   let lastSavePath
   if (head && version) {
     lastSavePath = muOps.path('history', head, version + '.json')
   } else {
-    const po = pointerOps
     lastSavePath = muOps.path('history', po.head, 'v' + Math.max(0, po.version - 1) + '.json')
   }
-  const lastSave = fs.existsSync(lastSavePath) ? fs.readJsonSync(lastSavePath) : gl.baseCase
+  const lastSave = await fs.pathExists(lastSavePath) ? fs.readJson(lastSavePath) : Promise.resolve(gl.baseCase)
   return lastSave
 }
 
@@ -106,4 +104,3 @@ function getOnFileData(tree, inode, filepath) {
     }
   }
 }
-

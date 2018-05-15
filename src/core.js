@@ -74,7 +74,7 @@ module.exports = () => {
   * @description collects all added, modfied, and deleted files and passes them to handle fxn
   */
   async function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
-    targetTree = mod.treeOps.getSavedData(head, version)
+    targetTree = await mod.treeOps.getSavedData(head, version)
     // currentTree implicity populates GlMem.fileHashLog
     currentTree = currentTree || await mod.treeOps.treeify(_forEachFile(hash))
     const fileHashLog = new Map(GlMem.fileHashLog) //shallow clone

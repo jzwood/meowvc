@@ -9,7 +9,7 @@ const chalk = require('chalk')
 const gl = require('../constant')
 const {print} = require('../utils/print')
 const muOps = require('./muOps')
-const pointerOps = require('./pointerOps')
+const po = require('./pointerOps')
 const treeOps = require('./treeOps')
 
 module.exports = {
@@ -68,9 +68,8 @@ function fdiff(str1, str2, fast=false) {
   }
 }
 
-function getFileMostRecentSave(fp){
-  const po = pointerOps
-  const currentTree = treeOps.getSavedData(po.head)
+async function getFileMostRecentSave(fp){
+  const currentTree = await treeOps.getSavedData(po.head)
 
   const hashes = Object.keys(currentTree.dat)
   let hash; while (hash = hashes.pop()){
