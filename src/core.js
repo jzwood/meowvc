@@ -128,7 +128,7 @@ module.exports = () => {
   * @description saves each file to disk and updates fs tree
   */
   function _forEachFile(cacheFxn) {
-    return (currentTree, childpath, relpath, status) => {
+    return (currentTree, {relpath, status}) => {
       const inode = status.ino
       const onfile = mod.treeOps.getOnFileData(targetTree, inode, relpath)
       const data = {

@@ -9,6 +9,7 @@ const eol = require('os').EOL
 
 const pointerOps = require('./pointerOps')
 const muOps = require('./muOps')
+const rget = require('../utils/rget')
 const {print} = require('../utils/print')
 const gl = require('../constant')
 
@@ -43,27 +44,15 @@ async function _ignore() {
 async function treeify(forEachFile) {
   const treeRoot = process.cwd()
   const ignorePattern = await _ignore()
-  const dirDive = (tree, parent) => {
-    fs.readdirSync(parent).forEach((child, index, ls) => {
-      if (!ignorePattern.test(child)) {
-        const childpath = path.join(parent, child)
-        const status = fs.statSync(childpath)
-        const isDir = status.isDirectory()
-        const isFile = status.isFile()
-        if (isDir) {
-          dirDive(tree, childpath)
-        } else if (isFile) {
-          const relpath = path.relative(treeRoot, childpath)
-          forEachFile(tree, childpath, relpath, status)
-        }
-      }
-    })
-  }
   const tree = gl.baseCase
-  if (!(await fs.pathExists(treeRoot))) {
-    return tree
+
+  if (await fs.pathExists(treeRoot)) {
+    (await rget(treeRoot, ignorePattern))
+      .forEach(file => {
+        forEachFile(tree, file)
+      })
   }
-  dirDive(tree, treeRoot)
+
   return tree
 }
 

@@ -17,7 +17,7 @@ module.exports = (root, ignorePattern) => {
           }
           if (status.isFile()) {
             const relpath = path.relative(root, abspath)
-            return files.concat({ abspath, relpath, status })
+            return files.concat({ relpath, status })
           }
         }
         return files
