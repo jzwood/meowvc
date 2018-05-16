@@ -10,7 +10,9 @@ const eol = require('os').EOL
 const po = require('./pointerOps')
 const muOps = require('./muOps')
 const rget = require('../utils/rget')
-const {print} = require('../utils/print')
+const {
+  print
+} = require('../utils/print')
 const gl = require('../constant')
 
 module.exports = {
@@ -47,10 +49,7 @@ async function treeify(forEachFile) {
   const tree = gl.baseCase
 
   if (await fs.pathExists(treeRoot)) {
-    (await rget(treeRoot, ignorePattern))
-      .forEach(file => {
-        forEachFile(tree, file)
-      })
+    await Promise.all((await rget(treeRoot, ignorePattern)).map(file => forEachFile(tree, file)))
   }
   return tree
 }
@@ -104,3 +103,4 @@ function getOnFileData(tree, inode, filepath) {
     }
   }
 }
+

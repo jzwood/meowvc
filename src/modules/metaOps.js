@@ -33,7 +33,7 @@ async function update(head, version, mdata) {
   if (mdata.parent) {
     metadata.parent = mdata.parent
   }
-  fs.outputJsonSync(mpath, metadata)
+  await fs.outputJson(mpath, metadata)
 }
 
 async function list(head, limit = Infinity) {

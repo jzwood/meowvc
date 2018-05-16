@@ -95,15 +95,6 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
       return report
 
     },{choose:[],correct:[],overwrite:[]})
-
-    //if (wasCurrentEdited && wasMergeEdited) {
-    //return promptUser(data)
-    //} else if (wasCurrentEdited && !wasMergeEdited) {
-    //return next()
-    //} else if (!wasCurrentEdited && wasMergeEdited) {
-    //mod.fileOps.overwrite(data)
-    //return next()
-    //}
   }
 
   async function actOnReport(report){
@@ -135,51 +126,5 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
       }
       await choices[decision]
     }
-  }
-
-  function next() {
-    if (conflicts.length) {
-      return manage(conflicts.pop())
-    } else {
-      console.info(chalk.green(`Repo ${mergeHead} ${mergeVersion} mashed into ${currentHead} ${currentVersion}`), chalk.yellow('Note: Mash unsaved!'))
-      return false
-    }
-  }
-
-  function promptUser(data) {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    })
-    let parfp = path.parse(data.fp)
-    const fname = parfp.name
-    const fext = parfp.ext
-    const prompt =
-      `conflict for file ${chalk.yellow(data.fp)}
-Select: (o) keep original file
-        (n) replace with new file
-        (b) keep both `
-
-    global.muReplOpen = true
-    rl.question(prompt, answer => {
-      console.log("next", conflicts.length)
-      rl.close()
-      global.muReplOpen = false
-
-      answer = answer.toLowerCase().trim()
-      if (answer === 'n') {
-        mod.fileOps.overwrite(data)
-      } else if (answer === 'b') {
-        let extension = -1,
-          inner = '.copy.'
-        while (fs.existsSync(`${fname}${inner}${++extension}${fext}`)) { /*intentionally empty*/ }
-        data.fp = `${fname}${inner}${extension}${fext}`
-        mod.fileOps.overwrite(data)
-      } else if (answer !== 'o') {
-        return manage(data)
-      }
-
-      return next()
-    })
   }
 }
