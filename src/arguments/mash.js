@@ -16,10 +16,8 @@ module.exports = async function mash(i, args) {
     const po = mod.pointerOps
     let version = args[i + 2] || 'v' + await po.latest(head)
 
-    const handle = diff => {
-      let data; while (data = diff.deleted.pop()) {
-        mod.fileOps.undelete(data)
-      }
+    const handle = async diff => {
+      await Promise.all(diff.deleted.map(mod.fileOps.undelete))
 
       const conflicts = diff.modified
       const mergeHead = head

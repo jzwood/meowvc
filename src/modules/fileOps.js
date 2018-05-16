@@ -82,34 +82,28 @@ async function getFileMostRecentSave(fp){
   return false
 }
 
-// fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
-function remove(fileDiff) {
-  const status = fs.statSync(fileDiff.fp)
+async function remove({fp}) {
+  const status = await fs.stat(fp)
   if (status && status.isFile()) {
-    fs.removeSync(fileDiff.fp)
-    print(chalk.red('x\t' + fileDiff.fp))
+    await fs.remove(fp)
+    print(chalk.red(`x\t${fp}`))
   }
 }
 
-// fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
-function retrieveData(fileDiff){
-  const getUtf8Data = () => {
-    const fileArray = fs.readJsonSync(muOps.path('disk_mem', 'files', gl.insert(fileDiff.targetHashsum, 2, '/')), 'utf8')
-    let linehash, data = ''; while (linehash = fileArray.pop()) {
-      data = fs.readFileSync(muOps.path('disk_mem', 'lines', gl.insert(linehash, 2, '/')), 'utf8') + data
-    }
-    return data
+async function retrieveData({targetHashsum, isutf8}){
+  const getUtf8Data = async () => {
+    const fileArray = await fs.readJson(muOps.path('disk_mem', 'files', gl.insert(targetHashsum, 2, '/')), 'utf8')
+    const fileLines = await Promise.all(fileArray.map(linehash => fs.readFile(muOps.path('disk_mem', 'lines', gl.insert(linehash, 2, '/')), 'utf8')))
+    return fileLines.join('')
   }
+  const getBinaryData = () => fs.readFile(muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/')))
 
-  const getBinaryData = () => fs.readFileSync(muOps.path('disk_mem', 'bin', gl.insert(fileDiff.targetHashsum, 2, '/')))
-
-  return fileDiff.isutf8 ? getUtf8Data() : getBinaryData()
+  return isutf8 ? getUtf8Data() : getBinaryData()
 }
 
-// fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
-function writeFile(fileDiff) {
-  fs.outputFileSync(fileDiff.fp, retrieveData(fileDiff))
-  fs.utimesSync(fileDiff.fp, Date.now()/1000, fileDiff.mtime)
+async function writeFile({fp, targetHashsum, isutf8, mtime}) {
+  await fs.outputFile(fp, await retrieveData({targetHashsum, isutf8}))
+  await fs.utimes(fp, Date.now()/1000, mtime)
 
-  print(chalk.green('✓\t' + fileDiff.fp))
+  print(chalk.green(`✓\t${fp}`))
 }

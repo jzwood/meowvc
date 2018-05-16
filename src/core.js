@@ -55,17 +55,11 @@ module.exports = () => {
   }
 
   function checkout({head, version, filterPattern}){
-    const handle = diff => {
-      let data
-      while(data = diff.modified.pop()) {
-        mod.fileOps.unmodify(data)
-      }
-      while(data = diff.added.pop()) {
-        mod.fileOps.unadd(data)
-      }
-      while(data = diff.deleted.pop()) {
-        mod.fileOps.undelete(data)
-      }
+    const handle = async diff => {
+      const p1 = Promise.all(diff.modified.map(mod.fileOps.unmodify))
+      const p2 = Promise.all(diff.added.map(mod.fileOps.unadd))
+      const p3 = Promise.all(diff.deleted.map(mod.fileOps.undelete))
+      await Promise.all([p1, p2, p3])
     }
     return difference({head, version, handle, filterPattern})
   }

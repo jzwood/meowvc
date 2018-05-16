@@ -117,8 +117,7 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
       //const decision = (await utils.stdin(prompt(name))).toLowerCase().trim()
       const choices = {
         get n(){
-          mod.fileOps.overwrite(data)
-          return Promise.resolve('change this when fileops get async')
+          return mod.fileOps.overwrite(data)
         },
         get o(){
           return Promise.resolve(gl.exit.success)
@@ -129,7 +128,7 @@ module.exports = async({conflicts, mergeHead, mergeVersion, currentHead, current
             let extension = -1
             while (await fs.pathExists(`${name}${inner}${++extension}${ext}`)) { /* intentionally empty */ }
             data.fp = `${fname}${inner}${extension}${fext}`
-            mod.fileOps.overwrite(data)
+            await mod.fileOps.overwrite(data)
             resolve(0)
           })
         }
