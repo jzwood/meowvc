@@ -1,15 +1,18 @@
 const test = require('ava')
 const chalk = require('chalk')
+const fs = require('fs-extra')
+const path = require('path')
 
 const tester = require('../modules/tester')
 const helper = require('../modules/helper')
 
 const name = 'conflicts'
 const flags = []
-helper.verboseLogging(false)
+const quiet = true ? '--quiet' : ''
 
 test('test', async t => {
-  await tester.setupTest(flags, name)
+  helper.verboseLogging(!quiet)
+  await tester.setupTest({quiet,flags}, name)
 
   helper.newline()
   helper.print(chalk.inverse('ADD FILES & SAVE'))
@@ -19,7 +22,7 @@ test('test', async t => {
   const files1 = Object.keys(save1)
 
   helper.print(chalk.inverse('MU'))
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   helper.print(chalk.inverse('MODIFY FILES'))
   const case1 = files1.slice(0 * arbNum, 1 * arbNum).sort()
@@ -28,24 +31,30 @@ test('test', async t => {
 
   await helper.modFiles(case1)
   helper.print(chalk.inverse('MU SAVEAS DEVELOP'))
-  await tester.mu(['saveas', 'develop'])
+  await tester.mu([quiet, 'saveas', 'develop'])
   await helper.modFiles(case3)
-  await tester.muSave()
-  await tester.mu(['get', 'master'])
+  await tester.muSave(quiet)
+  await tester.mu([quiet, 'get', 'master'])
   await helper.modFiles(case2)
   await helper.modFiles(case3)
 
-  const exitCode = await tester.mu(['mash', 'develop'])
+  const exitCode = await tester.mu([quiet, 'mash', 'develop'])
   t.truthy(exitCode, 'bash error codes are > 0')
   t.true(Number.isInteger(exitCode))
-  await tester.muSave()
+  await tester.muSave(quiet)
 
-  await tester.mu(['which'])
-  const {choose, correct, overwrite} = await tester.mu(['mash', 'develop'])
-  t.deepEqual(case1, overwrite.sort())
-  t.deepEqual(case2, correct.sort())
-  t.deepEqual(case3, choose.sort())
+  await tester.mu([quiet, 'which'])
+  global.muRepl = 'b'
+  const {choose, correct, overwrite} = await tester.mu([quiet, 'mash', 'develop'])
+  const getFP = arr => arr.map(data => data.fp)
+  t.deepEqual(case1, getFP(overwrite).sort())
+  t.deepEqual(case2, getFP(correct).sort())
+  t.deepEqual(case3, getFP(choose).sort())
+
+  const ls = await fs.readdir('.')
+  for(let data of choose) {
+    t.true(ls.includes(path.basename(data.fp,'txt') + 'copy.0.txt'))
+  }
 
   await tester.cleanupTest(flags, name)
 })
-

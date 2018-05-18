@@ -17,9 +17,8 @@ module.exports = async function diff(i, args) {
     chalk.yellow('Binary file. Output not shown.')
   ]
 
-
-  if (fs.existsSync(file) && fs.statSync(file).isFile()) {
-    const f1 = fs.readFileSync(file)
+  if ((await fs.pathExists(file)) && (await fs.stat(file)).isFile()) {
+    const f1 = await fs.readFile(file)
     if (isUtf8(f1)) {
       const f2 = await fileOps.getFileMostRecentSave(file) || ''
       const diffString = fileOps.fdiff(f1.toString('utf8'), f2.toString('utf8'))
@@ -30,8 +29,7 @@ module.exports = async function diff(i, args) {
   } else if (regex) {
     const filterPattern = new RegExp(regex.trim())
 
-    const handle = diff => {
-
+    const handle = async diff => {
 
       const diffIt = (f1, f2) => {
         const diffString = fileOps.fdiff(f1.toString('utf8'), f2.toString('utf8'))

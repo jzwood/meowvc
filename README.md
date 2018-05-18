@@ -5,7 +5,7 @@
 <p align="center"><h1 align="center">mμ</h1></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/node-%E2%89%A5%20v6.10-orange.svg" alt="node ≥ v6.10"/>
+  <img src="https://img.shields.io/badge/node-%E2%89%A5%20v6.10-orange.svg" alt="node ≥ v7.6.0"/>
 </p>
 
 <p align="center">

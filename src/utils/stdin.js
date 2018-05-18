@@ -9,9 +9,7 @@ module.exports = choice => {
   return new Promise((resolve, reject) => {
     rl.question(choice, decision => {
       rl.close()
-      console.log("HEARD",decision)
       resolve(decision)
     })
   })
 }
-

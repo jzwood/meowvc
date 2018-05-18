@@ -21,7 +21,6 @@
     "files": [
       "test/validation/*.js",
       "test/unit/*.js",
-      "!**/mashcon.js",
       "!**/diff.js"
     ],
     "verbose": true
