@@ -7,10 +7,11 @@ const helper = require('../modules/helper')
 
 const name = 'diff'
 const flags = []
-helper.verboseLogging(false)
+const quiet = true ? '--quiet' : ''
 
 test('test', async t => {
-  await tester.setupTest(flags, name)
+  helper.verboseLogging(!quiet)
+  await tester.setupTest({quiet,flags}, name)
 
   helper.newline()
   helper.print(chalk.inverse('ADD FILES'))
@@ -24,9 +25,9 @@ test('test', async t => {
   await Promise.all([p1, p2, p3])
 
   helper.print(chalk.inverse('MU DIFF'))
-  await tester.mu(['diff', '.'])
+  await tester.mu([quiet, 'diff', '.'])
   helper.print(chalk.inverse('MU SAVE'))
-  await tester.muSave()
+  await tester.muSave(quiet)
 
   /* without a timeout the files change so quickly that their last-modified time stamps are identical. If the time stamp is the same and the size doesn't change then mu can't tell that it has been edited. */
   await new Promise((resolve, reject) => {
@@ -41,7 +42,7 @@ test('test', async t => {
         helper.newline()
 
         helper.print(chalk.inverse('MU DIFF'))
-        await tester.mu(['diff', '.'])
+        await tester.mu([quiet, 'diff', '.'])
 
         helper.print(chalk.inverse('DEL FILES'))
 
@@ -52,7 +53,7 @@ test('test', async t => {
         ])
 
         helper.print(chalk.inverse('MU DIFF'))
-        await tester.mu(['diff', '.'])
+        await tester.mu([quiet, 'diff', '.'])
 
         await tester.cleanupTest(flags, name)
 

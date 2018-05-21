@@ -2,7 +2,7 @@ const chalk = require('chalk')
 const pointerOps = require('../modules/pointerOps')
 const gl = require('../constant')
 const {print} = require('../utils/print')
-const core = require('../core')()
+const core = require('../core')
 const stopwatch = require('../utils/timer')()
 
 /***********

@@ -3,12 +3,13 @@ const chalk = require('chalk')
 const isUtf8 = require('is-utf8')
 
 const fileOps = require('../modules/fileOps')
-const {print} = require('../utils/print')
-const core = require('../core')()
+const { print } = require('../utils/print')
+const gl = require('../constant')
+const core = require('../core')
 
 /*********
-*  DIFF  *
-*********/
+ *  DIFF  *
+ *********/
 
 module.exports = async function diff(i, args) {
   const file = regex = args[i + 1]
@@ -17,6 +18,7 @@ module.exports = async function diff(i, args) {
     chalk.yellow('Binary file. Output not shown.')
   ]
 
+  // if parameter is file
   if ((await fs.pathExists(file)) && (await fs.stat(file)).isFile()) {
     const f1 = await fs.readFile(file)
     if (isUtf8(f1)) {
@@ -26,7 +28,11 @@ module.exports = async function diff(i, args) {
     } else {
       print(binaryWarning[0])
     }
-  } else if (regex) {
+    return gl.exit.success
+  }
+
+  // if parameter is regex
+  if (regex) {
     const filterPattern = new RegExp(regex.trim())
 
     const handle = async diff => {
@@ -40,43 +46,46 @@ module.exports = async function diff(i, args) {
         print(chalk.bold('-'.repeat(30)))
       }
 
-      let data, diffString
-      while(data = diff.modified.pop()) {
+      for (let data of diff.modified) {
         print(chalk.cyan(chalk.inverse(data.fp, chalk.bold('% '))))
-        if(data.isutf8){
-          const f1 = fs.readFileSync(data.fp)
-          const f2 = fileOps.retrieveData(data)
+        if (data.isutf8) {
+          const [f1, f2] = await Promise.all([fs.readFile(data.fp), fileOps.retrieveData(data)])
           diffIt(f1, f2)
-        }else{
+        } else {
           print(binaryWarning[0])
         }
         newline()
       }
-      while(data = diff.added.pop()) {
+
+      for (let data of diff.added) {
         print(chalk.yellow(chalk.inverse(data.fp, chalk.bold('+ '))))
-        const f1 = fs.readFileSync(data.fp)
-        if(isUtf8(f1)){
+        const f1 = await fs.readFile(data.fp)
+        if (isUtf8(f1)) {
           const f2 = ''
           diffIt(f1, f2)
-        }else{
+        } else {
           print(binaryWarning[1])
         }
         newline()
       }
-      while(data = diff.deleted.pop()) {
+
+      for (let data of diff.deleted) {
         print(chalk.red(chalk.inverse(data.fp, chalk.bold('x '))))
-        if(data.isutf8){
-          const f1 = '', f2 = fileOps.retrieveData(data)
+        if (data.isutf8) {
+          const [f1, f2] = ['', await fileOps.retrieveData(data)]
           diffIt(f1, f2)
-        }else{
+        } else {
           print(binaryWarning[1])
         }
         newline()
       }
+
+      return gl.exit.success
     }
 
-    return core.difference({handle, filterPattern})
-  } else {
-    print(chalk.red('diff expects a filename or pattern, e.g. ') + chalk.inverse('$ mu diff path/to/file.txt'))
+    return core.difference({ handle, filterPattern })
   }
+
+  print(chalk.red('diff expects a filename or pattern, e.g. ') + chalk.inverse('$ mu diff path/to/file.txt'))
+  return gl.exit.invalid
 }

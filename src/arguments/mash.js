@@ -3,7 +3,7 @@ const loader = require('../utils/loader')
 const mod = loader.require('modules')
 const gl = require('../constant')
 const {print} = require('../utils/print')
-const core = require('../core')()
+const core = require('../core')
 
 /*********
  *  MASH  *

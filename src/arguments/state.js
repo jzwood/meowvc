@@ -1,6 +1,6 @@
 const chalk = require('chalk')
 const pointerOps = require('../modules/pointerOps')
-const core = require('../core')()
+const core = require('../core')
 const {print} = require('../utils/print')
 const gl = require('../constant')
 

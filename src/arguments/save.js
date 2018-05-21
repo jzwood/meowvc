@@ -1,5 +1,5 @@
 const chalk = require('chalk')
-const core = require('../core')()
+const core = require('../core')
 const gl = require('../constant')
 const {print} = require('../utils/print')
 const stopwatch = require('../utils/timer')()

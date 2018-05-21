@@ -1,6 +1,6 @@
 const chalk = require('chalk')
 const gl = require('../constant')
-const core = require('../core')()
+const core = require('../core')
 const {print} = require('../utils/print')
 
 /*********
