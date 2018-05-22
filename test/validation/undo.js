@@ -5,12 +5,15 @@ const tester = require('../modules/tester')
 const helper = require('../modules/helper')
 
 const name = 'undo'
-const flags = []
 const quiet = true ? '--quiet' : ''
 
-test('test', async t => {
+test.serial('local', undo(name, quiet, true))
+test.serial('remote', undo(name, quiet, false))
+
+function undo(name, quiet, local) {
+  return async t => {
   helper.verboseLogging(!quiet)
-  await tester.setupTest({quiet,flags}, name)
+  await tester.setupTest({quiet, local}, name)
 
   helper.newline()
   helper.print(chalk.inverse('ADD FILES & SAVE'))
@@ -47,5 +50,6 @@ test('test', async t => {
   await tester.mu([quiet, 'undo', '.'])
   await helper.verify(t, save1)
 
-  await tester.cleanupTest(flags, name)
-})
+  await tester.cleanupTest(local, name)
+  }
+}

@@ -29,7 +29,6 @@ function parseStateObject(stateObj){
   const added = extractFiles(stateObj.added)
   const deleted = extractFiles(stateObj.deleted)
   const modified = extractFiles(stateObj.modified)
-
   return {added, deleted, modified}
 }
 

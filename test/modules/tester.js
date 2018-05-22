@@ -9,7 +9,6 @@ module.exports = {
   cleanupTest,
   muSave,
   muStart,
-  parseFlags,
   setupTest,
   mu: testMu
 }
@@ -26,19 +25,10 @@ function testMu(args) {
   return mu.call(null, args)
 }
 
-function parseFlags(flags = []) {
-  const local = flags.some(f => f.startsWith('-') && f.includes('l'))
-  const preserve = flags.some(f => f.startsWith('-') && f.includes('p'))
-  return {
-    local,
-    preserve
-  }
-}
-
 //runs mu start in the right place (local|dropbox)
 function muStart(options, name = '', msg = '') {
   helper.print(`${ options.local ? chalk.inverse('MU START LOCAL ' + msg) : chalk.inverse('MU START DROPBOX ' + msg)}`)
-  return testMu([options.quiet, 'start', options.local ? name : false].filter(Boolean))
+  return testMu([options.quiet, 'start', options.local ? false : name].filter(Boolean))
 }
 
 function muSave(quiet) {
@@ -46,27 +36,24 @@ function muSave(quiet) {
 }
 
 async function emptyTestDir(remote, remove = false) {
-  if (/\.mu\\|Mu Repositories/.test(remote)) { // last rmrf failsafe
+  if (remote === '.mu' || remote.includes('Mu Repositories')) { // last rmrf failsafe
     await (remove ? fs.remove(remote) : fs.emptyDir(remote))
   }
 }
 
-async function getRemote(isLocal, name) {
+async function getRemote(local, name) {
   muOps = require('../../src/modules/muOps')
   await muOps.update()
-  return muOps._test.findRemotePath(isLocal ? false : name)
+  return muOps._test.findRemotePath(local ? false : name)
 }
 
 async function setupTest(options, name) {
-  const local = options.flags && parseFlags(options.flags).local
-  options.local = local
-
   const tempPath = path.join(process.cwd(), 'test', 'temp', name)
   await fs.emptyDir(tempPath)
   process.chdir(tempPath)
 
   name = path.join('test', name)
-  const remote = await getRemote(local, name)
+  const remote = await getRemote(options.local, name)
   await emptyTestDir(remote)
 
   if(!options.noMu){
@@ -74,17 +61,10 @@ async function setupTest(options, name) {
   }
 }
 
-async function cleanupTest(flags, name) {
+async function cleanupTest(local, name) {
   name = path.join('test', name)
-  const {local, preserve} = parseFlags(flags)
-
   const remote = await getRemote(local, name)
-
-  if (preserve) {
-    helper.print(chalk.yellow(remote), chalk.inverse('preserved'))
-  } else {
-    await emptyTestDir(remote, remove = true)
-    helper.print(chalk.cyan('cleaning up...'))
-    helper.print(chalk.yellow(remote), chalk.inverse('deleted'))
-  }
+  await emptyTestDir(remote, true)
+  helper.print(chalk.cyan('cleaning up...'))
+  helper.print(chalk.yellow(remote), chalk.inverse('deleted'))
 }

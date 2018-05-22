@@ -6,65 +6,69 @@ const tester = require('../modules/tester')
 const helper = require('../modules/helper')
 
 const name = 'diff'
-const flags = []
 const quiet = true ? '--quiet' : ''
 
-test('test', async t => {
-  helper.verboseLogging(!quiet)
-  await tester.setupTest({quiet,flags}, name)
+test.serial('local', diff(name, quiet, true))
+test.serial('remote', diff(name, quiet, false))
 
-  helper.newline()
-  helper.print(chalk.inverse('ADD FILES'))
+function diff(name, quiet, local) {
+  return async t => {
+    helper.verboseLogging(!quiet)
+    await tester.setupTest({quiet, local}, name)
 
-  const files = ['hello.txt', 'fox.sh', 'binary.bin']
+    helper.newline()
+    helper.print(chalk.inverse('ADD FILES'))
 
-  const p1 = fs.outputFile(files[0], 'hello world\nfoo bar')
-  const p2 = fs.outputFile(files[1], 'echo "the quick brown fox jumped over the lazy dog"')
-  const p3 = fs.outputFile(files[2], ']W^��Jɩ���������+^2��)\u001c�V�^pvӳ��4���K>�\u000e�C�����\nL�\b�AC��5-~�$\u0005z��\r�̾ob��mjكB�������+�T�C\u001bh\u0004�u/���v�0�\u001e�\f�ܳ�5rV||X��[��J��^��ƞH�&Ki\r4�\u0019�')
+    const files = ['hello.txt', 'fox.sh', 'binary.bin']
 
-  await Promise.all([p1, p2, p3])
+    const p1 = fs.outputFile(files[0], 'hello world\nfoo bar')
+    const p2 = fs.outputFile(files[1], 'echo "the quick brown fox jumped over the lazy dog"')
+    const p3 = fs.outputFile(files[2], ']W^��Jɩ���������+^2��)\u001c�V�^pvӳ��4���K>�\u000e�C�����\nL�\b�AC��5-~�$\u0005z��\r�̾ob��mjكB�������+�T�C\u001bh\u0004�u/���v�0�\u001e�\f�ܳ�5rV||X��[��J��^��ƞH�&Ki\r4�\u0019�')
 
-  helper.print(chalk.inverse('MU DIFF'))
-  await tester.mu([quiet, 'diff', '.'])
-  helper.print(chalk.inverse('MU SAVE'))
-  await tester.muSave(quiet)
+    await Promise.all([p1, p2, p3])
 
-  /* without a timeout the files change so quickly that their last-modified time stamps are identical. If the time stamp is the same and the size doesn't change then mu can't tell that it has been edited. */
-  await new Promise((resolve, reject) => {
-    setTimeout(async () => {
-      try {
-        await Promise.all([
-          fs.outputFile(files[0], 'Hello the world bar foo'),
-          fs.outputFile(files[1], 'echo "the Quick fox jumped high over\nthe lazy dog."'),
-          fs.outputFile(files[2], ']W^��Jɩ������+^2��)\u001c�V�^pvӳ��4u000e�C�����\nL�\b�AC��005z��\r�̾ob��mj����+�T�C\u001bh\u0004�u/���v�0�\u001e�\f�ܳ�5rV||X��[�^��ƞH�&Ki\r4�\u0019�')
-        ])
+    helper.print(chalk.inverse('MU DIFF'))
+    await tester.mu([quiet, 'diff', '.'])
+    helper.print(chalk.inverse('MU SAVE'))
+    await tester.muSave(quiet)
 
-        helper.newline()
+    /* without a timeout the files change so quickly that their last-modified time stamps are identical. If the time stamp is the same and the size doesn't change then mu can't tell that it has been edited. */
+    await new Promise((resolve, reject) => {
+      setTimeout(async () => {
+        try {
+          await Promise.all([
+            fs.outputFile(files[0], 'Hello the world bar foo'),
+            fs.outputFile(files[1], 'echo "the Quick fox jumped high over\nthe lazy dog."'),
+            fs.outputFile(files[2], ']W^��Jɩ������+^2��)\u001c�V�^pvӳ��4u000e�C�����\nL�\b�AC��005z��\r�̾ob��mj����+�T�C\u001bh\u0004�u/���v�0�\u001e�\f�ܳ�5rV||X��[�^��ƞH�&Ki\r4�\u0019�')
+          ])
 
-        helper.print(chalk.inverse('MU DIFF'))
-        await tester.mu([quiet, 'diff', '.'])
+          helper.newline()
 
-        helper.print(chalk.inverse('DEL FILES'))
+          helper.print(chalk.inverse('MU DIFF'))
+          await tester.mu([quiet, 'diff', '.'])
 
-        await Promise.all([
-          fs.remove(files[0]),
-          fs.remove(files[1]),
-          fs.remove(files[2])
-        ])
+          helper.print(chalk.inverse('DEL FILES'))
 
-        helper.print(chalk.inverse('MU DIFF'))
-        await tester.mu([quiet, 'diff', '.'])
+          await Promise.all([
+            fs.remove(files[0]),
+            fs.remove(files[1]),
+            fs.remove(files[2])
+          ])
 
-        await tester.cleanupTest(flags, name)
+          helper.print(chalk.inverse('MU DIFF'))
+          await tester.mu([quiet, 'diff', '.'])
 
-        t.pass()
-        resolve()
-      } catch (err) {
-        t.fail()
-        reject(err)
-      }
+          await tester.cleanupTest(local, name)
 
-    }, 1000)
-  })
-})
+          t.pass()
+          resolve()
+        } catch (err) {
+          t.fail()
+          reject(err)
+        }
+
+      }, 1000)
+    })
+  }
+}
 

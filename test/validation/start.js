@@ -4,29 +4,28 @@ const tester = require('../modules/tester')
 const helper = require('../modules/helper')
 
 const name = 'start'
-const flags = []
 const quiet = true ? '--quiet' : ''
 
-test('test', async t => {
-  helper.verboseLogging(!quiet)
-  let exitcode = await tester.setupTest({
-    quiet,
-    flags
-  }, name)
-  t.is(exitcode, 0) // success
+test.serial('local', start(name, quiet, true))
+test.serial('remote', start(name, quiet, false))
 
-  helper.newline()
+function start(name, quiet, local) {
+  return async t => {
 
-  const options = {
-    quiet,
-    local: tester.parseFlags(flags).local
+    helper.verboseLogging(!quiet)
+    const options = { quiet, local }
+    let exitcode = await tester.setupTest(options, name)
+    t.is(exitcode, 0) // success
+
+    helper.newline()
+
+    exitcode = await tester.muStart(options, '', '(when mu repo exists already)')
+    t.is(exitcode, 126) //cannot execute
+
+    exitcode = await tester.mu([quiet, 'gibberish'])
+    t.is(exitcode, 127) //argument not found
+
+    await tester.cleanupTest(local, name)
   }
-  exitcode = await tester.muStart(options, '', '(when mu repo exists already)')
-  t.is(exitcode, 126) //cannot execute
-
-  exitcode = await tester.mu([quiet, 'gibberish'])
-  t.is(exitcode, 127) //argument not found
-
-  await tester.cleanupTest(flags, name)
-})
+}
 
