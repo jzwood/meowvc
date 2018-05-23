@@ -20,7 +20,7 @@
   "ava": {
     "files": [
       "test/validation/*.js",
-      "!test/unit/*.js"
+      "test/unit/*.js"
     ],
     "verbose": true
   },

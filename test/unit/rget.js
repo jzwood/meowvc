@@ -8,7 +8,7 @@ const rget = require('../../src/utils/rget')
 const name = 'rget'
 
 test('test', async t => {
-  await tester.setupTest({noMu: true}, name)
+  await tester.setupTest({local: true, noMu: true}, name)
 
   const save1 = await helper.addFiles(50)
   const files1 = Object.keys(save1).sort()
@@ -18,5 +18,5 @@ test('test', async t => {
     .sort()
 
   t.deepEqual(allFiles, files1)
-  await tester.cleanupTest([], name)
+  await tester.cleanupTest(true, name)
 })
