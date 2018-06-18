@@ -102,7 +102,7 @@ Commands and arguments:
 
 ## when to use mµ
 
-For people who already use Git, SVN, Mercurial, or other there still may be reasons to use mu. If you give `mu start` the optional _name_ parameter your mu data will be stored in **Dropbox** if possible. This means that if you want to backup your personal work (_which you do_) without setting up and syncing a repository on *BitBucket** or polluting your GitHub you can use mu!
+For people who already use Git, SVN, Mercurial, or other there still may be reasons to use mu. If you give `mu start` the optional _name_ parameter your mu data will be stored in **Dropbox** if possible. This means that if you want to backup your personal work (_which you do_) without setting up and syncing a repository on **BitBucket** or polluting your GitHub you can use mu!
 
 ## power users
 If you want to resume working on a project from a different computer that is still linked to your Dropbox run `mu start <name_of_repo>`. If you then run `mu state` mu will tell you that all your files have been deleted (_cuz the dir is empty_). Run `mu undo .` and your latest master branch will be restored.
