@@ -2,23 +2,22 @@ const chalk = require('chalk')
 const loader = require('../utils/loader')
 const mod = loader.require('modules')
 const gl = require('../constant')
-const core = require('../core')()
+const {print} = require('../utils/print')
+const core = require('../core')
 
 /*********
  *  MASH  *
  *********/
 
-module.exports = function mash(i, args) {
+module.exports = async function mash(i, args) {
   const head = args[i + 1] || ''
 
   if (head) {
-    const po = mod.pointerOps()
-    let version = args[i + 2] || 'v' + po.latest(head)
+    const po = mod.pointerOps
+    let version = args[i + 2] || 'v' + await po.latest(head)
 
-    const handle = diff => {
-      let data; while (data = diff.deleted.pop()) {
-        mod.fileOps.undelete(data)
-      }
+    const handle = async diff => {
+      await Promise.all(diff.deleted.map(mod.fileOps.undelete))
 
       const conflicts = diff.modified
       const mergeHead = head
@@ -26,19 +25,25 @@ module.exports = function mash(i, args) {
       const currentHead = po.head
       const currentVersion = 'v' + gl.vnorm(po.version)
 
-      return mod.handleConflicts({conflicts, mergeHead, mergeVersion, currentHead, currentVersion})
+      return mod.handleConflicts({ conflicts, mergeHead, mergeVersion, currentHead, currentVersion })
     }
 
-    const exists = po.exists(head, version)
-    const isUnchanged = core.isUnchanged()
+    const exists = await po.exists(head, version)
+    const isUnchanged = await core.isUnchanged()
     if (exists && isUnchanged) {
-      core.difference({ head, version, handle })
-    } else if (exists && !isUnchanged) {
-      console.info(chalk.yellow('Warning: Save or undo changes before calling mash'))
-    } else {
-      console.warn(chalk.red(`Error: ${head} ${version} does not exist.`))
+      return core.difference({ head, version, handle })
     }
-  } else {
-    console.log(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
+
+    if (exists && !isUnchanged) {
+      print(chalk.yellow('Warning: Save or undo changes before calling mash'))
+      return gl.exit.cannotExe
+    }
+
+    print(chalk.red(`Error: ${head} ${version} does not exist.`))
+    return gl.exit.invalid
   }
+
+  print(chalk.red('mash expects the name of an existing save, e.g. ') + chalk.inverse('$ mu mash develop v3'))
+  return gl.exit.invalid
 }
+

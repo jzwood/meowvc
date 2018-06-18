@@ -1,28 +1,33 @@
 const chalk = require('chalk')
 const pointerOps = require('../modules/pointerOps')
+const core = require('../core')
+const {print} = require('../utils/print')
 const gl = require('../constant')
-const core = require('../core')()
 
 /**********
 *  STATUS  *
 **********/
 
-module.exports = function state(){
-  const po = pointerOps()
-  const latest = po.latest()
-  console.info(chalk.green(po.head, `(v${gl.vnorm(po.version)}/${latest})`))
+module.exports = async function state(){
+  const po = pointerOps
+  const latest = await po.latest()
+  print(chalk.green(po.head, `(v${gl.vnorm(po.version)}/${latest})`))
 
   const handle = diff => {
-    let data
-    while(data = diff.modified.pop()) {
-      console.info(chalk.cyan('%\t' + data.fp))
-    }
-    while(data = diff.added.pop()) {
-      console.info(chalk.yellow('+\t' + data.fp))
-    }
-    while(data = diff.deleted.pop()) {
-      console.info(chalk.red('x\t' + data.fp))
-    }
+    const modified = diff.modified
+    const added = diff.added
+    const deleted = diff.deleted
+
+    modified.map(data => {
+      print(chalk.cyan('%\t' + data.fp))
+    })
+    added.map(data => {
+      print(chalk.yellow('+\t' + data.fp))
+    })
+    deleted.map(data => {
+      print(chalk.red('x\t' + data.fp))
+    })
+    return {modified, added, deleted}
   }
-  core.difference({handle})
+  return core.difference({handle})
 }

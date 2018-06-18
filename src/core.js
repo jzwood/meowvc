@@ -4,188 +4,193 @@ const chalk = require('chalk')
 const isUtf8 = require('is-utf8')
 const loader = require('./utils/loader')
 const mod = loader.require('modules')
-const gl = require('./constant')
+const { print } = require('./utils/print')
 
-module.exports = () => {
+const GlMem = {
+  memory: new Set(),
+  fileHashLog: new Map(),
+  fileQueue: [],
+  lineQueue: [],
+  binQueue: []
+}
 
-  const GlMem = {
-    memory: new Set(),
-    fileHashLog: new Map(),
-    fileQueue: [],
-    lineQueue: [],
-    binQueue: []
-  }
-  let currentTree, targetTree
+const trees = {}
 
-  return {
-    save,
-    checkout,
-    difference,
-    isUnchanged
-  }
+module.exports = {
+  save,
+  checkout,
+  difference,
+  isUnchanged
+}
 
-  function isUnchanged() {
-    const handle = diff => diff.nothingChanged
-    return difference({handle})
-  }
+/**
+ * @returns promise
+ */
+function isUnchanged() {
+  const handle = diff => diff.nothingChanged
+  return difference({
+    handle
+  })
+}
 
-  /**
-  * @description stores every hash on disk into RAM
-  */
-  function save({head, mdata}){
-    const hash = mod.hashOps.diskCache.bind(null, GlMem)
-    const handle = diff => {
-      const po = mod.pointerOps()
-      if(diff.nothingChanged && !head){
-        console.info(chalk.yellow('Warning: no changes detected. Save cancelled.'))
-      }else{
-        _writeToDisk()
-        const [head, version] = [po.head, po.version]
-        mod.metaOps(head).update(version, mdata)
-        fs.outputJsonSync(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
-        po.update()
-        console.info(chalk.green(`${head} v${version} successfully saved!`))
-      }
+/**
+ * @description stores every hash on disk into RAM
+ */
+async function save({ head, mdata }) {
+  const hash = mod.hashOps.diskCache.bind(null, GlMem)
+  const handle = async diff => {
+    const po = mod.pointerOps
+    if (diff.nothingChanged && !head) {
+      print(chalk.yellow('Warning: no changes detected. Save cancelled.'))
+    } else {
+      await _writeToDisk()
+      const [head, version] = [po.head, po.version]
+      await mod.metaOps.update(head, version, mdata)
+      await fs.outputJson(mod.muOps.path('history', head, 'v' + version + '.json'), diff.currentTree)
+      await po.incrementVersion()
+      print(chalk.green(`${head} v${version} successfully saved!`))
     }
-    _preCache()
-    difference({head, handle, hash})
   }
+  await _preCache()
+  return difference({
+    head,
+    handle,
+    hash
+  })
+}
 
-  function checkout({head, version, filterPattern}){
-    const handle = diff => {
-      let data
-      while(data = diff.modified.pop()) {
-        mod.fileOps.unmodify(data)
-      }
-      while(data = diff.added.pop()) {
-        mod.fileOps.unadd(data)
-      }
-      while(data = diff.deleted.pop()) {
-        mod.fileOps.undelete(data)
-      }
-    }
-    difference({head, version, handle, filterPattern})
+function checkout({ head, version, filterPattern }) {
+  const handle = async diff => {
+    const p1 = Promise.all(diff.modified.map(mod.fileOps.unmodify))
+    const p2 = Promise.all(diff.added.map(mod.fileOps.unadd))
+    const p3 = Promise.all(diff.deleted.map(mod.fileOps.undelete))
+    await Promise.all([p1, p2, p3])
   }
+  return difference({ head, version, handle, filterPattern })
+}
 
-  /**
-  * @description collects all added, modfied, and deleted files and passes them to handle fxn
-  */
-  function difference({head, version, handle, filterPattern, hash=mod.hashOps.hashIt}) {
-    targetTree = mod.treeOps.getSavedData(head, version)
-    // currentTree implicity populates GlMem.fileHashLog
-    currentTree = currentTree || mod.treeOps.treeify(_forEachFile(hash))
-    const fileHashLog = new Map(GlMem.fileHashLog) //shallow clone
-    const targetFileHashes = Object.keys(targetTree.dat)
+/**
+ * @description collects all added, modfied, and deleted files and passes them to handle fxn
+ */
+async function difference({ head, version, handle, filterPattern, hash = mod.hashOps.hashIt }) {
+  trees.target = await mod.treeOps.getSavedData(head, version)
+  // currentTree implicity populates GlMem.fileHashLog
+  trees.current = trees.current || await mod.treeOps.treeify(_forEachFile(hash))
+  const fileHashLog = new Map(GlMem.fileHashLog) //shallow clone
+  const targetFileHashes = Object.keys(trees.target.dat)
 
-    const modified = [], deleted = []
+  const modified = []
+  const deleted = []
 
-    let targetHashsum; while (targetHashsum = targetFileHashes.pop()) {
-      const data = targetTree.dat[targetHashsum]
-      const [isutf8, size, files] = data
-      const filepaths = Object.keys(files)
-      let fp; while (fp = filepaths.pop()) {
-        const equivFiles = currentHashsum = fileHashLog.get(fp)
-        const equivHashes = (currentHashsum === targetHashsum)
+  let targetHashsum;
+  while (targetHashsum = targetFileHashes.pop()) {
+    const data = trees.target.dat[targetHashsum]
+    const [isutf8, size, files] = data
+    const filepaths = Object.keys(files)
+    let fp;
+    while (fp = filepaths.pop()) {
+      const equivFiles = currentHashsum = fileHashLog.get(fp)
+      const equivHashes = (currentHashsum === targetHashsum)
 
-        fileHashLog.delete(fp)
+      fileHashLog.delete(fp)
 
-        if (!filterPattern || filterPattern.test(fp)) {
-          const mtime = files[fp]
-          const fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
-          if (equivFiles && !equivHashes) {
-            modified.push(fileDiff)
-          } else if (!equivFiles){
-            deleted.push(fileDiff)
-          }
+      if (!filterPattern || filterPattern.test(fp)) {
+        const mtime = files[fp]
+        const fileDiff = {
+          fp,
+          currentHashsum,
+          targetHashsum,
+          isutf8,
+          mtime
+        }
+        if (equivFiles && !equivHashes) {
+          modified.push(fileDiff)
+        } else if (!equivFiles) {
+          deleted.push(fileDiff)
         }
       }
     }
-
-    let added = []
-    fileHashLog.forEach((hash, fp) => {
-      if(!filterPattern || filterPattern.test(fp)){
-        added.push({'fp': fp})
-      }
-    })
-
-    const nothingChanged = !added.length && !deleted.length && !modified.length
-
-    // added, modified, & deleted collected
-    return handle({
-      currentTree,
-      nothingChanged,
-      added,
-      deleted,
-      modified
-    })
   }
 
-
-  /**
-  * @description saves each file to disk and updates fs tree
-  */
-  function _forEachFile(cacheFxn) {
-    return (currentTree, childpath, relpath, status) => {
-      const inode = status.ino
-      const onfile = mod.treeOps.getOnFileData(targetTree, inode, relpath)
-      const data = {
-        size: status.size,
-        mtime: fs._toUnixTimestamp(status.mtime),
-        isutf8: onfile.isutf8
-      }
-
-      let hashsum = mod.treeOps.getHashByInode(targetTree, inode)
-      if(!onfile.exists ||
-        onfile.size !== data.size ||
-        onfile.mtime !== data.mtime) {
-        const buffer = fs.readFileSync(relpath) //don't include encoding
-        data.isutf8 = isUtf8(buffer) ? 1 : 0
-        hashsum = cacheFxn(buffer, data.isutf8)
-      }
-
-      GlMem.fileHashLog.set(relpath, hashsum)
-      mod.treeOps.setHashByInode(currentTree, inode, hashsum)
-      mod.treeOps.setTreeData(currentTree, hashsum, relpath, data)
+  let added = []
+  fileHashLog.forEach((hash, fp) => {
+    if (!filterPattern || filterPattern.test(fp)) {
+      added.push({
+        'fp': fp
+      })
     }
-  }
+  })
 
-  /**
-  * @description stores every hash on disk into RAM
-  */
-  function _preCache() {
-    const lp = gl.linesPath,
-      fp = gl.filesPath
-    fs.ensureDirSync(lp)
-    fs.ensureDirSync(fp)
+  const nothingChanged = !added.length && !deleted.length && !modified.length
 
-    fs.readdirSync(lp).forEach(d => {
-      const linesDirPath = path.join(lp, d)
-      if(fs.statSync(linesDirPath).isDirectory()){
-        fs.readdirSync(linesDirPath).forEach(f => {
-          GlMem.memory.add('' + d + f)
-        })
-      }
-    })
-    fs.readdirSync(fp).forEach(d => {
-      const filesDirPath = path.join(fp, d)
-      if(fs.statSync(filesDirPath).isDirectory()){
-        fs.readdirSync(filesDirPath).forEach(f => {
-          GlMem.memory.add('' + d + f)
-        })
-      }
-    })
-  }
-
-  function _writeToDisk(){
-    let outputFile; while (outputFile = GlMem.fileQueue.pop()) {
-      fs.outputJsonSync(outputFile[0], outputFile[1], {encoding: 'utf8'})
-    }
-    let outputLine; while (outputLine = GlMem.lineQueue.pop()) {
-      fs.outputFileSync(outputLine[0], outputLine[1], {encoding: 'utf8'})
-    }
-    let outputBinary; while (outputBinary = GlMem.binQueue.pop()) {
-      fs.outputFileSync(outputBinary[0], outputBinary[1], {encoding: null})
-    }
-  }
-
+  // added, modified, & deleted collected
+  return handle({
+    currentTree: trees.current,
+    nothingChanged,
+    added,
+    deleted,
+    modified
+  })
 }
+
+
+/**
+ * @description saves each file to disk and updates fs tree
+ */
+function _forEachFile(cacheFxn) {
+  return async (currentTree, { relpath, status }) => {
+    const inode = status.ino
+    const onfile = mod.treeOps.getOnFileData(trees.target, inode, relpath)
+    const data = {
+      size: status.size,
+      mtime: fs._toUnixTimestamp(status.mtime),
+      isutf8: onfile.isutf8
+    }
+
+    let hashsum = mod.treeOps.getHashByInode(trees.target, inode)
+    if (!onfile.exists ||
+      onfile.size !== data.size ||
+      onfile.mtime !== data.mtime) {
+      const buffer = await fs.readFile(relpath) //don't include encoding
+      data.isutf8 = isUtf8(buffer) ? 1 : 0
+      hashsum = cacheFxn(buffer, data.isutf8)
+    }
+
+    GlMem.fileHashLog.set(relpath, hashsum)
+    mod.treeOps.setHashByInode(currentTree, inode, hashsum)
+    mod.treeOps.setTreeData(currentTree, hashsum, relpath, data)
+  }
+}
+
+/**
+ * @description stores every hash on disk into RAM
+ */
+function _preCache() {
+  async function cacheIt(cPath) {
+    await fs.ensureDir(cPath)
+    return Promise.all((await fs.readdir(cPath))
+      .map(d => fs.readdir(path.join(cPath, d))
+        .then(dirs => dirs.map(f => GlMem.memory.add('' + d + f)))
+        .catch(e => {
+          if (e.code !== 'ENOTDIR') throw e
+        })))
+  }
+
+  const lp = mod.muOps.to.lines
+  const fp = mod.muOps.to.files
+  return Promise.all([lp, fp].map(cacheIt))
+}
+
+function _writeToDisk() {
+  function writeIt(data, asyncFxn, encoding='utf8'){
+    return Promise.all(data.map(output => asyncFxn(output[0], output[1], {encoding})))
+  }
+
+  const files = writeIt(GlMem.fileQueue, fs.outputJson)
+  const lines = writeIt(GlMem.lineQueue, fs.outputFile)
+  const binary = writeIt(GlMem.binQueue, fs.outputFile, null)
+
+  return Promise.all([files, lines, binary])
+}
+
+

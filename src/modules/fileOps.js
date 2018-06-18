@@ -7,8 +7,9 @@ const eol = require('os').EOL
 const fs = require('fs-extra')
 const chalk = require('chalk')
 const gl = require('../constant')
+const {print} = require('../utils/print')
 const muOps = require('./muOps')
-const pointerOps = require('./pointerOps')
+const po = require('./pointerOps')
 const treeOps = require('./treeOps')
 
 module.exports = {
@@ -48,7 +49,7 @@ function fdiff(str1, str2, fast=false) {
     let pointer = p2.length
     let diff = []
     const added = str => chalk.bold(chalk.green(str))
-    const deleted = str => chalk.dim(chalk.red(str))
+    const deleted = str => chalk.underline(chalk.red(str))
     backtrace.forEach(instr => {
       const getNum = i => {
         let num = i.match(/\d+/)
@@ -67,9 +68,8 @@ function fdiff(str1, str2, fast=false) {
   }
 }
 
-function getFileMostRecentSave(fp){
-  const po = pointerOps()
-  const currentTree = treeOps.getSavedData(po.head)
+async function getFileMostRecentSave(fp){
+  const currentTree = await treeOps.getSavedData(po.head)
 
   const hashes = Object.keys(currentTree.dat)
   let hash; while (hash = hashes.pop()){
@@ -82,34 +82,28 @@ function getFileMostRecentSave(fp){
   return false
 }
 
-// fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
-function remove(fileDiff) {
-  const status = fs.statSync(fileDiff.fp)
+async function remove({fp}) {
+  const status = await fs.stat(fp)
   if (status && status.isFile()) {
-    fs.removeSync(fileDiff.fp)
-    console.log(chalk.red('x\t' + fileDiff.fp))
+    await fs.remove(fp)
+    print(chalk.red(`x\t${fp}`))
   }
 }
 
-// fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
-function retrieveData(fileDiff){
-  const getUtf8Data = () => {
-    const fileArray = fs.readJsonSync(muOps.path('disk_mem', 'files', gl.insert(fileDiff.targetHashsum, 2, '/')), 'utf8')
-    let linehash, data = ''; while (linehash = fileArray.pop()) {
-      data = fs.readFileSync(muOps.path('disk_mem', 'lines', gl.insert(linehash, 2, '/')), 'utf8') + data
-    }
-    return data
+async function retrieveData({targetHashsum, isutf8}){
+  const getUtf8Data = async () => {
+    const fileArray = await fs.readJson(muOps.path('disk_mem', 'files', gl.insert(targetHashsum, 2, '/')), 'utf8')
+    const fileLines = await Promise.all(fileArray.map(linehash => fs.readFile(muOps.path('disk_mem', 'lines', gl.insert(linehash, 2, '/')), 'utf8')))
+    return fileLines.join('')
   }
+  const getBinaryData = () => fs.readFile(muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/')))
 
-  const getBinaryData = () => fs.readFileSync(muOps.path('disk_mem', 'bin', gl.insert(fileDiff.targetHashsum, 2, '/')))
-
-  return fileDiff.isutf8 ? getUtf8Data() : getBinaryData()
+  return isutf8 ? getUtf8Data() : getBinaryData()
 }
 
-// fileDiff = {fp, currentHashsum, targetHashsum, isutf8, mtime}
-function writeFile(fileDiff) {
-  fs.outputFileSync(fileDiff.fp, retrieveData(fileDiff))
-  fs.utimesSync(fileDiff.fp, Date.now()/1000, fileDiff.mtime)
+async function writeFile({fp, targetHashsum, isutf8, mtime}) {
+  await fs.outputFile(fp, await retrieveData({targetHashsum, isutf8}))
+  await fs.utimes(fp, Date.now()/1000, mtime)
 
-  console.log(chalk.green('✓\t' + fileDiff.fp))
+  print(chalk.green(`✓\t${fp}`))
 }

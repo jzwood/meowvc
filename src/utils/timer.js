@@ -1,3 +1,5 @@
+const {print} = require('./print')
+
 module.exports = () => {
   let t1, t2
   return {
@@ -6,7 +8,8 @@ module.exports = () => {
     },
     stop(){
       t2 = Date.now()
-      console.info((t2 - t1) / 1000 + 's')
+      print((t2 - t1) / 1000 + 's')
     }
   }
 }
+

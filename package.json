@@ -1,6 +1,6 @@
 {
   "name": "meowvc",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "a version control system for dummies",
   "dependencies": {
     "chalk": "^1.1.3",
@@ -10,14 +10,22 @@
     "minimum-edit-distance": "^1.1.7"
   },
   "devDependencies": {
-    "eslint": "^4.8.0"
+    "ava": "1.0.0-beta.4",
+    "eslint": "^4.19.1"
   },
   "scripts": {
-    "test": "node test/index.js"
+    "test": "ava"
+  },
+  "ava": {
+    "files": [
+      "test/validation/*.js",
+      "test/unit/*.js"
+    ],
+    "verbose": true
   },
   "preferGlobal": true,
   "engines": {
-    "node": ">=6.10"
+    "node": ">=7.6.0"
   },
   "license": "MIT",
   "bin": {

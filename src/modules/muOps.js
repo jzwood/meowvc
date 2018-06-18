@@ -1,5 +1,5 @@
 /**
- *  LOCAL/DROPBOX MU OPERATIONS
+ * LOCAL/DROPBOX MU OPERATIONS
  */
 
 const fs = require('fs-extra')
@@ -18,78 +18,100 @@ const MU = {
 }
 
 const muOps = {
-  findRemotePath,
-  setupRemote,
-  findMuidAncestor,
-  repoPath: getRepoPath(),
-  path() {
-    return path.join(this.repoPath, ...arguments)
+  _test: {
+    findRemotePath
+  },
+  isPath: false,
+  start: {
+    findMuidAncestor,
+    setupRemote
+  },
+  ignorePath: path.join(cwd, '_muignore'),
+  update
+}
+
+module.exports = muOps
+
+function getPath() {
+  return path.join(muOps._cachedRepoPath, ...arguments)
+}
+
+async function update() {
+  muPath = await getRepoPath()
+  const isPath = Boolean(muPath)
+  muOps._cachedRepoPath = muPath
+  if (isPath) {
+    muOps.isPath = isPath
+    muOps.path = getPath
+    muOps.to = {
+      lines: getPath('disk_mem', 'lines'),
+      files: getPath('disk_mem', 'files'),
+      bin: getPath('disk_mem', 'bin')
+    }
   }
 }
 
-function findRemotePath(name){
-  return name ? getDropboxPath(name) : MU.local
+//call updateMuOps() after
+async function setupRemote(name) {
+  const muPath = await findRemotePath(name)
+  await fs.outputFile(MU.muidPath, muPath)
 }
 
-function setupRemote(name) {
-  const repoPath = findRemotePath(name)
-  fs.outputFileSync(MU.muidPath, repoPath)
-  muOps.repoPath = getRepoPath()
+
+function findRemotePath(name) {
+  return name ? getDropboxPath(name) : Promise.resolve(MU.local)
 }
 
-function findMuidAncestor() {
+async function findMuidAncestor() {
   const parentPath = cwd.split(path.sep)
-  while (parentPath.length) {
-    parentPath.pop()
-    if (fs.existsSync(path.join(...parentPath, MU.muid))) {
+  while (parentPath.pop()) {
+    if (await fs.pathExists(path.join(...parentPath, MU.muid))) {
       return parentPath
     }
   }
   return null
 }
 
-function getDropboxPath(name) {
+async function getDropboxPath(name) {
 
   let dropboxConfigPath
   const isWin = /^win/i.test(os.platform())
 
-  const winPath1 = path.join('%APPDATA%','Dropbox','info.json')
-  const winPath2 = path.join('%LOCALAPPDATA%','Dropbox','info.json')
+  const winPath1 = path.join('%APPDATA%', 'Dropbox', 'info.json')
+  const winPath2 = path.join('%LOCALAPPDATA%', 'Dropbox', 'info.json')
   const unixPath = path.join(os.homedir(), '.dropbox', 'info.json')
 
-  if(!isWin && fs.existsSync(unixPath)){
+  if (!isWin && await fs.pathExists(unixPath)) {
     dropboxConfigPath = unixPath
-  }else if(isWin && fs.existsSync(winPath1)){
+  } else if (isWin && await fs.pathExists(winPath1)) {
     dropboxConfigPath = winPath1
-  }else if (isWin && fs.existsSync(winPath2)){
+  } else if (isWin && await fs.pathExists(winPath2)) {
     dropboxConfigPath = winPath2
-  }else{
+  } else {
     return false
   }
 
-  const dropboxConfig = fs.readJsonSync(dropboxConfigPath)
+  const dropboxConfig = await fs.readJson(dropboxConfigPath)
   const dropBoxPath = dropboxConfig.personal.path
 
-  if (fs.existsSync(dropBoxPath)) {
+  if (await fs.pathExists(dropBoxPath)) {
     const dropboxMuPath = path.join(dropBoxPath, MU.remote, name)
-    fs.ensureDirSync(dropboxMuPath)
+    await fs.ensureDir(dropboxMuPath)
     return dropboxMuPath
-  }else{
+  } else {
     return false
   }
 }
 
-function getRepoPath() {
-  let repoPath
-  if (fs.existsSync(MU.muidPath)) {
-    let repoPath = fs.readFileSync(MU.muidPath, 'utf8')
-    if (!fs.existsSync(repoPath)) {
+async function getRepoPath() {
+  if (await fs.pathExists(MU.muidPath)) {
+    let repoPath = await fs.readFile(MU.muidPath, 'utf8')
+    if (!(await fs.pathExists(repoPath))) {
       repoPath = MU.local
-      fs.writeJsonSync(MU.muidPath, MU.local)
+      await fs.writeJson(MU.muidPath, MU.local)
     }
     return repoPath
   }
-  return ''
+  return null
 }
 
-module.exports = muOps

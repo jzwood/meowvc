@@ -1,27 +1,38 @@
 'use strict'
 
 /*
- *  MU.JS === MAIN
+ * MAIN
  */
 
 const chalk = require('chalk')
 
-module.exports = function mu(args) {
-
+module.exports = async function mu(args) {
   const gl = require('./src/constant')
   const loader = require('./src/utils/loader')
   const commands = loader.require('arguments')
   const muOps = require('./src/modules/muOps')
+  const pointerOps = require('./src/modules/pointerOps')
+  const {print, quiet} = require('./src/utils/print')
 
-  for (let i = 0, n = args.length; i < n; i++) {
-    const command = commands[args[i]]
+  if(args.includes('--quiet')){
+    quiet()
+  }
+
+  for (let [index, param] of args.entries()) {
+    const command = commands[param]
     if (typeof command === 'function') {
-      if (muOps.repoPath || args[i] === 'start') {
-        return command(i, args)
+      await muOps.update()
+      if (param === 'start') {
+        return command(index, args)
       }
-      console.info(chalk.yellow(`Warning: ${process.cwd()} is not a mu repo root`))
-      return 0
+      if(muOps.isPath){
+        await pointerOps.init()
+        return command(index, args)
+      }
+      print(chalk.yellow(`Warning: ${process.cwd()} is not a mu repo root`))
+      return gl.exit.cannotExe
     }
   }
-  console.info(gl.help)
+  print(gl.help)
+  return gl.exit.notFound
 }
