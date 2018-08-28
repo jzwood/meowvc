@@ -1,6 +1,6 @@
 {
   "name": "meowvc",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "a version control system for dummies",
   "dependencies": {
     "chalk": "^1.1.3",
