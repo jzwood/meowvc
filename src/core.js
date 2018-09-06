@@ -152,7 +152,7 @@ function _forEachFile(cacheFxn) {
       onfile.size !== data.size ||
       onfile.mtime !== data.mtime) {
       const buffer = await fs.readFile(relpath) //don't include encoding
-      data.isutf8 = isUtf8(buffer) ? 1 : 0
+      data.isutf8 = isUtf8(buffer) >> 0 //super fast integer casting
       hashsum = cacheFxn(buffer, data.isutf8)
     }
 
@@ -192,5 +192,3 @@ function _writeToDisk() {
 
   return Promise.all([files, lines, binary])
 }
-
-

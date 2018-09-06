@@ -3,7 +3,6 @@
  */
 
 const path = require('path')
-const crc = require('crc')
 const crc32 = require('crc/lib/crc32')
 const muOps = require('./muOps')
 const gl = require('../constant')
