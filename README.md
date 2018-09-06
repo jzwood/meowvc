@@ -78,27 +78,27 @@ mµ, on the other hand, is simple and approachable. Let’s get started!
 
 Commands and arguments:
 
-**help:** shows usage
+`help` : shows usage
 
-**start [\<name>]:** creates a new mµ repo
+`start [<name>]` : creates a new mµ repo
 
-**state:** shows the current repo state
+`state:` : shows the current repo state
 
-**save \<message>:** records snapshot of current repo
+`save <message>` : records snapshot of current repo
 
-**which:** shows name of current repo
+`which` : shows name of current repo
 
-**saveas \<name>:** saves current repo with a new name
+`saveas <name>` : saves current repo with a new name
 
-**history [\<limit=∞>]:** shows ≤ the limit number of save messages for current repo
+`history [<limit=∞>]` : shows ≤ the limit number of save messages for current repo
 
-**undo \<file|pattern>:** reverts file(s) (by name or pattern) to last save
+`undo <file|pattern>` : reverts file(s) (by name or pattern) to last save
 
-**get \<name> [\<version>]:** switches to a different named repo
+`get <name> [<version>]` : switches to a different named repo
 
-**mash \<name> [\<version>]:** mashes (ie merges) named repo into current repo
+`mash <name> [<version>]` : mashes (ie merges) named repo into current repo
 
-**diff \<file|pattern>:** shows the word differences between current and saved version of file
+`diff <file|pattern>` : shows the word differences between current and saved version of file
 
 ## when to use mµ
 
