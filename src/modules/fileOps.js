@@ -22,7 +22,6 @@ module.exports = {
   fdiff
 }
 
-
 function fdiff(str1, str2, fast=false) {
 
   const splitIt = str => {
@@ -68,7 +67,7 @@ function fdiff(str1, str2, fast=false) {
   }
 }
 
-async function getFileMostRecentSave(fp){
+async function getFileMostRecentSave(fp) {
   const currentTree = await treeOps.getSavedData(po.head)
 
   const hashes = Object.keys(currentTree.dat)
@@ -76,7 +75,7 @@ async function getFileMostRecentSave(fp){
     const data = currentTree.dat[hash]
     const isutf8 = data[0]
     if(Object.keys(data[2]).some(k => (k === fp)) && isutf8){
-      return retrieveData({'targetHashsum': hash, isutf8})
+      return retrieveData({'targetHashsum': hash})
     }
   }
   return false
@@ -94,8 +93,18 @@ async function retrieveData({targetHashsum}){
   return fs.readFile(muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/')))
 }
 
-async function writeFile({fp, targetHashsum, isutf8, mtime}) {
-  await fs.outputFile(fp, await retrieveData({targetHashsum}))
+function getReadStream({targetHashsum}) {
+  return fs.createReadStream(muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/')))
+}
+
+async function writeFile({fp, targetHashsum, mtime}) {
+  const readStream = getReadStream({targetHashsum})
+  const writeStream = fs.createWriteStream(fp)
+
+  readStream.pipe(writeStream)
+  await (new Promise(resolve => {
+    writeStream.on('finish', resolve)
+  }))
   await fs.utimes(fp, Date.now()/1000, mtime)
 
   print(chalk.green(`✓\t${fp}`))
