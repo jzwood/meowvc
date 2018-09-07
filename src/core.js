@@ -181,14 +181,20 @@ function _preCache() {
   return Promise.all([lp, fp].map(cacheIt))
 }
 
-function _writeToDisk() {
-  function writeIt(data, asyncFxn, encoding='utf8'){
-    return Promise.all(data.map(output => asyncFxn(output[0], output[1], {encoding})))
+async function _writeToDisk() {
+  function getFileWriter(fsFxn, encoding, incr) {
+    return async function writeFileInChunks(dataArr) {
+      const [head, tail] = [dataArr.slice(0,incr), dataArr.slice(incr)]
+      await Promise.all(head.map(([fpath, data]) => fsFxn(fpath, data, encoding)))
+      return tail.length ? writeFileInChunks(tail) : true
+    }
   }
 
-  const files = writeIt(GlMem.fileQueue, fs.outputJson)
-  const lines = writeIt(GlMem.lineQueue, fs.outputFile)
-  const binary = writeIt(GlMem.binQueue, fs.outputFile, null)
+  const writeJson = getFileWriter(fs.outputJson, 'utf8', 100)
+  const writeBinary = getFileWriter(fs.outputFile, null, 100)
+  const writeFile = getFileWriter(fs.outputFile, 'utf8', 100)
 
-  return Promise.all([files, lines, binary])
+  const files = await writeJson(GlMem.fileQueue)
+  const binary = await writeBinary(GlMem.binQueue)
+  const lines = await writeFile(GlMem.lineQueue, 'utf8')
 }
