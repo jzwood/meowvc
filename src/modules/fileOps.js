@@ -90,19 +90,12 @@ async function remove({fp}) {
   }
 }
 
-async function retrieveData({targetHashsum, isutf8}){
-  const getUtf8Data = async () => {
-    const fileArray = await fs.readJson(muOps.path('disk_mem', 'files', gl.insert(targetHashsum, 2, '/')), 'utf8')
-    const fileLines = await Promise.all(fileArray.map(linehash => fs.readFile(muOps.path('disk_mem', 'lines', gl.insert(linehash, 2, '/')), 'utf8')))
-    return fileLines.join('')
-  }
-  const getBinaryData = () => fs.readFile(muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/')))
-
-  return isutf8 ? getUtf8Data() : getBinaryData()
+async function retrieveData({targetHashsum}){
+  return fs.readFile(muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/')))
 }
 
 async function writeFile({fp, targetHashsum, isutf8, mtime}) {
-  await fs.outputFile(fp, await retrieveData({targetHashsum, isutf8}))
+  await fs.outputFile(fp, await retrieveData({targetHashsum}))
   await fs.utimes(fp, Date.now()/1000, mtime)
 
   print(chalk.green(`✓\t${fp}`))
