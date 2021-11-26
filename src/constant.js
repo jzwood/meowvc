@@ -2,7 +2,7 @@ const eol = require('os').EOL
 const muOps = require('./modules/muOps')
 
 const usage = `
-Usage:
+Usage (v3.0):
 mu <command> [<args>]
 
   Commands: Args:                 Descriptions:
