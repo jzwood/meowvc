@@ -44,8 +44,6 @@ async function update() {
     muOps.isPath = isPath
     muOps.path = getPath
     muOps.to = {
-      lines: getPath('disk_mem', 'lines'),
-      files: getPath('disk_mem', 'files'),
       bin: getPath('disk_mem', 'bin')
     }
   }

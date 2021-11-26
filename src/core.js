@@ -4,13 +4,12 @@ const chalk = require('chalk')
 const isUtf8 = require('is-utf8')
 const loader = require('./utils/loader')
 const mod = loader.require('modules')
+const simpleSet = require('./utils/simpleSet')
 const { print } = require('./utils/print')
 
 const GlMem = {
-  memory: new Set(),
+  memory: simpleSet(),
   fileHashLog: new Map(),
-  fileQueue: [],
-  lineQueue: [],
   binQueue: []
 }
 
@@ -82,12 +81,12 @@ async function difference({ head, version, handle, filterPattern, hash = mod.has
   const modified = []
   const deleted = []
 
-  let targetHashsum;
+  let targetHashsum
   while (targetHashsum = targetFileHashes.pop()) {
     const data = trees.target.dat[targetHashsum]
     const [isutf8, size, files] = data
     const filepaths = Object.keys(files)
-    let fp;
+    let fp
     while (fp = filepaths.pop()) {
       const equivFiles = currentHashsum = fileHashLog.get(fp)
       const equivHashes = (currentHashsum === targetHashsum)
@@ -166,6 +165,7 @@ function _forEachFile(cacheFxn) {
  * @description stores every hash on disk into RAM
  */
 function _preCache() {
+
   async function cacheIt(cPath) {
     await fs.ensureDir(cPath)
     return Promise.all((await fs.readdir(cPath))
@@ -173,28 +173,29 @@ function _preCache() {
         .then(dirs => dirs.map(f => GlMem.memory.add('' + d + f)))
         .catch(e => {
           if (e.code !== 'ENOTDIR') throw e
-        })))
+        })
+      )
+    )
   }
 
-  const lp = mod.muOps.to.lines
-  const fp = mod.muOps.to.files
-  return Promise.all([lp, fp].map(cacheIt))
+  return cacheIt(mod.muOps.to.bin)
 }
 
 async function _writeToDisk() {
-  function getFileWriter(fsFxn, encoding, incr) {
-    return async function writeFileInChunks(dataArr) {
-      const [head, tail] = [dataArr.slice(0,incr), dataArr.slice(incr)]
-      await Promise.all(head.map(([fpath, data]) => fsFxn(fpath, data, encoding)))
-      return tail.length ? writeFileInChunks(tail) : true
-    }
+  const streamWrite = async (fpath, data) => {
+    await fs.ensureDir(path.dirname(fpath))
+    const writeStream = fs.createWriteStream(fpath)
+    await writeStream.write(data)
+    writeStream.end()
   }
 
-  const writeJson = getFileWriter(fs.outputJson, 'utf8', 100)
-  const writeBinary = getFileWriter(fs.outputFile, null, 100)
-  const writeFile = getFileWriter(fs.outputFile, 'utf8', 100)
+  async function writeFiles(dataArr, incr){
+    const head= dataArr.slice(0,incr)
+    const tail = dataArr.slice(incr)
+    await Promise.all(head.map(([fpath, data]) => streamWrite(fpath, data)))
+    return tail.length ? writeFiles(tail, incr) : true
+  }
 
-  const files = await writeJson(GlMem.fileQueue)
-  const binary = await writeBinary(GlMem.binQueue)
-  const lines = await writeFile(GlMem.lineQueue, 'utf8')
+  const NUM_PARALLEL_WRITES = 10
+  return writeFiles(GlMem.binQueue, NUM_PARALLEL_WRITES)
 }
