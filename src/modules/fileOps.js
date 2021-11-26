@@ -93,18 +93,9 @@ async function retrieveData({targetHashsum}){
   return fs.readFile(muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/')))
 }
 
-function getReadStream({targetHashsum}) {
-  return fs.createReadStream(muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/')))
-}
-
 async function writeFile({fp, targetHashsum, mtime}) {
-  const readStream = getReadStream({targetHashsum})
-  const writeStream = fs.createWriteStream(fp)
-
-  readStream.pipe(writeStream)
-  await (new Promise(resolve => {
-    writeStream.on('finish', resolve)
-  }))
+  const src = muOps.path('disk_mem', 'bin', gl.insert(targetHashsum, 2, '/'))
+  await fs.copy(src, fp)
   await fs.utimes(fp, Date.now()/1000, mtime)
 
   print(chalk.green(`✓\t${fp}`))

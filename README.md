@@ -62,12 +62,12 @@ mµ, on the other hand, is simple and approachable. Let’s get started!
 
 **from npm**
 
-`$ npm install -g meowvc`
+`$ yarn global add meowvc`
 
 **or from GitHub**
 
 `$ git clone https://github.com/jzwood/meowvc.git && cd meowvc`<br>
-`$ npm install && npm link`
+`$ yarn && yarn link`
 
 **and you're ready to go!**
 
